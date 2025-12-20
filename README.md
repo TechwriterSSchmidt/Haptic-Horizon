@@ -13,7 +13,9 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
-- **Output**: Vibration Motor Module (Breakout Board)
+- **IMU**: BMI160 (Gyroscope + Accelerometer)
+- **Haptic Driver**: DRV2605L (Optional - for advanced waveforms & LRA support)
+- **Output**: Vibration Motor (ERM or LRA)
 - **Audio**: Passive Piezo Buzzer
 - **Input**: Momentary Push Button
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
@@ -29,9 +31,13 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ## Pinout (SuperMini NRF52840)
 | Component | SuperMini Pin | Description |
 |-----------|---------------|-------------|
-| VL53L5CX SDA | P0.17 (D2) | I2C SDA |
-| VL53L5CX SCL | P0.20 (D3) | I2C SCL |
-| Vibration Motor | P0.06 (D1) | PWM capable (Needs Transistor!) |
+| VL53L5CX SDA | P0.17 (D2) | I2C SDA (Shared) |
+| VL53L5CX SCL | P0.20 (D3) | I2C SCL (Shared) |
+| BMI160 SDA | P0.17 (D2) | I2C SDA (Shared) |
+| BMI160 SCL | P0.20 (D3) | I2C SCL (Shared) |
+| DRV2605L SDA | P0.17 (D2) | I2C SDA (Shared) |
+| DRV2605L SCL | P0.20 (D3) | I2C SCL (Shared) |
+| Vibration Motor | P0.06 (D1) | PWM (Direct) OR DRV2605L Output |
 | Buzzer | P0.24 | Piezo (+) to Pin, (-) to GND |
 | Mode Button | P0.29 (A2) | Button to GND (Internal Pullup) |
 | Battery + | B+ | LiPo Positive |
@@ -42,23 +48,43 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ### 1. Power On / Off
 *   **Start / Wake Up:** Press the **Mode Button** once.
     *   Sound: *La Marseillaise* (Opening)
-*   **Auto-Off:** Automatically turns off after **5 minutes** of inactivity.
-    *   **Smart Detection:** Stays on as long as you move (distance changes > 10cm). Turns off if placed on a table or held still.
+*   **Auto-Off:** Automatically turns off after **2 minutes** of inactivity.
+    *   **Smart Detection:** Stays on as long as you move (Gyroscope detection). Turns off if placed on a table or held still.
     *   Sound: *Windows Shutdown* (Classic)
     *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON) to save power.
 
 ### 2. Modes (Toggle via Button)
 Press the button to switch between modes.
-*   **Navigation Mode (Default):**
-    *   Sound: *Zoom Out* (Descending Tones)
-    *   Scans a wide area (Safety Bubble).
-    *   Vibrates for the *closest* object in any direction.
+*   **Smart Terrain Mode (Default):**
+    *   **Intelligent Analysis:** Uses the IMU (Tilt) and Trigonometry to understand the ground.
+    *   **Looking Forward:** Wall & Obstacle Detection.
+        *   Feedback: **Continuous Vibration** (Stronger = Closer).
+    *   **Looking Down:** Terrain Analysis (Virtual Cane).
+        *   **Flat Ground:** No Feedback (Silence).
+        *   **Drop-off / Hole / Stairs Down:** Ground is further away than expected.
+            *   Feedback: **Fast Nervous Rattle** (Strobe).
+        *   **Obstacle / Curb / Stairs Up:** Ground is closer than expected.
+            *   Feedback: **Slow Heavy Pulse**.
 *   **Precision Mode:**
     *   Sound: *Zoom In* (Ascending Tones)
     *   Scans only the center (Tunnel Vision).
     *   Used to find door handles or narrow gaps. Geiger-counter style clicking.
 
-### 3. "Find Me" Feature (Bluetooth App)
+### 3. Battery Check
+*   **Long Press (> 1s):** The device announces the battery level.
+    *   4 Beeps: Full (> 4.0V)
+    *   3 Beeps: Good (> 3.7V)
+    *   2 Beeps: Low (> 3.4V)
+    *   1 Long Beep: Critical (< 3.4V)
+
+### 4. Calibration (IMU)
+If the device is not detecting the ground correctly (e.g., false alarms on flat ground), you can recalibrate the "Zero" position.
+1.  Place the device **flat on a table** (or the surface you want to define as "level").
+2.  Press and **hold the button for 10 seconds**.
+3.  Wait for the **Success Melody** (Major Arpeggio).
+4.  The new calibration is saved permanently.
+
+### 5. "Find Me" Feature (Bluetooth App)
 If the device is lost (even in Auto-Off mode), it can be found using a smartphone.
 1.  Open a BLE App (e.g., **nRF Connect** or **Adafruit Bluefruit**).
 2.  Connect to **"Haptic Horizon"**.
@@ -66,7 +92,7 @@ If the device is lost (even in Auto-Off mode), it can be found using a smartphon
 4.  Send the character **'B'** (or 'F').
 5.  The device will play a loud **"Here I Am"** melody.
 
-### 4. "Selfie Button" Finder (Tactile Remote)
+### 5. "Selfie Button" Finder (Tactile Remote)
 For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").
 1.  Enable `#define ENABLE_SELFIE_FINDER` in `include/config.h`.
 2.  Set the name of your remote in `SELFIE_BUTTON_NAME` (check via phone first).
@@ -76,19 +102,28 @@ For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote
 
 ## Configuration (`include/config.h`)
 You can customize the device behavior by editing `include/config.h`:
+*   **Haptic Driver:** Uncomment `#define ENABLE_DRV2605` to use the DRV2605L chip instead of direct PWM.
+*   **Motor Type:** If using DRV2605L, uncomment `#define DRV2605_MOTOR_TYPE_LRA` for Linear Resonant Actuators. Default is ERM (Eccentric Rotating Mass).
 *   **Haptic Thresholds:** Adjust distances for vibration intensity.
 *   **Auto-Off Timer:** Default is 5 minutes (`300000` ms).
 *   **Selfie Finder:** Uncomment `#define ENABLE_SELFIE_FINDER` to enable the remote scanner.
 *   **Scanner Settings:** Adjust `SCAN_INTERVAL_MS` to trade off reaction time vs. battery life.
 
-## Wiring (Vibration Motor Module)
-Connect the Vibration Motor Breakout Board as follows:
+## Wiring (Vibration Motor)
 
+### Option A: Direct PWM (Basic)
+Connect a Vibration Motor Breakout Board (with transistor):
 *   **VCC**: Connect to **3.3V** or **BAT+**
 *   **GND**: Connect to **GND**
 *   **IN / SIG**: Connect to **P0.06**
 
-*Note: The breakout board already contains the necessary transistor driver and protection diode.*
+### Option B: DRV2605L Driver (Advanced)
+Connect the DRV2605L Breakout Board:
+*   **VIN**: Connect to **3.3V**
+*   **GND**: Connect to **GND**
+*   **SDA**: Connect to **P0.17**
+*   **SCL**: Connect to **P0.20**
+*   **Motor**: Connect motor wires to the output pads on the DRV2605L.
 
 ## Battery Life Estimation
 *Estimates based on a **2500 mAh 18650 Cell**.*
