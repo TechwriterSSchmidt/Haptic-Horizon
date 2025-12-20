@@ -38,3 +38,10 @@ enum OperationMode {
 // ===== Power Management =====
 #define AUTO_OFF_MS 300000  // 5 Minutes (5 * 60 * 1000)
                             // Device turns off if no vibration & no button press for this time.
+
+// ===== Find Me Features =====
+// Uncomment to enable searching for a Bluetooth Selfie Button (e.g. "AB Shutter3")
+#define ENABLE_SELFIE_FINDER 
+#define SELFIE_BUTTON_NAME "AB Shutter3" // Common name for cheap remotes
+#define SCAN_INTERVAL_MS 4000  // Scan every 4 seconds
+#define SCAN_WINDOW_MS   200   // Scan for 200ms (Duty Cycle ~5%)

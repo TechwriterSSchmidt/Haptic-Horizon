@@ -8,85 +8,86 @@ Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) las
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
 - **Output**: Vibration Motor (requires Transistor Driver!)
+- **Audio**: Passive Piezo Buzzer
+- **Input**: Momentary Push Button
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
 
-## Circuit Diagram (Motor Driver)
-**WARNING:** Do NOT connect a raw motor directly to the GPIO pin!
-
-### Option A: Using a Breakout Board (Recommended)
-The easiest way is to use a **Vibration Motor Module** (e.g., from DFRobot, Adafruit, or generic). These boards already have the transistor and diode built-in.
-*   **VCC**: Connect to 3.3V or BAT+
-*   **GND**: Connect to GND
-*   **IN / SIG**: Connect to **P0.06** (PWM works perfectly!)
-
-### Option B: Custom Circuit (DIY)
-If you have a raw motor, use a simple NPN Transistor (e.g., BC547, 2N2222) or MOSFET.
-
-```text
-                 + 3.3V (or BAT+)
-                   |
-                   +-------+
-                   |       |
-                 ( M )   (Diode 1N4148, Cathode to +)
-                   |       |
-                   +-------+
-                   |
-               C / D (Collector/Drain)
-GPIO P0.06 ----[ 1k Resistor ]---- B / G (Base/Gate)
-(Motor Pin)        |
-               E / S (Emitter/Source)
-                   |
-                  GND
-```
-
-## Functionality
-1.  **Distance Measurement**: The VL53L5CX measures the distance in a 4x4 grid (Wide Field of View).
-2.  **Safety Logic**: The system calculates the distance to the *closest* object in any of the 16 zones. This creates a "protective bubble" effect, detecting obstacles even if they are not perfectly centered.
-3.  **Haptic Feedback**:
-    - **Far (> 2m)**: No vibration.
-    - **Medium (1m - 2m)**: Gentle/Slow pulses.
-    - **Close (< 1m)**: Strong/Fast pulses.
-    - **Critical (< 30cm)**: Continuous vibration.
+## Power Supply (Important!)
+*   **Recommended:** 3.7V LiPo Battery (e.g., 400mAh - 2500mAh).
+    *   Connect to **B+** and **B-**.
+    *   Charges automatically via USB-C.
+*   **Alternative:** 3x AA Batteries (4.5V) connected to VCC/GND.
+*   **NOT Recommended:** Coin Cells (CR2032/CR2450). They cannot handle the current spikes (~100mA) of the sensor and motor.
 
 ## Pinout (SuperMini NRF52840)
 | Component | SuperMini Pin | Description |
 |-----------|---------------|-------------|
 | VL53L5CX SDA | P0.17 (D2) | I2C SDA |
 | VL53L5CX SCL | P0.20 (D3) | I2C SCL |
-| Vibration Motor | P0.06 (D1) | PWM capable |
+| Vibration Motor | P0.06 (D1) | PWM capable (Needs Transistor!) |
+| Buzzer | P0.24 | Piezo (+) to Pin, (-) to GND |
+| Mode Button | P0.29 (A2) | Button to GND (Internal Pullup) |
 | Battery + | B+ | LiPo Positive |
 | Battery - | B- | LiPo Negative |
-| Mode Button | P0.29 (A2) | Switch Mode (GND) |
-| Buzzer (Optional) | P0.24 | Piezo (+) to Pin, (-) to GND |
 
-## Battery Life Estimation (2500 mAh LiPo)
-*Estimates based on continuous sensor operation at 15Hz.*
+## User Guide
+
+### 1. Power On / Off
+*   **Start:** Connect power or reset.
+    *   🎵 Sound: *La Marseillaise* (Opening)
+*   **Auto-Off:** After **5 minutes** of inactivity (no obstacles < 2m, no button press).
+    *   🎵 Sound: *Windows Shutdown* (Classic)
+    *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON).
+
+### 2. Modes (Toggle via Button)
+Press the button to switch between modes.
+*   **Navigation Mode (Default):**
+    *   🎵 Sound: *Zoom Out* (Descending Tones)
+    *   Scans a wide area (Safety Bubble).
+    *   Vibrates for the *closest* object in any direction.
+*   **Precision Mode:**
+    *   🎵 Sound: *Zoom In* (Ascending Tones)
+    *   Scans only the center (Tunnel Vision).
+    *   Used to find door handles or narrow gaps. Geiger-counter style clicking.
+
+### 3. "Find Me" Feature (Bluetooth)
+If the device is lost (even in Auto-Off mode), it can be found using a smartphone.
+1.  Open a BLE App (e.g., **nRF Connect** or **Adafruit Bluefruit**).
+2.  Connect to **"Haptic Horizon"**.
+3.  Select the **UART Service**.
+4.  Send the character **'B'** (or 'F').
+5.  🎵 The device will play a loud **"Here I Am"** melody.
+
+## Circuit Diagram (Motor Driver)
+**WARNING:** Do NOT connect a raw motor directly to the GPIO pin! Use a Transistor.
+
+```text
+                 + 3.3V (or BAT+)
+                   |
+                   +-------+
+                   |       |
+                 ( M )   (Diode 1N4148)
+                   |       |
+                   +-------+
+                   |
+               C / D (Collector/Drain)
+GPIO P0.06 ----[ 1k Resistor ]---- B / G (Base/Gate)
+                   |
+               E / S (Emitter/Source)
+                   |
+                  GND
+```
+
+## Battery Life Estimation
+*Estimates based on 1000 mAh LiPo.*
 
 | Scenario | Avg. Current | Estimated Runtime |
 | :--- | :--- | :--- |
-| **Open Space** (No Vibration) | ~55 mA | **~45 Hours** |
-| **Mixed Use** (Normal Walking) | ~70 mA | **~35 Hours** |
-| **Heavy Use** (Constant Feedback) | ~120 mA | **~20 Hours** |
-| **Deep Sleep** (Auto-Off) | ~0.05 mA | **Years** |
-
-## Setup
-1.  Open in VS Code with PlatformIO.
-2.  Build and Upload.
-
-## Hardware
-- **Controller:** Seeed Xiao ESP32C3 (or similar small form factor)
-- **Sensor:** VL53L1X (Long Range ToF Sensor, up to 4m)
-- **Feedback:** Coin Vibration Motor (PWM controlled)
-- **Power:** LiPo Battery
-
-## How it works
-1.  **Scan:** The VL53L1X continuously measures the distance to objects in front of the user.
-2.  **Process:** The ESP32 maps the distance (e.g., 0.1m to 4.0m) to a vibration intensity/pattern.
-3.  **Buzz:** 
-    - **Far away (> 2m):** No vibration (Safe zone).
-    - **Approaching (1m - 2m):** Gentle, slow pulses.
-    - **Close (< 1m):** Rapid, strong buzzing.
-    - **IMMINENT BONK (< 30cm):** Continuous alarm vibration.
+| **Active Use** | ~40-80 mA | **~15-20 Hours** |
+| **BLE Standby** (Find Me) | ~0.5 mA | **~2-3 Months** |
+| **Deep Sleep** (Off) | ~0.05 mA | **Years** |
 
 ## Status
-🚧 **Under Construction** - Initial scaffolding phase.
+✅ **Feature Complete** - Ready for Assembly.
+
+

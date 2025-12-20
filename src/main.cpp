@@ -39,6 +39,10 @@ void playStartupMelody();
 void playShutdownMelody();
 #endif
 
+#ifdef ENABLE_SELFIE_FINDER
+void scan_callback(ble_gap_evt_adv_report_t* report);
+#endif
+
 void setup() {
   Serial.begin(115200);
   
@@ -56,7 +60,8 @@ void setup() {
   #endif
 
   // BLE Setup
-  Bluefruit.begin();
+  // Note: 1 connection for phone, 1 for potential central role if needed
+  Bluefruit.begin(1, 1); 
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Haptic Horizon");
 
@@ -82,6 +87,15 @@ void setup() {
   Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
+
+  #ifdef ENABLE_SELFIE_FINDER
+  // Configure Scanner
+  Bluefruit.Scanner.setRxCallback(scan_callback);
+  Bluefruit.Scanner.restartOnDisconnect(true);
+  Bluefruit.Scanner.setInterval(160, 80); // Internal scanning interval (not the duty cycle)
+  Bluefruit.Scanner.useActiveScan(true);  // Request scan response data
+  // We don't start scanning yet, only in Standby
+  #endif
 
   // I2C Setup
   Wire.setPins(SDA_PIN, SCL_PIN);
@@ -242,6 +256,16 @@ void enterStandby() {
     Bluefruit.Advertising.stop();
     Bluefruit.Advertising.setInterval(3200, 3200); // 2 seconds interval
     Bluefruit.Advertising.start(0);
+
+    #ifdef ENABLE_SELFIE_FINDER
+    // Start scanning with low duty cycle
+    // Interval: 4000ms (0x1900 units of 0.625ms = 6400)
+    // Window: 200ms (0xC8 units of 0.625ms = 320)
+    // Note: Bluefruit.Scanner.setInterval(window, interval)
+    Bluefruit.Scanner.setInterval(SCAN_WINDOW_MS/0.625, SCAN_INTERVAL_MS/0.625);
+    Bluefruit.Scanner.start(0);
+    Serial.println("Scanner started (Low Duty Cycle)");
+    #endif
 }
 
 void wakeUp() {
@@ -249,6 +273,10 @@ void wakeUp() {
     isStandby = false;
     lastActivityTime = millis();
     
+    #ifdef ENABLE_SELFIE_FINDER
+    Bluefruit.Scanner.stop();
+    #endif
+
     // Restart Sensor
     sensor.startRanging();
     
@@ -261,6 +289,46 @@ void wakeUp() {
     playStartupMelody();
     #endif
 }
+
+#ifdef ENABLE_SELFIE_FINDER
+void scan_callback(ble_gap_evt_adv_report_t* report) {
+  // Check if the device name matches our target
+  // Note: We need to parse the advertising packet to find the name
+  uint8_t buffer[32];
+  memset(buffer, 0, sizeof(buffer));
+  
+  // Check for Complete Local Name (0x09) or Shortened Local Name (0x08)
+  if (Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME, buffer, sizeof(buffer)) ||
+      Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME, buffer, sizeof(buffer))) 
+  {
+      const char* name = (const char*)buffer;
+      // Serial.print("Found: "); Serial.println(name);
+      
+      if (strstr(name, SELFIE_BUTTON_NAME) != NULL || strstr(name, "Remote") != NULL || strstr(name, "Shutter") != NULL) {
+          Serial.println("FOUND SELFIE BUTTON! TRIGGERING ALARM!");
+          
+          #ifdef BUZZER_PIN
+          // Play Marseillaise (Loop for ~20 seconds)
+          // The melody is roughly 3 seconds long, so play 6-7 times
+          for(int loop=0; loop<7; loop++) {
+             // La Marseillaise Opening
+             int melody[] = { 294, 294, 294, 392, 392, 440, 440, 587, 494, 494 };
+             int durations[] = { 150, 150, 150, 400, 400, 400, 400, 800, 300, 300 };
+             for (int i = 0; i < 10; i++) {
+                tone(BUZZER_PIN, melody[i], durations[i]);
+                delay(durations[i] * 1.30);
+                noTone(BUZZER_PIN);
+             }
+             delay(500);
+          }
+          #endif
+          
+          // Wake up fully after alarm
+          wakeUp();
+      }
+  }
+}
+#endif
 
 void toggleMode() {
     if (currentMode == MODE_NAVIGATION) {
