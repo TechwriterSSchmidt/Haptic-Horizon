@@ -115,9 +115,19 @@ void setup() {
 
   Serial.println("Haptic Horizon Started");
   lastActivityTime = millis();
+
+  // --- Watchdog Setup ---
+  // Pause WDT when CPU is sleeping (to allow long Standby/BLE waits)
+  NRF_WDT->CONFIG = (WDT_CONFIG_SLEEP_Pause << WDT_CONFIG_SLEEP_Pos) | (WDT_CONFIG_HALT_Pause << WDT_CONFIG_HALT_Pos);
+  NRF_WDT->CRV = 32768 * 5; // 5 Seconds Timeout (32768 Hz clock)
+  NRF_WDT->RREN = WDT_RREN_RR0_Msk; // Enable Reload Register 0
+  NRF_WDT->TASKS_START = 1; // Start WDT
 }
 
 void loop() {
+  // Feed the Watchdog
+  NRF_WDT->RR[0] = WDT_RR_RR_Reload;
+
   // --- BLE Handling (Find Me) ---
   // If connected via BLE, check for commands
   if (Bluefruit.connected() && bleuart.notifyEnabled()) {

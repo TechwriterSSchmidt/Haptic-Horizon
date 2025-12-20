@@ -39,6 +39,8 @@ enum OperationMode {
 #define AUTO_OFF_MS 300000  // 5 Minutes (5 * 60 * 1000)
                             // Device turns off if no vibration & no button press for this time.
 
+#define WATCHDOG_TIMEOUT_SEC 3 // 3 Seconds Timeout for system freeze protection
+
 // ===== Find Me Features =====
 // Uncomment to enable searching for a Bluetooth Selfie Button (e.g. "AB Shutter3")
 #define ENABLE_SELFIE_FINDER 
