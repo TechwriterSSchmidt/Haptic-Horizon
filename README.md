@@ -1,5 +1,5 @@
 # Haptic-Horizon
-The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode!
+The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode! 🦇
 
 ## Overview
 Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) laser technology to translate the distance of obstacles into haptic feedback. The closer the object, the faster the vibration.

@@ -45,6 +45,8 @@ void scan_callback(ble_gap_evt_adv_report_t* report);
 
 void setup() {
   Serial.begin(115200);
+  // Give Serial some time to start
+  delay(100);
   
   // Motor Setup
   nrf_gpio_cfg_output(MOTOR_PIN);
@@ -119,7 +121,7 @@ void setup() {
   // --- Watchdog Setup ---
   // Pause WDT when CPU is sleeping (to allow long Standby/BLE waits)
   NRF_WDT->CONFIG = (WDT_CONFIG_SLEEP_Pause << WDT_CONFIG_SLEEP_Pos) | (WDT_CONFIG_HALT_Pause << WDT_CONFIG_HALT_Pos);
-  NRF_WDT->CRV = 32768 * 5; // 5 Seconds Timeout (32768 Hz clock)
+  NRF_WDT->CRV = 32768 * WATCHDOG_TIMEOUT_SEC; // Configurable Timeout (32768 Hz clock)
   NRF_WDT->RREN = WDT_RREN_RR0_Msk; // Enable Reload Register 0
   NRF_WDT->TASKS_START = 1; // Start WDT
 }
