@@ -55,20 +55,25 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 
 ### 2. Modes (Toggle via Button)
 Press the button to switch between modes.
-*   **Smart Terrain Mode (Default):**
-    *   **Intelligent Analysis:** Uses the IMU (Tilt) and Trigonometry to understand the ground.
-    *   **Looking Forward:** Wall & Obstacle Detection.
-        *   Feedback: **Continuous Vibration** (Stronger = Closer).
-    *   **Looking Down:** Terrain Analysis (Virtual Cane).
-        *   **Flat Ground:** No Feedback (Silence).
-        *   **Drop-off / Hole / Stairs Down:** Ground is further away than expected.
-            *   Feedback: **Fast Nervous Rattle** (Strobe).
-        *   **Obstacle / Curb / Stairs Up:** Ground is closer than expected.
-            *   Feedback: **Slow Heavy Pulse**.
-*   **Precision Mode:**
-    *   Sound: *Zoom In* (Ascending Tones)
-    *   Scans only the center (Tunnel Vision).
-    *   Used to find door handles or narrow gaps. Geiger-counter style clicking.
+
+#### A. Smart Terrain Mode (Default)
+Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D. The device compares the upper and lower zones of the sensor to distinguish between walls, stairs, and drop-offs.
+
+**The Haptic Language:**
+
+| Situation | Sensor Pattern | Haptic Feedback (LRA) | Feeling |
+| :--- | :--- | :--- | :--- |
+| **Wall / Obstacle** | Object ahead (ignoring ground) | **Continuous Buzz** | Like a force field. Stronger = Closer. |
+| **Drop-off / Hole** | Ground suddenly disappears | **Ramp Down** | A "falling" sensation. Warning! |
+| **Stairs Up** | Distance increases in steps | **Ramp Up** | A "rising" sensation. |
+| **Curb / Trip Hazard** | Small obstacle on ground | **Soft Bump** | A gentle nudge. |
+| **Flat Ground** | Consistent gradient | **Silence** | Safe to walk. |
+
+#### B. Precision Mode
+*   **Sound:** *Zoom In* (Ascending Tones)
+*   **Function:** Scans only the center point (Tunnel Vision).
+*   **Feedback:** **Sharp Clicks** (Geiger-Counter Style). Faster clicking = Closer.
+*   **Use Case:** Finding door handles, locating narrow gaps, or checking specific objects.
 
 ### 3. Battery Check
 *   **Long Press (> 1s):** The device announces the battery level.
