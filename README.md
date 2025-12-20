@@ -67,6 +67,8 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 | **Drop-off / Hole** | Ground suddenly disappears | **Ramp Down** | A "falling" sensation. Warning! |
 | **Stairs Up** | Distance increases in steps | **Ramp Up** | A "rising" sensation. |
 | **Curb / Trip Hazard** | Small obstacle on ground | **Soft Bump** | A gentle nudge. |
+| **Gap / Door** | Open space between obstacles | **Double Click** | A distinct "click-click". |
+| **Bat-in-danger Mode** | Confusing reflections (Glass/Mirror) | **Sharp Tick** | A short, sharp warning tick. |
 | **Flat Ground** | Consistent gradient | **Silence** | Safe to walk. |
 
 #### B. Precision Mode
@@ -76,7 +78,7 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 *   **Use Case:** Finding door handles, locating narrow gaps, or checking specific objects.
 
 ### 3. Battery Check
-*   **Long Press (> 1s):** The device announces the battery level.
+*   **Long Press (> 2s):** The device announces the battery level.
     *   4 Beeps: Full (> 4.0V)
     *   3 Beeps: Good (> 3.7V)
     *   2 Beeps: Low (> 3.4V)
@@ -104,6 +106,9 @@ For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote
 3.  When the device is in **Auto-Off** mode, it scans for the remote every 4 seconds.
 4.  Turn on or press the remote button.
 5.  The device plays *La Marseillaise* for ~20 seconds.
+
+## Documentation
+For a printable, easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](Docs/QUICK_REFERENCE.md).
 
 ## Configuration (`include/config.h`)
 You can customize the device behavior by editing `include/config.h`:

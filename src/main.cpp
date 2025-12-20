@@ -305,8 +305,8 @@ void loop() {
           else if (duration > 50) { // Debounce
               lastActivityTime = currentMillis;
               
-              if (duration > 1000) {
-                  // Long Press -> Battery
+              if (duration > 2000) {
+                  // Long Press (> 2s) -> Battery
                   #ifdef BUZZER_PIN
                   announceBatteryLevel();
                   #endif
@@ -436,7 +436,8 @@ void loop() {
             }
         }
 
-        // --- NEW: GLASS / MIRROR DETECTION ---
+        // --- BAT-IN-DANGER MODE (Glass / Mirror Detection) ---
+        // Like a bat confused by a window, the sensor gets weird reflections.
         // Check center zones (5,6,9,10) for specific error codes
         bool glassDetected = false;
         int centerZones[] = {5, 6, 9, 10};
