@@ -19,7 +19,7 @@
 #define BUZZER_PIN 24 // P0.24 (Check available pins)
 
 // ===== Haptic Feedback Thresholds (in mm) =====
-#define DIST_FAR    2000      // > 2m: No vibration
+#define DIST_FAR    2500     // > 2.5m No vibration
 #define DIST_MEDIUM 1000      // 1m - 2m: Slow pulse
 #define DIST_CLOSE  300       // 30cm - 1m: Fast pulse
                               // < 30cm: Continuous vibration
