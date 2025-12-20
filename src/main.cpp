@@ -126,12 +126,11 @@ void loop() {
       // If we receive 'B' (Beep) or 'F' (Find), play melody
       if (ch == 'B' || ch == 'F' || ch == 'b' || ch == 'f') {
           #ifdef BUZZER_PIN
-          // Play "Here I Am" Melody (Repeated Beeps)
+          // Play Marseillaise (Loop for visibility)
           for(int i=0; i<5; i++) {
-            tone(BUZZER_PIN, 1000, 200); delay(250);
-            tone(BUZZER_PIN, 1500, 200); delay(250);
+            playStartupMelody();
+            delay(500);
           }
-          noTone(BUZZER_PIN);
           #endif
           // Reset activity timer so we don't sleep immediately
           lastActivityTime = millis();
@@ -309,16 +308,8 @@ void scan_callback(ble_gap_evt_adv_report_t* report) {
           
           #ifdef BUZZER_PIN
           // Play Marseillaise (Loop for ~20 seconds)
-          // The melody is roughly 3 seconds long, so play 6-7 times
-          for(int loop=0; loop<7; loop++) {
-             // La Marseillaise Opening
-             int melody[] = { 294, 294, 294, 392, 392, 440, 440, 587, 494, 494 };
-             int durations[] = { 150, 150, 150, 400, 400, 400, 400, 800, 300, 300 };
-             for (int i = 0; i < 10; i++) {
-                tone(BUZZER_PIN, melody[i], durations[i]);
-                delay(durations[i] * 1.30);
-                noTone(BUZZER_PIN);
-             }
+          for(int loop=0; loop<5; loop++) {
+             playStartupMelody();
              delay(500);
           }
           #endif
