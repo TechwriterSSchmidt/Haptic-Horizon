@@ -45,6 +45,12 @@
 #define HAPTIC_DROPOFF 2   // Fast Strobe (Drop-off / Hole detected)
 #define HAPTIC_OBSTACLE 3  // Slow Pulse (Step up / Curb detected)
 #define HAPTIC_STAIRS_UP 4 // Ascending Pulse (Stairs Up detected)
+#define HAPTIC_GAP 5       // Double Click (Door/Gap found)
+#define HAPTIC_GLASS 6     // Sharp Tick (Glass/Mirror warning)
+
+// Gap Hunter Settings
+#define GAP_WIDTH_MIN_MM 600   // Minimum width for a door (standard is ~800mm)
+#define GAP_DEPTH_DIFF_MM 1000 // The gap must be at least 1m deeper than the frame
 
 // Stair Detection Thresholds
 #define STAIR_STEP_MIN_HEIGHT 100 // Minimum height difference for a step (mm)

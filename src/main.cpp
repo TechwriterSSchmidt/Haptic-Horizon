@@ -436,6 +436,66 @@ void loop() {
             }
         }
 
+        // --- NEW: GLASS / MIRROR DETECTION ---
+        // Check center zones (5,6,9,10) for specific error codes
+        bool glassDetected = false;
+        int centerZones[] = {5, 6, 9, 10};
+        for (int i : centerZones) {
+            // Status 4 (Phase Fail) or 13 (Consistency Fail) often happen with glass/mirrors
+            if (measurementData.target_status[i] == 4 || measurementData.target_status[i] == 13) {
+                glassDetected = true;
+                break;
+            }
+        }
+        
+        if (glassDetected && hapticMode == HAPTIC_NONE) {
+            // Only warn if we don't have a more urgent alarm (like Dropoff)
+            hapticMode = HAPTIC_GLASS;
+            // Optional: Short audio ping for glass
+            #ifdef BUZZER_PIN
+            playTone(2000, 50, VOL_ALARM); 
+            #endif
+        }
+
+        // --- NEW: GAP HUNTER (Door Finder) ---
+        // Only active if looking forward (Pitch > -20) and no other alarm
+        if (pitch > -20 && hapticMode == HAPTIC_NONE) {
+            
+            // Average Left Column (0,4,8,12) vs Right Column (3,7,11,15) vs Center (5,6,9,10)
+            long distLeft = 0, distRight = 0, distCenter = 0;
+            int countLeft = 0, countRight = 0, countCenter = 0;
+
+            // Helper to sum up valid zones
+            for(int r=0; r<4; r++) {
+                // Left Col (0, 4, 8, 12)
+                int idxL = r*4; 
+                if(measurementData.target_status[idxL] == 5) { distLeft += measurementData.distance_mm[idxL]; countLeft++; }
+                
+                // Right Col (3, 7, 11, 15)
+                int idxR = r*4 + 3;
+                if(measurementData.target_status[idxR] == 5) { distRight += measurementData.distance_mm[idxR]; countRight++; }
+            }
+            
+            // Center
+            for(int i : centerZones) {
+                if(measurementData.target_status[i] == 5) { distCenter += measurementData.distance_mm[i]; countCenter++; }
+            }
+
+            if (countLeft > 0 && countRight > 0 && countCenter > 0) {
+                distLeft /= countLeft;
+                distRight /= countRight;
+                distCenter /= countCenter;
+
+                // Logic: Left & Right are CLOSE (Frame), Center is FAR (Gap)
+                if (distLeft < 1500 && distRight < 1500) { // Frame within 1.5m
+                    if (distCenter > (distLeft + GAP_DEPTH_DIFF_MM) && distCenter > (distRight + GAP_DEPTH_DIFF_MM)) {
+                        // Found a gap!
+                        hapticMode = HAPTIC_GAP;
+                    }
+                }
+            }
+        }
+
         // --- EXECUTE HAPTIC FEEDBACK ---
         
         unsigned long now = millis();
@@ -486,6 +546,26 @@ void loop() {
             // Effect 58: Transition Ramp Up Long Smooth 1
             if (now - lastEffectTrigger > 500) { 
                 drv.setWaveform(0, 58); 
+                drv.setWaveform(1, 0);
+                drv.go();
+                lastEffectTrigger = now;
+            }
+        }
+        else if (hapticMode == HAPTIC_GAP) {
+            // Gap Found -> Double Click
+            // Effect 11: Double Click 100%
+            if (now - lastEffectTrigger > 800) { // Slower repeat to not be annoying
+                drv.setWaveform(0, 11); 
+                drv.setWaveform(1, 0);
+                drv.go();
+                lastEffectTrigger = now;
+            }
+        }
+        else if (hapticMode == HAPTIC_GLASS) {
+            // Glass Warning -> Sharp Tick
+            // Effect 1: Strong Click 100%
+            if (now - lastEffectTrigger > 300) { 
+                drv.setWaveform(0, 1); 
                 drv.setWaveform(1, 0);
                 drv.go();
                 lastEffectTrigger = now;
