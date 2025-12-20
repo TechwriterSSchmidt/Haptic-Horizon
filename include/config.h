@@ -38,8 +38,15 @@ enum OperationMode {
 // ===== Power Management =====
 #define AUTO_OFF_MS 300000  // 5 Minutes (5 * 60 * 1000)
                             // Device turns off if no vibration & no button press for this time.
+#define MOVEMENT_THRESHOLD_MM 100 // Minimum distance change to count as "Activity" (prevents staying on when on table)
 
 #define WATCHDOG_TIMEOUT_SEC 3 // 3 Seconds Timeout for system freeze protection
+
+// ===== Audio Volume (1-10) =====
+#define VOL_STARTUP     8
+#define VOL_SHUTDOWN    8
+#define VOL_MODE_CHANGE 4
+#define VOL_ALARM       10
 
 // ===== Find Me Features =====
 // Uncomment to enable searching for a Bluetooth Selfie Button (e.g. "AB Shutter3")

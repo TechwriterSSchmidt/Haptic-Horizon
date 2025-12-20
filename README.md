@@ -42,7 +42,8 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ### 1. Power On / Off
 *   **Start / Wake Up:** Press the **Mode Button** once.
     *   Sound: *La Marseillaise* (Opening)
-*   **Auto-Off:** Automatically turns off after **5 minutes** of inactivity (no obstacles < 2m, no button press).
+*   **Auto-Off:** Automatically turns off after **5 minutes** of inactivity.
+    *   **Smart Detection:** Stays on as long as you move (distance changes > 10cm). Turns off if placed on a table or held still.
     *   Sound: *Windows Shutdown* (Classic)
     *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON) to save power.
 

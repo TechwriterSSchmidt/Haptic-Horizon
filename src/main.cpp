@@ -202,6 +202,7 @@ void loop() {
     if (sensor.getRangingData(&measurementData)) {
       
       int targetDistance = 9999;
+      static int lastTargetDistance = 9999; // For Auto-Off movement detection
 
       if (currentMode == MODE_NAVIGATION) {
         // MODE 1: Safety Bubble (Check ALL zones)
@@ -214,11 +215,6 @@ void loop() {
           }
         }
         if (validZones == 0) targetDistance = 9999;
-        
-        // Activity Check: If we are detecting something close, we are "active"
-        if (targetDistance < DIST_FAR) {
-            lastActivityTime = currentMillis;
-        }
         
         handleHapticsNavigation(targetDistance);
 
@@ -236,12 +232,14 @@ void loop() {
         }
         if (validZones == 0) targetDistance = 9999;
 
-        // Activity Check
-        if (targetDistance < DIST_FAR) {
-            lastActivityTime = currentMillis;
-        }
-
         handleHapticsPrecision(targetDistance);
+      }
+      
+      // Activity Check: Only reset timer if distance CHANGES significantly
+      // This prevents staying on when placed on a table (constant distance)
+      if (abs(targetDistance - lastTargetDistance) > MOVEMENT_THRESHOLD_MM) {
+          lastActivityTime = currentMillis;
+          lastTargetDistance = targetDistance;
       }
       
       // Debug Output (Optional, can be removed for production)
@@ -339,9 +337,8 @@ void toggleMode() {
         
         #ifdef BUZZER_PIN
         // Sound: Zoom In (Ascending C5 -> E5)
-        tone(BUZZER_PIN, 523, 100); delay(120);
-        tone(BUZZER_PIN, 659, 100); delay(120);
-        noTone(BUZZER_PIN);
+        playTone(523, 100, VOL_MODE_CHANGE); delay(20);
+        playTone(659, 100, VOL_MODE_CHANGE); delay(20);
         #endif
 
         // Feedback: Double Buzz
@@ -354,9 +351,8 @@ void toggleMode() {
         
         #ifdef BUZZER_PIN
         // Sound: Zoom Out (Descending E5 -> C5)
-        tone(BUZZER_PIN, 659, 100); delay(120);
-        tone(BUZZER_PIN, 523, 100); delay(120);
-        noTone(BUZZER_PIN);
+        playTone(659, 100, VOL_MODE_CHANGE); delay(20);
+        playTone(523, 100, VOL_MODE_CHANGE); delay(20);
         #endif
 
         // Feedback: Single Long Buzz
@@ -431,6 +427,27 @@ void handleHapticsPrecision(int distance) {
 }
 
 #ifdef BUZZER_PIN
+// Helper for Volume Control (Software PWM)
+// Volume: 1-10 (1 = Quiet, 10 = Max/50% Duty)
+void playTone(unsigned int frequency, unsigned long duration, int volume) {
+    if (frequency == 0 || volume == 0) {
+        delay(duration);
+        return;
+    }
+    
+    unsigned long period = 1000000 / frequency;
+    unsigned long onTime = period * volume * 5 / 100; // volume(1-10) * 5%
+    unsigned long offTime = period - onTime;
+    
+    unsigned long startTime = millis();
+    while (millis() - startTime < duration) {
+        nrf_gpio_pin_write(BUZZER_PIN, 1);
+        delayMicroseconds(onTime);
+        nrf_gpio_pin_write(BUZZER_PIN, 0);
+        delayMicroseconds(offTime);
+    }
+}
+
 void playStartupMelody() {
     // La Marseillaise Opening (Extended)
     // D4, D4, D4, G4, G4, A4, A4, D5 ... B4, B4
@@ -440,23 +457,21 @@ void playStartupMelody() {
     int durations[] = { 150, 150, 150, 400, 400, 400, 400, 800, 300, 300 };
     
     for (int i = 0; i < 10; i++) {
-        tone(BUZZER_PIN, melody[i], durations[i]);
-        delay(durations[i] * 1.30); // Wait for note to finish + gap
-        noTone(BUZZER_PIN);
+        playTone(melody[i], durations[i], VOL_STARTUP);
+        delay(durations[i] * 0.30); // Gap
     }
 }
 
 void playShutdownMelody() {
-    // Classic Windows Shutdown Style
-    // Eb5, Bb4, F4
+    // Windows XP Shutdown Style
+    // Eb5, Bb4, G4, Eb4
     
-    int melody[] = { 622, 466, 349 };
-    int durations[] = { 250, 250, 800 };
+    int melody[] = { 622, 466, 392, 311 };
+    int durations[] = { 300, 300, 300, 1000 };
     
-    for (int i = 0; i < 3; i++) {
-        tone(BUZZER_PIN, melody[i], durations[i]);
-        delay(durations[i] * 1.10);
-        noTone(BUZZER_PIN);
+    for (int i = 0; i < 4; i++) {
+        playTone(melody[i], durations[i], VOL_SHUTDOWN);
+        delay(durations[i] * 0.10); // Gap
     }
 }
 #endif
