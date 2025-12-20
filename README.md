@@ -7,17 +7,18 @@ Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) las
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
-- **Output**: Vibration Motor (requires Transistor Driver!)
+- **Output**: Vibration Motor Module (Breakout Board)
 - **Audio**: Passive Piezo Buzzer
 - **Input**: Momentary Push Button
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
 
 ## Power Supply (Important!)
-*   **Recommended:** 3.7V LiPo Battery (e.g., 400mAh - 2500mAh).
+*   **Recommended:** 3.7V LiPo/Li-Ion Battery.
+    *   **Type:** 18650 Cell (2500mAh+) is excellent for a comfortable, grip-friendly handle design.
     *   Connect to **B+** and **B-**.
     *   Charges automatically via USB-C.
-*   **Alternative:** 3x AA Batteries (4.5V) connected to VCC/GND.
-*   **NOT Recommended:** Coin Cells (CR2032/CR2450). They cannot handle the current spikes (~100mA) of the sensor and motor.
+*   **Alternative:** Flat LiPo Pouch Cell (for slimmer designs).
+*   **NOT Recommended:** Coin Cells (CR2032/CR2450). They cannot handle the current spikes (~100mA).
 
 ## Pinout (SuperMini NRF52840)
 | Component | SuperMini Pin | Description |
@@ -50,7 +51,7 @@ Press the button to switch between modes.
     *   Scans only the center (Tunnel Vision).
     *   Used to find door handles or narrow gaps. Geiger-counter style clicking.
 
-### 3. "Find Me" Feature (Bluetooth)
+### 3. "Find Me" Feature (Bluetooth App)
 If the device is lost (even in Auto-Off mode), it can be found using a smartphone.
 1.  Open a BLE App (e.g., **nRF Connect** or **Adafruit Bluefruit**).
 2.  Connect to **"Haptic Horizon"**.
@@ -58,33 +59,38 @@ If the device is lost (even in Auto-Off mode), it can be found using a smartphon
 4.  Send the character **'B'** (or 'F').
 5.  🎵 The device will play a loud **"Here I Am"** melody.
 
-## Circuit Diagram (Motor Driver)
-**WARNING:** Do NOT connect a raw motor directly to the GPIO pin! Use a Transistor.
+### 4. "Selfie Button" Finder (Tactile Remote)
+For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").
+1.  Enable `#define ENABLE_SELFIE_FINDER` in `include/config.h`.
+2.  Set the name of your remote in `SELFIE_BUTTON_NAME` (check via phone first).
+3.  When the device is in **Auto-Off** mode, it scans for the remote every 4 seconds.
+4.  Turn on or press the remote button.
+5.  🎵 The device plays *La Marseillaise* for ~20 seconds.
 
-```text
-                 + 3.3V (or BAT+)
-                   |
-                   +-------+
-                   |       |
-                 ( M )   (Diode 1N4148)
-                   |       |
-                   +-------+
-                   |
-               C / D (Collector/Drain)
-GPIO P0.06 ----[ 1k Resistor ]---- B / G (Base/Gate)
-                   |
-               E / S (Emitter/Source)
-                   |
-                  GND
-```
+## Configuration (`include/config.h`)
+You can customize the device behavior by editing `include/config.h`:
+*   **Haptic Thresholds:** Adjust distances for vibration intensity.
+*   **Auto-Off Timer:** Default is 5 minutes (`300000` ms).
+*   **Selfie Finder:** Uncomment `#define ENABLE_SELFIE_FINDER` to enable the remote scanner.
+*   **Scanner Settings:** Adjust `SCAN_INTERVAL_MS` to trade off reaction time vs. battery life.
+
+## Wiring (Vibration Motor Module)
+Connect the Vibration Motor Breakout Board as follows:
+
+*   **VCC**: Connect to **3.3V** or **BAT+**
+*   **GND**: Connect to **GND**
+*   **IN / SIG**: Connect to **P0.06**
+
+*Note: The breakout board already contains the necessary transistor driver and protection diode.*
 
 ## Battery Life Estimation
-*Estimates based on 1000 mAh LiPo.*
+*Estimates based on a **2500 mAh 18650 Cell**.*
 
 | Scenario | Avg. Current | Estimated Runtime |
 | :--- | :--- | :--- |
-| **Active Use** | ~40-80 mA | **~15-20 Hours** |
-| **BLE Standby** (Find Me) | ~0.5 mA | **~2-3 Months** |
+| **Active Use** | ~40-80 mA | **~40-50 Hours** |
+| **BLE Standby** (App Find only) | ~0.5 mA | **~6-8 Months** |
+| **BLE Standby + Selfie Scanner** | ~1.0 mA | **~3-4 Months** |
 | **Deep Sleep** (Off) | ~0.05 mA | **Years** |
 
 ## Status
