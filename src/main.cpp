@@ -5,9 +5,15 @@
 // Include Nordic GPIO HAL to bypass Arduino pin mapping and use P0.xx directly
 #include <hal/nrf_gpio.h>
 #include <nrf_soc.h> // For power management
+#include <bluefruit.h> // Bluetooth LE
 
 SparkFun_VL53L5CX sensor;
 VL53L5CX_ResultsData measurementData;
+
+// Bluetooth Services
+BLEDfu  bledfu;  // OTA DFU service
+BLEDis  bledis;  // Device Information
+BLEUart bleuart; // UART over BLE
 
 OperationMode currentMode = MODE_NAVIGATION;
 unsigned long lastPulseTime = 0;
@@ -15,6 +21,7 @@ int pulseState = 0;
 
 // Power Management
 unsigned long lastActivityTime = 0;
+bool isStandby = false; // New State for "Find Me" mode
 
 // Button Debouncing
 int lastButtonState = HIGH;
@@ -25,7 +32,8 @@ unsigned long debounceDelay = 50;
 void handleHapticsNavigation(int distance);
 void handleHapticsPrecision(int distance);
 void toggleMode();
-void goToSleep();
+void enterStandby();
+void wakeUp();
 #ifdef BUZZER_PIN
 void playStartupMelody();
 void playShutdownMelody();
@@ -46,6 +54,34 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);
   playStartupMelody();
   #endif
+
+  // BLE Setup
+  Bluefruit.begin();
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
+  Bluefruit.setName("Haptic Horizon");
+
+  // To be consistent OTA DFU should be added first if it exists
+  bledfu.begin();
+
+  // Configure and Start Device Information Service
+  bledis.setManufacturer("Haptic Horizon Team");
+  bledis.setModel("V1.0");
+  bledis.begin();
+
+  // Configure and Start BLE Uart Service
+  bleuart.begin();
+
+  // Set up Advertising Packet
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+  Bluefruit.Advertising.addService(bleuart);
+  Bluefruit.ScanResponse.addName();
+  
+  // Start Advertising
+  Bluefruit.Advertising.restartOnDisconnect(true);
+  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
+  Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
+  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 
   // I2C Setup
   Wire.setPins(SDA_PIN, SCL_PIN);
@@ -68,11 +104,49 @@ void setup() {
 }
 
 void loop() {
+  // --- BLE Handling (Find Me) ---
+  // If connected via BLE, check for commands
+  if (Bluefruit.connected() && bleuart.notifyEnabled()) {
+    while (bleuart.available()) {
+      uint8_t ch = (uint8_t) bleuart.read();
+      // If we receive 'B' (Beep) or 'F' (Find), play melody
+      if (ch == 'B' || ch == 'F' || ch == 'b' || ch == 'f') {
+          #ifdef BUZZER_PIN
+          // Play "Here I Am" Melody (Repeated Beeps)
+          for(int i=0; i<5; i++) {
+            tone(BUZZER_PIN, 1000, 200); delay(250);
+            tone(BUZZER_PIN, 1500, 200); delay(250);
+          }
+          noTone(BUZZER_PIN);
+          #endif
+          // Reset activity timer so we don't sleep immediately
+          lastActivityTime = millis();
+          if (isStandby) wakeUp();
+      }
+    }
+  }
+
+  // --- Standby Mode Handling ---
+  if (isStandby) {
+      // In Standby, we just wait for Button or BLE
+      // Blink LED or sleep CPU lightly could go here
+      
+      // Check Button to Wake Up
+      int reading = nrf_gpio_pin_read(BUTTON_PIN);
+      if (reading == LOW) { // Button Pressed
+          wakeUp();
+      }
+      
+      // Low Power Wait (System ON, waiting for interrupts/events)
+      sd_app_evt_wait(); 
+      return; // Skip the rest of the loop
+  }
+
   unsigned long currentMillis = millis();
 
   // --- Auto-Off Check ---
   if (currentMillis - lastActivityTime > AUTO_OFF_MS) {
-      goToSleep();
+      enterStandby();
   }
 
   // --- Button Handling ---
@@ -154,32 +228,38 @@ void loop() {
   }
 }
 
-void goToSleep() {
-    Serial.println("Auto-Off: Entering Deep Sleep.");
+void enterStandby() {
+    Serial.println("Auto-Off: Entering BLE Standby.");
     
     #ifdef BUZZER_PIN
     playShutdownMelody();
-    #else
-    // Feedback: 3 short pulses to indicate shutdown if no buzzer
-    for(int i=0; i<3; i++) {
-        nrf_gpio_pin_write(MOTOR_PIN, 1); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 0); delay(100);
-    }
     #endif
     
     sensor.stopRanging();
+    isStandby = true;
     
-    // Configure Button as Wakeup Source (Sense LOW level)
-    nrf_gpio_cfg_sense_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    // Slow down advertising to save power
+    Bluefruit.Advertising.stop();
+    Bluefruit.Advertising.setInterval(3200, 3200); // 2 seconds interval
+    Bluefruit.Advertising.start(0);
+}
+
+void wakeUp() {
+    Serial.println("Waking Up!");
+    isStandby = false;
+    lastActivityTime = millis();
     
-    // Enter System OFF
-    // Try SoftDevice Power Off first (if SD is enabled)
-    sd_power_system_off();
+    // Restart Sensor
+    sensor.startRanging();
     
-    // Fallback for no SoftDevice
-    NRF_POWER->SYSTEMOFF = 1;
+    // Speed up advertising
+    Bluefruit.Advertising.stop();
+    Bluefruit.Advertising.setInterval(32, 244);
+    Bluefruit.Advertising.start(0);
     
-    while(1); // Should not be reached
+    #ifdef BUZZER_PIN
+    playStartupMelody();
+    #endif
 }
 
 void toggleMode() {
