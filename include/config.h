@@ -12,6 +12,11 @@
 #define MOTOR_PIN 6   // P0.06
 #define SDA_PIN   17  // P0.17
 #define SCL_PIN   20  // P0.20
+#define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
+
+// Optional: Piezo Buzzer for Startup Melody
+// Uncomment to enable
+#define BUZZER_PIN 24 // P0.24 (Check available pins)
 
 // ===== Haptic Feedback Thresholds (in mm) =====
 #define DIST_FAR    2000      // > 2m: No vibration
@@ -23,3 +28,13 @@
 #define I2C_FREQUENCY 400000   // 400 kHz
 #define SENSOR_RESOLUTION 4*4  // 4x4 zones (16 zones)
 #define SENSOR_RANGING_FREQ 15 // 15 Hz update rate
+
+// ===== Modes =====
+enum OperationMode {
+  MODE_NAVIGATION, // Wide angle, safety bubble, pulsed feedback
+  MODE_PRECISION   // Narrow angle, wall following, analog feedback
+};
+
+// ===== Power Management =====
+#define AUTO_OFF_MS 300000  // 5 Minutes (5 * 60 * 1000)
+                            // Device turns off if no vibration & no button press for this time.

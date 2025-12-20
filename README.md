@@ -7,8 +7,37 @@ Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) las
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
-- **Output**: Vibration Motor (connected via PWM or simple GPIO)
+- **Output**: Vibration Motor (requires Transistor Driver!)
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
+
+## Circuit Diagram (Motor Driver)
+**WARNING:** Do NOT connect a raw motor directly to the GPIO pin!
+
+### Option A: Using a Breakout Board (Recommended)
+The easiest way is to use a **Vibration Motor Module** (e.g., from DFRobot, Adafruit, or generic). These boards already have the transistor and diode built-in.
+*   **VCC**: Connect to 3.3V or BAT+
+*   **GND**: Connect to GND
+*   **IN / SIG**: Connect to **P0.06** (PWM works perfectly!)
+
+### Option B: Custom Circuit (DIY)
+If you have a raw motor, use a simple NPN Transistor (e.g., BC547, 2N2222) or MOSFET.
+
+```text
+                 + 3.3V (or BAT+)
+                   |
+                   +-------+
+                   |       |
+                 ( M )   (Diode 1N4148, Cathode to +)
+                   |       |
+                   +-------+
+                   |
+               C / D (Collector/Drain)
+GPIO P0.06 ----[ 1k Resistor ]---- B / G (Base/Gate)
+(Motor Pin)        |
+               E / S (Emitter/Source)
+                   |
+                  GND
+```
 
 ## Functionality
 1.  **Distance Measurement**: The VL53L5CX measures the distance in a 4x4 grid (Wide Field of View).
@@ -27,6 +56,18 @@ Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) las
 | Vibration Motor | P0.06 (D1) | PWM capable |
 | Battery + | B+ | LiPo Positive |
 | Battery - | B- | LiPo Negative |
+| Mode Button | P0.29 (A2) | Switch Mode (GND) |
+| Buzzer (Optional) | P0.24 | Piezo (+) to Pin, (-) to GND |
+
+## Battery Life Estimation (2500 mAh LiPo)
+*Estimates based on continuous sensor operation at 15Hz.*
+
+| Scenario | Avg. Current | Estimated Runtime |
+| :--- | :--- | :--- |
+| **Open Space** (No Vibration) | ~55 mA | **~45 Hours** |
+| **Mixed Use** (Normal Walking) | ~70 mA | **~35 Hours** |
+| **Heavy Use** (Constant Feedback) | ~120 mA | **~20 Hours** |
+| **Deep Sleep** (Auto-Off) | ~0.05 mA | **Years** |
 
 ## Setup
 1.  Open in VS Code with PlatformIO.
