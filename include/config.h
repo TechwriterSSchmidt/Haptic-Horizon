@@ -36,7 +36,7 @@ enum OperationMode {
 };
 
 // ===== Power Management =====
-#define AUTO_OFF_MS 300000  // 5 Minutes (5 * 60 * 1000)
+#define AUTO_OFF_MS 120000  // 2 Minutes (2 * 60 * 1000)
                             // Device turns off if no vibration & no button press for this time.
 #define MOVEMENT_THRESHOLD_MM 100 // Minimum distance change to count as "Activity" (prevents staying on when on table)
 
@@ -44,8 +44,8 @@ enum OperationMode {
 
 // ===== Audio Volume (1-10) =====
 #define VOL_STARTUP     8
-#define VOL_SHUTDOWN    8
-#define VOL_MODE_CHANGE 4
+#define VOL_SHUTDOWN    5
+#define VOL_MODE_CHANGE 7
 #define VOL_ALARM       10
 
 // ===== Find Me Features =====
