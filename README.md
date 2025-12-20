@@ -15,7 +15,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Optional - for advanced waveforms & LRA support)
-- **Output**: Vibration Motor (ERM or LRA)
+- **Output**: Vibration Motor (LRA Coin Type recommended, 1.2V, max 100mA)
 - **Audio**: Passive Piezo Buzzer
 - **Input**: Momentary Push Button
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
@@ -130,7 +130,7 @@ Connect the DRV2605L Breakout Board:
 
 | Scenario | Avg. Current | Estimated Runtime |
 | :--- | :--- | :--- |
-| **Active Use** | ~40-80 mA | **~40-50 Hours** |
+| **Active Use (LRA Haptics)** | ~80-120 mA | **~20-30 Hours** |
 | **BLE Standby** (App Find only) | ~0.5 mA | **~6-8 Months** |
 | **BLE Standby + Selfie Scanner** | ~1.0 mA | **~3-4 Months** |
 | **Deep Sleep** (Off) | ~0.05 mA | **Years** |

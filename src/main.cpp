@@ -341,74 +341,98 @@ void loop() {
         handleHapticsPrecision(targetDistance);
       } 
       else {
-        // MODE: Smart Terrain (Virtual Cane)
-        // Uses Trigonometry to detect walls vs. drop-offs vs. obstacles
+        // MODE: Smart Terrain (Gradient Analysis)
+        // Uses 4x4 Matrix to detect patterns (Stairs, Drop-offs, Walls)
         
-        int measuredDist = 4000;
-        bool validMeasurement = false;
-        
-        // Use center zones for terrain analysis
-        int zones[] = {5, 6, 9, 10};
-        for (int i : zones) {
+        // 1. Analyze Rows (Row 0 = Top, Row 3 = Bottom)
+        long rowSum[4] = {0, 0, 0, 0};
+        int rowCount[4] = {0, 0, 0, 0};
+        int rowAvg[4] = {9999, 9999, 9999, 9999};
+
+        for (int i = 0; i < 16; i++) {
+            int row = i / 4; // Map 0-15 to Rows 0-3
+            // Check for valid status (5=Valid, 9=Valid with low confidence)
             if (measurementData.target_status[i] == 5 || measurementData.target_status[i] == 9) {
-                if (measurementData.distance_mm[i] < measuredDist && measurementData.distance_mm[i] > 0) {
-                    measuredDist = measurementData.distance_mm[i];
-                    validMeasurement = true;
+                if (measurementData.distance_mm[i] > 0 && measurementData.distance_mm[i] < 4000) {
+                    rowSum[row] += measurementData.distance_mm[i];
+                    rowCount[row]++;
                 }
             }
+        }
+
+        // Calculate Averages
+        for (int r=0; r<4; r++) {
+            if (rowCount[r] > 0) rowAvg[r] = rowSum[r] / rowCount[r];
         }
 
         int hapticMode = HAPTIC_NONE;
         int intensity = 0; // 0-255
 
-        if (validMeasurement) {
-            // --- SCENARIO 1: Looking Forward (Wall Detection) ---
-            if (pitch > -20) { 
-                // Angle is flat (>-20 deg). We are looking for walls/obstacles ahead.
-                if (measuredDist < 1500) {
-                    hapticMode = HAPTIC_WALL;
-                    // Map intensity: 1.5m -> 0, 0.3m -> 255
-                    intensity = map(measuredDist, 300, 1500, 255, 50);
-                    intensity = constrain(intensity, 0, 255);
-                }
+        // --- SCENARIO 1: Looking Forward (Wall Detection) ---
+        if (pitch > -15) { 
+            // Angle is flat (>-15 deg). We are looking for walls/obstacles ahead.
+            // Focus on Top Half (Row 0 & 1) to avoid ground reflections
+            int forwardDist = min(rowAvg[0], rowAvg[1]);
+            
+            if (forwardDist < 1500) {
+                hapticMode = HAPTIC_WALL;
+                // Map intensity: 1.5m -> 50, 0.3m -> 255
+                intensity = map(forwardDist, 300, 1500, 255, 50);
+                intensity = constrain(intensity, 0, 255);
             }
-            // --- SCENARIO 2: Looking Down (Terrain Analysis) ---
+        }
+        // --- SCENARIO 2: Looking Down (Terrain Analysis) ---
+        else {
+            // We are looking at the ground. Analyze the Gradient.
+            
+            // A) Drop-off / Stairs Down Detection
+            // Logic: If the bottom row sees ground, but the row above sees "nothing" (far away), it's a cliff.
+            // Or: If the measured distance is significantly larger than expected by Trig.
+            
+            bool isDropOff = false;
+            
+            // Gradient Check: Row 2 is much further than Row 3 (> 50cm)
+            if (rowAvg[3] < 2000 && (rowAvg[2] > rowAvg[3] + 500)) {
+                 isDropOff = true;
+            }
+            
+            // Trig Check (Backup): Whole ground is missing
+            float angleRad = abs(pitch) * PI / 180.0;
+            float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
+            if (expectedDist < 3000 && rowAvg[3] > expectedDist + 400) {
+                 isDropOff = true;
+            }
+
+            if (isDropOff) {
+                hapticMode = HAPTIC_DROPOFF;
+                intensity = 255; 
+            } 
             else {
-                // Angle is steep (e.g. -45 deg).
-                // Calculate expected distance to ground based on hand height.
-                // Hypotenuse = Adjacent / sin(alpha) -> Dist = Height / sin(pitch)
+                // B) Stairs Up / Obstacle Detection
+                // Logic: Check for "Stair Step" pattern: Row 3 < Row 2 < Row 1
+                // The distance increases as we look up, but in discrete steps.
                 
-                float angleRad = abs(pitch) * PI / 180.0;
-                float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
+                int step1 = rowAvg[2] - rowAvg[3]; // Height of first step (approx distance diff)
+                int step2 = rowAvg[1] - rowAvg[2]; // Height of second step
                 
-                // Safety Clamp
-                if (expectedDist > 3500) expectedDist = 3500;
-
-                int delta = measuredDist - (int)expectedDist;
-
-                if (delta > TOLERANCE_MM) {
-                    // A) Measured is MUCH LARGER than expected -> Ground dropped away!
-                    // Drop-off / Stairs Down / Hole
-                    hapticMode = HAPTIC_DROPOFF;
-                    intensity = 255; 
-                } 
-                else if (delta < -TOLERANCE_MM) {
-                    // B) Measured is MUCH SMALLER than expected -> Ground came up!
-                    // Curb Up / Stairs Up / Obstacle on floor
+                // Note: Distance diff is not exactly height, but proportional. 
+                // 100mm - 300mm diff usually indicates a step when looking down at ~45 deg.
+                
+                if (step1 > STAIR_STEP_MIN_HEIGHT && step1 < STAIR_STEP_MAX_HEIGHT &&
+                    step2 > STAIR_STEP_MIN_HEIGHT && step2 < STAIR_STEP_MAX_HEIGHT) {
+                    // It's a staircase! (Multiple steps)
+                    hapticMode = HAPTIC_STAIRS_UP;
+                    intensity = 200;
+                }
+                else if (step1 > STAIR_STEP_MIN_HEIGHT) {
+                    // Just one step or obstacle (Curb)
                     hapticMode = HAPTIC_OBSTACLE;
                     intensity = 200;
                 }
+                // C) Flat Ground
                 else {
-                    // C) Within tolerance -> Flat Ground
                     hapticMode = HAPTIC_NONE;
                 }
-            }
-        } else {
-            // No valid measurement (Too far or absorbed)
-            // If we are looking steeply down and see NOTHING -> ALARM (Deep Hole)
-            if (pitch < -30) {
-                hapticMode = HAPTIC_DROPOFF;
-                intensity = 255;
             }
         }
 
@@ -457,6 +481,16 @@ void loop() {
                 lastEffectTrigger = now;
             }
         }
+        else if (hapticMode == HAPTIC_STAIRS_UP) {
+            // Stairs Up -> Ascending Pulse
+            // Effect 58: Transition Ramp Up Long Smooth 1
+            if (now - lastEffectTrigger > 500) { 
+                drv.setWaveform(0, 58); 
+                drv.setWaveform(1, 0);
+                drv.go();
+                lastEffectTrigger = now;
+            }
+        }
         lastHapticMode = hapticMode;
         
         #else
@@ -481,6 +515,12 @@ void loop() {
         else if (hapticMode == HAPTIC_OBSTACLE) {
             // Slow Heavy Pulse -> 200ms ON, 200ms OFF
             if ((now / 200) % 2 == 0) nrf_gpio_pin_write(MOTOR_PIN, 1);
+            else nrf_gpio_pin_write(MOTOR_PIN, 0);
+        }
+        else if (hapticMode == HAPTIC_STAIRS_UP) {
+            // Double Pulse -> 100ms ON, 100ms OFF, 100ms ON, 300ms OFF
+            int cycle = now % 600;
+            if (cycle < 100 || (cycle > 200 && cycle < 300)) nrf_gpio_pin_write(MOTOR_PIN, 1);
             else nrf_gpio_pin_write(MOTOR_PIN, 0);
         }
         #endif

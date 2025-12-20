@@ -44,6 +44,11 @@
 #define HAPTIC_WALL 1      // Continuous vibration (Obstacle ahead)
 #define HAPTIC_DROPOFF 2   // Fast Strobe (Drop-off / Hole detected)
 #define HAPTIC_OBSTACLE 3  // Slow Pulse (Step up / Curb detected)
+#define HAPTIC_STAIRS_UP 4 // Ascending Pulse (Stairs Up detected)
+
+// Stair Detection Thresholds
+#define STAIR_STEP_MIN_HEIGHT 100 // Minimum height difference for a step (mm)
+#define STAIR_STEP_MAX_HEIGHT 300 // Maximum height difference for a step (mm)
 
 // ===== Modes =====
 enum OperationMode {
