@@ -13,6 +13,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
+- **Thermal Camera**: AMG8833 (8x8 Infrared Array)
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Optional - for advanced waveforms & LRA support)
 - **Output**: Vibration Motor (LRA Coin Type recommended, 1.2V, max 100mA)
@@ -33,6 +34,8 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 |-----------|---------------|-------------|
 | VL53L5CX SDA | P0.17 (D2) | I2C SDA (Shared) |
 | VL53L5CX SCL | P0.20 (D3) | I2C SCL (Shared) |
+| AMG8833 SDA | P0.17 (D2) | I2C SDA (Shared) |
+| AMG8833 SCL | P0.20 (D3) | I2C SCL (Shared) |
 | BMI160 SDA | P0.17 (D2) | I2C SDA (Shared) |
 | BMI160 SCL | P0.20 (D3) | I2C SCL (Shared) |
 | DRV2605L SDA | P0.17 (D2) | I2C SDA (Shared) |
@@ -77,6 +80,12 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 *   **Feedback:** **Sharp Clicks** (Geiger-Counter Style). Faster clicking = Closer.
 *   **Use Case:** Finding door handles, locating narrow gaps, or checking specific objects.
 
+#### C. Heat Vision Mode
+*   **Sound:** *High Pitch Pulse*
+*   **Function:** Uses the Thermal Camera to detect heat sources (people, pets, electronics).
+*   **Feedback:** **Triple Buzz** on entry. **Pulsing Vibration** when heat > 28°C. Stronger vibration for hotter objects.
+*   **Use Case:** Finding people in the dark, checking if electronics are running, locating pets.
+
 ### 3. Battery Check
 *   **Long Press (> 2s):** The device announces the battery level.
     *   4 Beeps: Full (> 4.0V)
@@ -98,6 +107,10 @@ If the device is lost (even in Auto-Off mode), it can be found using a smartphon
 3.  Select the **UART Service**.
 4.  Send the character **'B'** (or 'F').
 5.  The device will play a loud **"Here I Am"** melody.
+
+### 6. Safety Features
+*   **Drop Beacon:** If the device detects a hard fall (Impact > 2.5G), it waits 5 seconds. If not picked up, it triggers a loud alarm and flashing haptics for 30 seconds to help you find it.
+
 
 ### 5. "Selfie Button" Finder (Tactile Remote)
 For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").

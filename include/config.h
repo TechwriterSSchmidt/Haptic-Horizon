@@ -59,8 +59,19 @@
 // ===== Modes =====
 enum OperationMode {
   MODE_SMART_TERRAIN, // Uses IMU + ToF to detect walls, drop-offs, and obstacles automatically
-  MODE_PRECISION      // Manual override: Narrow angle, wall following
+  MODE_PRECISION,     // Manual override: Narrow angle, wall following
+  MODE_HEAT_VISION    // Uses AMG8833 Thermal Camera to find heat sources
 };
+
+// ===== Drop Beacon (Fall Detection) =====
+#define DROP_IMPACT_THRESHOLD 2.5 // G-force threshold to detect a fall/impact (approx 2.5G)
+#define DROP_WAIT_TIME_MS 5000    // Wait 5 seconds after fall before alarming (gives time to pick it up)
+#define DROP_ALARM_DURATION_MS 30000 // How long the alarm sounds (30 seconds)
+
+// ===== AMG8833 Thermal Camera Settings =====
+#define AMG8833_I2C_ADDR 0x69 // Default I2C address
+#define HEAT_THRESHOLD_C 28   // Temperature in Celsius to trigger haptic feedback (Body heat is ~37C, surface temp lower)
+#define HEAT_MAX_C 40         // Temperature for maximum vibration intensity
 
 // ===== IMU Settings (BMI160) =====
 #define BMI160_I2C_ADDR 0x69 // Default is often 0x68 or 0x69. Check your module!
