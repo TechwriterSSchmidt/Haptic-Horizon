@@ -40,11 +40,11 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ## User Guide
 
 ### 1. Power On / Off
-*   **Start:** Connect power or reset.
+*   **Start / Wake Up:** Press the **Mode Button** once.
     *   Sound: *La Marseillaise* (Opening)
-*   **Auto-Off:** After **5 minutes** of inactivity (no obstacles < 2m, no button press).
+*   **Auto-Off:** Automatically turns off after **5 minutes** of inactivity (no obstacles < 2m, no button press).
     *   Sound: *Windows Shutdown* (Classic)
-    *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON).
+    *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON) to save power.
 
 ### 2. Modes (Toggle via Button)
 Press the button to switch between modes.
