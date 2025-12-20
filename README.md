@@ -4,6 +4,12 @@ The shin-saving, forehead-protecting sixth sense designed exclusively for Samira
 ## Overview
 Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) laser technology to translate the distance of obstacles into haptic feedback. The closer the object, the faster the vibration.
 
+## Support my projects
+
+Your tip motivates me to continue developing nerdy stuff for the DIY community. Thank you very much for your support!
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D01HVT9A)
+
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
@@ -35,19 +41,19 @@ Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) las
 
 ### 1. Power On / Off
 *   **Start:** Connect power or reset.
-    *   🎵 Sound: *La Marseillaise* (Opening)
+    *   Sound: *La Marseillaise* (Opening)
 *   **Auto-Off:** After **5 minutes** of inactivity (no obstacles < 2m, no button press).
-    *   🎵 Sound: *Windows Shutdown* (Classic)
+    *   Sound: *Windows Shutdown* (Classic)
     *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON).
 
 ### 2. Modes (Toggle via Button)
 Press the button to switch between modes.
 *   **Navigation Mode (Default):**
-    *   🎵 Sound: *Zoom Out* (Descending Tones)
+    *   Sound: *Zoom Out* (Descending Tones)
     *   Scans a wide area (Safety Bubble).
     *   Vibrates for the *closest* object in any direction.
 *   **Precision Mode:**
-    *   🎵 Sound: *Zoom In* (Ascending Tones)
+    *   Sound: *Zoom In* (Ascending Tones)
     *   Scans only the center (Tunnel Vision).
     *   Used to find door handles or narrow gaps. Geiger-counter style clicking.
 
@@ -57,7 +63,7 @@ If the device is lost (even in Auto-Off mode), it can be found using a smartphon
 2.  Connect to **"Haptic Horizon"**.
 3.  Select the **UART Service**.
 4.  Send the character **'B'** (or 'F').
-5.  🎵 The device will play a loud **"Here I Am"** melody.
+5.  The device will play a loud **"Here I Am"** melody.
 
 ### 4. "Selfie Button" Finder (Tactile Remote)
 For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").
@@ -65,7 +71,7 @@ For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote
 2.  Set the name of your remote in `SELFIE_BUTTON_NAME` (check via phone first).
 3.  When the device is in **Auto-Off** mode, it scans for the remote every 4 seconds.
 4.  Turn on or press the remote button.
-5.  🎵 The device plays *La Marseillaise* for ~20 seconds.
+5.  The device plays *La Marseillaise* for ~20 seconds.
 
 ## Configuration (`include/config.h`)
 You can customize the device behavior by editing `include/config.h`:
@@ -93,7 +99,17 @@ Connect the Vibration Motor Breakout Board as follows:
 | **BLE Standby + Selfie Scanner** | ~1.0 mA | **~3-4 Months** |
 | **Deep Sleep** (Off) | ~0.05 mA | **Years** |
 
-## Status
-✅ **Feature Complete** - Ready for Assembly.
+## Contributing
+
+Feel free to open issues or submit pull requests for improvements!
+
+## License
+
+This project is open source. Feel free to use and modify as needed.
+
+## Credits
+
+Created to help Samira navigate the physical obstacles of her life more easily, with a casually elegant flick of her wrist. Batgirl-style!
+
 
 
