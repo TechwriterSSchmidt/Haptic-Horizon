@@ -23,14 +23,14 @@
 // Uncomment to enable
 // #define BUZZER_PIN 24 // P0.24 (Check available pins)
 
-// ===== DFPlayer Mini (Voice Output) =====
+// ===== DY-SV17F (Voice Output) =====
 #define ENABLE_VOICE
-#define DFPLAYER_RX_PIN 9  // P0.09 (Connect to DFPlayer TX)
-#define DFPLAYER_TX_PIN 10 // P0.10 (Connect to DFPlayer RX)
-#define VOICE_VOL_DEFAULT 20
+#define DYPLAYER_RX_PIN 9  // P0.09 (Connect to DY-SV17F TX)
+#define DYPLAYER_TX_PIN 10 // P0.10 (Connect to DY-SV17F RX)
+#define VOICE_VOL_DEFAULT 20 // 0-30
 #define VOICE_VOL_ALARM   30
 
-// Voice Track IDs
+// Voice Track IDs (Files must be named 00001.mp3, 00002.mp3, etc.)
 #define TRACK_STARTUP       1 // "System Online. Welcome, Batgirl."
 #define TRACK_MODE_TERRAIN  2 // "Smart Terrain Mode active."
 #define TRACK_MODE_PRECISION 3 // "Precision Mode active."

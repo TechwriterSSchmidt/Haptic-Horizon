@@ -7,7 +7,7 @@
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <Adafruit_MLX90640.h>
-#include <DFRobotDFPlayerMini.h>
+#include <DYPlayerArduino.h>
 
 #ifdef ENABLE_DRV2605
 #include <Adafruit_DRV2605.h>
@@ -24,7 +24,7 @@ SparkFun_VL53L5CX sensor;
 VL53L5CX_ResultsData measurementData;
 DFRobot_BMI160 bmi160;
 Adafruit_MLX90640 mlx;
-DFRobotDFPlayerMini myDFPlayer;
+DY::Player player(&Serial1);
 
 #ifdef ENABLE_DRV2605
 Adafruit_DRV2605 drv;
@@ -129,15 +129,11 @@ void setup() {
   #endif
 
   #ifdef ENABLE_VOICE
-  Serial1.setPins(DFPLAYER_RX_PIN, DFPLAYER_TX_PIN);
-  Serial1.begin(9600);
-  if (!myDFPlayer.begin(Serial1)) {
-    Serial.println("DFPlayer Error!");
-  } else {
-    Serial.println("DFPlayer Online.");
-    myDFPlayer.volume(VOICE_VOL_DEFAULT);
-    playVoice(TRACK_STARTUP);
-  }
+  Serial1.setPins(DYPLAYER_RX_PIN, DYPLAYER_TX_PIN);
+  player.begin();
+  player.setVolume(VOICE_VOL_DEFAULT);
+  playVoice(TRACK_STARTUP);
+  Serial.println("DY-SV17F Initialized.");
   #endif
 
   // BLE Setup
@@ -883,7 +879,7 @@ void playTone(unsigned int frequency, unsigned long duration, int volume) {
 
 void playVoice(int trackId) {
     #ifdef ENABLE_VOICE
-    myDFPlayer.play(trackId);
+    player.playSpecified(trackId);
     #endif
 }
 
@@ -1083,7 +1079,7 @@ void checkForDrop(int16_t* accelGyro) {
             #ifdef ENABLE_VOICE
             // Play alarm track repeatedly (every 3 seconds approx, depending on track length)
             if (millis() % 3000 < 100) {
-                myDFPlayer.volume(VOICE_VOL_ALARM);
+                player.setVolume(VOICE_VOL_ALARM);
                 playVoice(TRACK_DROP_ALARM);
             }
             #endif

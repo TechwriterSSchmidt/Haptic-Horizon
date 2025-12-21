@@ -24,7 +24,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Optional - for advanced waveforms & LRA support)
 - **Output**: Vibration Motor (LRA Coin Type recommended, 1.2V, max 100mA)
-- **Audio**: Passive Piezo Buzzer
+- **Audio**: DY-SV17F Voice Module (4MB Flash)
 - **Input**: Momentary Push Button
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
 
@@ -41,14 +41,15 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 |-----------|---------------|-------------|
 | VL53L5CX SDA | P0.17 (D2) | I2C SDA (Shared) |
 | VL53L5CX SCL | P0.20 (D3) | I2C SCL (Shared) |
-| AMG8833 SDA | P0.17 (D2) | I2C SDA (Shared) |
-| AMG8833 SCL | P0.20 (D3) | I2C SCL (Shared) |
+| MLX90640 SDA | P0.17 (D2) | I2C SDA (Shared) |
+| MLX90640 SCL | P0.20 (D3) | I2C SCL (Shared) |
 | BMI160 SDA | P0.17 (D2) | I2C SDA (Shared) |
 | BMI160 SCL | P0.20 (D3) | I2C SCL (Shared) |
 | DRV2605L SDA | P0.17 (D2) | I2C SDA (Shared) |
 | DRV2605L SCL | P0.20 (D3) | I2C SCL (Shared) |
 | Vibration Motor | P0.06 (D1) | PWM (Direct) OR DRV2605L Output |
-| Buzzer | P0.24 | Piezo (+) to Pin, (-) to GND |
+| DY-SV17F RX | P0.09 | UART RX (Connect to Module TX) |
+| DY-SV17F TX | P0.10 | UART TX (Connect to Module RX) |
 | Mode Button | P0.29 (A2) | Button to GND (Internal Pullup) |
 | Trigger Button | P0.31 (D6) | Button to GND (Internal Pullup) |
 | Battery + | B+ | LiPo Positive |
