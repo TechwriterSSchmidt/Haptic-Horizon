@@ -109,11 +109,11 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 ### 5. Calibration (IMU)
 If the device is not detecting the ground correctly (e.g., false alarms on flat ground), you can recalibrate the "Zero" position.
 1.  Place the device **flat on a table** (or the surface you want to define as "level").
-2.  Press and **hold the button for 10 seconds**.
+2.  Press and **hold the Mode Button for 10 seconds**.
 3.  Wait for the **Success Melody** (Major Arpeggio).
 4.  The new calibration is saved permanently.
 
-### 5. "Find Me" Feature (Bluetooth App)
+### 6. "Find Me" Feature (Bluetooth App)
 If the device is lost (even in Auto-Off mode), it can be found using a smartphone.
 1.  Open a BLE App (e.g., **nRF Connect** or **Adafruit Bluefruit**).
 2.  Connect to **"Haptic Horizon"**.
@@ -121,11 +121,10 @@ If the device is lost (even in Auto-Off mode), it can be found using a smartphon
 4.  Send the character **'B'** (or 'F').
 5.  The device will play a loud **"Here I Am"** melody.
 
-### 6. Safety Features
+### 7. Safety Features
 *   **Drop Beacon:** If the device detects a hard fall (Impact > 2.5G), it waits 5 seconds. If not picked up, it triggers a loud alarm and flashing haptics for 30 seconds to help you find it.
 
-
-### 5. "Selfie Button" Finder (Tactile Remote)
+### 8. "Selfie Button" Finder (Tactile Remote)
 For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").
 1.  Enable `#define ENABLE_SELFIE_FINDER` in `include/config.h`.
 2.  Set the name of your remote in `SELFIE_BUTTON_NAME` (check via phone first).
@@ -138,28 +137,22 @@ For a printable, easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](
 
 ## Configuration (`include/config.h`)
 You can customize the device behavior by editing `include/config.h`:
-*   **Haptic Driver:** Uncomment `#define ENABLE_DRV2605` to use the DRV2605L chip instead of direct PWM.
-*   **Motor Type:** If using DRV2605L, uncomment `#define DRV2605_MOTOR_TYPE_LRA` for Linear Resonant Actuators. Default is ERM (Eccentric Rotating Mass).
+*   **Haptic Driver:** `ENABLE_DRV2605` is enabled by default (Required).
+*   **Motor Type:** Uncomment `#define DRV2605_MOTOR_TYPE_LRA` for Linear Resonant Actuators. Default is ERM (Eccentric Rotating Mass).
 *   **Haptic Thresholds:** Adjust distances for vibration intensity.
-*   **Auto-Off Timer:** Default is 5 minutes (`300000` ms).
+*   **Auto-Off Timer:** Default is 2 minutes (`120000` ms).
 *   **Selfie Finder:** Uncomment `#define ENABLE_SELFIE_FINDER` to enable the remote scanner.
 *   **Scanner Settings:** Adjust `SCAN_INTERVAL_MS` to trade off reaction time vs. battery life.
 
 ## Wiring (Vibration Motor)
 
-### Option A: Direct PWM (Basic)
-Connect a Vibration Motor Breakout Board (with transistor):
-*   **VCC**: Connect to **3.3V** or **BAT+**
-*   **GND**: Connect to **GND**
-*   **IN / SIG**: Connect to **P0.06**
-
-### Option B: DRV2605L Driver (Advanced)
+### DRV2605L Driver (Required)
 Connect the DRV2605L Breakout Board:
 *   **VIN**: Connect to **3.3V**
 *   **GND**: Connect to **GND**
-*   **SDA**: Connect to **P0.17**
-*   **SCL**: Connect to **P0.20**
-*   **Motor**: Connect motor wires to the output pads on the DRV2605L.
+*   **SDA**: Connect to **P0.17** (Primary Bus)
+*   **SCL**: Connect to **P0.20** (Primary Bus)
+*   **Motor**: Connect LRA motor wires to the output pads on the DRV2605L.
 
 ## Audio Files (DY-SV17F)
 The device uses a DY-SV17F module with 4MB Flash storage. The files must be named exactly as follows and placed in the root directory of the module (connect via USB).
