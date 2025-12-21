@@ -39,7 +39,10 @@ Switch modes by pressing the button.
     *   *Activation:* Hold the **Trigger Button** (Abzugsfinger). Release to stop.
     *   *Signal:* High Pitch Pulse.
     *   *Use for:* Finding people, pets, or checking electronics.
-    *   *Feedback:* Pulsing vibration (Hotter = Faster).
+    *   *Feedback:*
+        *   **Heartbeat:** Human detected.
+        *   **Double-Tick:** Monitor/Machine detected.
+        *   **Fast Ticking:** Small object (Cup/Cat).
 
 ## 4. Safety Features
 

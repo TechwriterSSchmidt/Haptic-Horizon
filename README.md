@@ -2,7 +2,7 @@
 The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode! 🦇
 
 ## Overview
-Haptic Horizon is a wearable navigational aid that uses Time-of-Flight (ToF) laser technology to translate the distance of obstacles into haptic feedback. The closer the object, the faster the vibration.
+Haptic Horizon is a compact wearable navigational aid that uses Time-of-Flight (ToF) laser technology to translate the distance of obstacles into haptic feedback. The closer the object, the faster the vibration.
 
 ## Support my projects
 
@@ -84,8 +84,11 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 #### C. Heat Vision Mode (Trigger Activated)
 *   **Activation:** Press and hold the **Trigger Button** (Abzugsfinger). Release to return to previous mode.
 *   **Sound:** *High Pitch Pulse* (On Activate) / *Low Pitch* (On Release)
-*   **Function:** Uses the Thermal Camera to detect heat sources (people, pets, electronics).
-*   **Feedback:** **Pulsing Vibration** when heat > 28°C. Stronger vibration for hotter objects.
+*   **Function:** Uses Sensor Fusion (Thermal + ToF) to identify heat sources.
+*   **Feedback:**
+    *   **Human (Narrow & Hot):** Slow **Heartbeat** (*Bumm... Bumm...*).
+    *   **Monitor / Machine (Wide & Hot):** Mechanical **Double-Tick** (*Tick-Tick...*).
+    *   **Small Object (Cup/Cat):** Fast **Geiger Counter** (*Tickticktick*).
 *   **Use Case:** Finding people in the dark, checking if electronics are running, locating pets.
 
 ### 3. Battery Check
