@@ -20,7 +20,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
-- **Thermal Camera**: AMG8833 (8x8 Infrared Array)
+- **Thermal Camera**: MLX90640-BAB (32x24 Infrared Array)
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Optional - for advanced waveforms & LRA support)
 - **Output**: Vibration Motor (LRA Coin Type recommended, 1.2V, max 100mA)

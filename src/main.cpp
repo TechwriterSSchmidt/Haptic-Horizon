@@ -6,7 +6,7 @@
 #include <math.h> // Required for Smart Terrain trigonometry
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
-#include <Adafruit_AMG88xx.h>
+#include <Adafruit_MLX90640.h>
 
 #ifdef ENABLE_DRV2605
 #include <Adafruit_DRV2605.h>
@@ -22,7 +22,7 @@ using namespace Adafruit_LittleFS_Namespace;
 SparkFun_VL53L5CX sensor;
 VL53L5CX_ResultsData measurementData;
 DFRobot_BMI160 bmi160;
-Adafruit_AMG88xx amg;
+Adafruit_MLX90640 mlx;
 
 #ifdef ENABLE_DRV2605
 Adafruit_DRV2605 drv;
@@ -41,7 +41,7 @@ OperationMode previousMode = MODE_SMART_TERRAIN;
 bool dropDetected = false;
 unsigned long dropTime = 0;
 bool dropAlarmActive = false;
-float amgPixels[AMG88xx_PIXEL_ARRAY_SIZE];
+float mlxPixels[768];
 
 // Calibration
 float pitchOffset = MOUNTING_PITCH_OFFSET; // Loaded from file if available
@@ -237,6 +237,16 @@ void setup() {
   sensor.setResolution(SENSOR_RESOLUTION); 
   sensor.setRangingFrequency(SENSOR_RANGING_FREQ);
   sensor.startRanging();
+
+  Serial.println("Initializing MLX90640...");
+  if (!mlx.begin(MLX90640_I2CADDR_DEFAULT, &Wire)) {
+    Serial.println("MLX90640 not found!");
+  } else {
+    Serial.println("MLX90640 Found!");
+    mlx.setMode(MLX90640_CHESS);
+    mlx.setResolution(MLX90640_ADC_BIT_RESOLUTION_18);
+    mlx.setRefreshRate(MLX90640_2_HZ);
+  }
 
   Serial.println("Haptic Horizon Started");
   lastActivityTime = millis();
@@ -1040,16 +1050,19 @@ void runHeatVision() {
     
     int avgDist = (validZones > 0) ? (sumDist / validZones) : 2000;
 
-    // 2. Read pixels
-    amg.readPixels(amgPixels);
+    // 2. Read pixels (MLX90640 32x24 = 768 pixels)
+    if (mlx.getFrame(mlxPixels) != 0) {
+        Serial.println("Failed to read MLX90640 frame");
+        return;
+    }
     
     int hotPixelCount = 0;
     float maxTemp = 0;
     
-    for (int i=0; i<AMG88xx_PIXEL_ARRAY_SIZE; i++) {
-        if (amgPixels[i] > HEAT_THRESHOLD_C) {
+    for (int i=0; i<768; i++) {
+        if (mlxPixels[i] > HEAT_THRESHOLD_C) {
             hotPixelCount++;
-            if (amgPixels[i] > maxTemp) maxTemp = amgPixels[i];
+            if (mlxPixels[i] > maxTemp) maxTemp = mlxPixels[i];
         }
     }
     
@@ -1063,12 +1076,14 @@ void runHeatVision() {
         } else if (objectWidth >= 1) {
             // Narrower object (20-40cm) + Heat -> Human Head / Torso
             // Check pixel count to distinguish from small cup
-            if (hotPixelCount >= 3) classification = 2; // Human
+            // MLX90640 has 12x more pixels than AMG8833. 
+            // Human face at 1m ~ 35 pixels.
+            if (hotPixelCount >= 20) classification = 2; // Human
             else classification = 1; // Small object
         } else {
             // Heat but no ToF object? (Maybe out of range or reflection)
             // Fallback to pixel count
-            if (hotPixelCount >= 4) classification = 2;
+            if (hotPixelCount >= 25) classification = 2;
             else classification = 1;
         }
     }
