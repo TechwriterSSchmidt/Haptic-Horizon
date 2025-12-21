@@ -207,7 +207,7 @@ void setup() {
   // Init File System for Calibration
   if (InternalFS.begin()) {
       if (InternalFS.exists("/calib.txt")) {
-          File file = InternalFS.open("/calib.txt", FILE_O_READ);
+          Adafruit_LittleFS_Namespace::File file = InternalFS.open("/calib.txt", FILE_O_READ);
           if (file) {
               float storedOffset = file.parseFloat();
               pitchOffset = storedOffset;
@@ -244,7 +244,7 @@ void setup() {
   } else {
     Serial.println("MLX90640 Found!");
     mlx.setMode(MLX90640_CHESS);
-    mlx.setResolution(MLX90640_ADC_BIT_RESOLUTION_18);
+    mlx.setResolution(MLX90640_ADC_18BIT);
     mlx.setRefreshRate(MLX90640_2_HZ);
   }
 
@@ -729,7 +729,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report) {
           #endif
           
           // Wake up fully after alarm
-          wakeUp();
+          lastActivityTime = millis();
       }
   }
 }
@@ -943,7 +943,7 @@ void calibrateIMU() {
         
         // 3. Save to File
         InternalFS.remove("/calib.txt");
-        File file = InternalFS.open("/calib.txt", FILE_O_WRITE);
+        Adafruit_LittleFS_Namespace::File file = InternalFS.open("/calib.txt", FILE_O_WRITE);
         if (file) {
             file.print(pitchOffset);
             file.close();
