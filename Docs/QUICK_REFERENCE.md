@@ -32,19 +32,27 @@ Switch modes by pressing the button.
 
 *   **Smart Terrain Mode (Default):**
     *   *Use for:* Walking, exploring, detecting stairs and obstacles.
+    *   *Switch Signal:* **Single Long Bump**.
 *   **Precision Mode:**
     *   *Use for:* Finding door handles, locating small objects.
-    *   *Feedback:* Clicks like a Geiger counter.
+    *   *Switch Signal:* **Double Click**.
+    *   *Feedback:* Clicks like a Geiger counter (Faster = Closer).
 *   **Heat Vision Mode:**
     *   *Activation:* Hold the **Trigger Button** (Abzugsfinger). Release to stop.
     *   *Use for:* Finding people, pets, or checking electronics.
     *   *Feedback:*
-        *   **Heartbeat:** Human detected.
-        *   **Double-Tick:** Monitor/Machine detected.
+        *   **Heartbeat (Triple Click):** Human detected.
+        *   **Double-Click:** Monitor/Machine detected.
         *   **Fast Ticking:** Small object (Cup/Cat).
 
-## 4. Safety Features
+## 4. Other Signals
 
+*   **Battery Level:**
+    *   Long press button (> 2s).
+    *   *Signal:* 1 to 4 **Strong Clicks** (4 = Full, 1 = Critical).
+*   **Calibration Success:**
+    *   Long press button (> 10s).
+    *   *Signal:* **Triple Click**.
 *   **Drop Beacon:**
     *   If you drop the device hard, it waits 5 seconds.
     *   If not picked up, it starts a **Strong Pulsing Vibration**.

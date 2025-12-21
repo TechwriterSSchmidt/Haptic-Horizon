@@ -818,7 +818,7 @@ void announceBatteryLevel() {
     else pulses = 1;                    // Critical
 
     for(int i=0; i<pulses; i++) {
-        drv.setWaveform(0, 64); // Effect 64: Strong Click 100%
+        drv.setWaveform(0, 1); // Effect 1: Strong Click 100%
         drv.setWaveform(1, 0);
         drv.go();
         delay(400); // Gap between pulses
@@ -1033,7 +1033,7 @@ void runHeatVision() {
         // Interval: 1000ms
         if (now % 1000 < 100) {
             #ifdef ENABLE_DRV2605
-            drv.setWaveform(0, 52); // Pulsing Strong 1
+            drv.setWaveform(0, 10); // Effect 10: Double Click 100%
             drv.setWaveform(1, 0);
             drv.go();
             #endif

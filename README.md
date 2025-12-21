@@ -1,4 +1,4 @@
-# Haptic-Horizon
+# Haptic Horizon
 The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode! 🦇
 
 ## Overview
