@@ -58,11 +58,16 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 
 ## Advanced Features
 
-### Stereo Haptics (Optional)
-If a second DRV2605L driver is connected to the secondary I2C bus (SDA1/SCL1), the device enables **Directional Feedback**:
-*   **Wall Detection:** If a wall is closer on the left, the Left LRA vibrates stronger.
-*   **Heat Vision:** If a person is to the left, the Left LRA pulses.
-*   **Benefit:** Allows for intuitive navigation ("Follow the vibration") without mental effort.
+### Stereo Haptics (Optional Upgrade)
+For the ultimate intuitive experience, Haptic Horizon supports **Dual-Channel Feedback**.
+*   **Hardware:** Connect a second DRV2605L to the secondary I2C bus (SDA1/SCL1).
+*   **Positioning:** Place the two LRAs on opposite sides of the handle (180° offset).
+    *   **LRA 1 (Left Channel):** Under the **Thumb** (for a flashlight grip).
+    *   **LRA 2 (Right Channel):** Under the **Fingers**.
+*   **Function:**
+    *   **Navigation:** If a wall is closer on the left, the Thumb vibrates. If on the right, the Fingers vibrate.
+    *   **Heat Vision:** If a person is to the left, the Thumb pulses.
+    *   **Result:** Samira can navigate blindly by simply "steering away" from the vibration, without needing to scan back and forth.
 
 ## User Guide
 
@@ -75,23 +80,32 @@ If a second DRV2605L driver is connected to the secondary I2C bus (SDA1/SCL1), t
     *   The device enters **Deep Sleep** (System OFF) to save power and prevent accidental wakeups.
     *   *Note:* Motion alone will NOT wake the device. You must double-tap a button.
 
-### 2. Modes (Toggle via Button)
+### 2. The Haptic Dictionary (Complete List)
+This table lists every signal the device can produce.
+
+| Category | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
+| :--- | :--- | :--- | :--- | :--- |
+| **System** | Startup | **Ramp Up** | Rising Pitch | Device is waking up. |
+| **System** | Shutdown | **Ramp Down** | Falling Pitch | Device is going to sleep (Auto-Off). |
+| **System** | Battery Full | **4 Pulses** | *Tick-Tick-Tick-Tick* | Battery > 80%. |
+| **System** | Battery Low | **2 Pulses** | *Tick-Tick* | Battery < 20%. Charge soon. |
+| **System** | Calibration | **Triple Click** | *Click-Click-Click* | IMU Calibration saved. |
+| **Terrain** | Wall / Obstacle | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
+| **Terrain** | Drop-off | **Ramp Down** | Falling Sensation | Hole or stairs down! Stop! |
+| **Terrain** | Stairs Up | **Ramp Up** | Rising Sensation | Stairs going up ahead. |
+| **Terrain** | Gap / Door | **Double Click** | *Click-Click* | Open space found (Doorway). |
+| **Terrain** | Glass Warning | **Sharp Tick** | *Tick* | Confusing reflection (Mirror/Glass). |
+| **Heat** | Human | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warm & Narrow). |
+| **Heat** | Machine | **Double Tick** | *Tick-Tick...* | Electronics detected (Warm & Wide). |
+| **Heat** | Small Object | **Geiger Counter** | *Trrrrr...* | Small heat source (Cup, Pet). |
+| **Alarm** | Drop Beacon | **Loud Strobe** | *BZZZ-BZZZ-BZZZ* | "I fell down! Pick me up!" |
+| **Alarm** | Find Me | **Loud Strobe** | *BZZZ-BZZZ-BZZZ* | "Here I am!" (Triggered via App). |
+
+### 3. Modes (Toggle via Button)
 Press the **Mode Button** to switch between *Smart Terrain* and *Precision Mode*.
 
 #### A. Smart Terrain Mode (Default)
 Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D. The device compares the upper and lower zones of the sensor to distinguish between walls, stairs, and drop-offs.
-
-**The Haptic Language:**
-
-| Situation | Sensor Pattern | Haptic Feedback (LRA) | Feeling |
-| :--- | :--- | :--- | :--- |
-| **Wall / Obstacle** | Object ahead (ignoring ground) | **Continuous Buzz** | Like a force field. Stronger = Closer. |
-| **Drop-off / Hole** | Ground suddenly disappears | **Ramp Down** | A "falling" sensation. Warning! |
-| **Stairs Up** | Distance increases in steps | **Ramp Up** | A "rising" sensation. |
-| **Curb / Trip Hazard** | Small obstacle on ground | **Soft Bump** | A gentle nudge. |
-| **Gap / Door** | Open space between obstacles | **Double Click** | A distinct "click-click". |
-| **Bat-in-danger Mode** | Confusing reflections (Glass/Mirror) | **Sharp Tick** | A short, sharp warning tick. |
-| **Flat Ground** | Consistent gradient | **Silence** | Safe to walk. |
 
 #### B. Precision Mode
 *   **Function:** Scans only the center point (Tunnel Vision).
@@ -101,13 +115,9 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 #### C. Heat Vision Mode (Trigger Activated)
 *   **Activation:** Press and hold the **Trigger Button** (Abzugsfinger). Release to return to previous mode.
 *   **Function:** Uses Sensor Fusion (Thermal + ToF) to identify heat sources.
-*   **Feedback:**
-    *   **Human (Narrow & Hot):** Slow **Heartbeat** (*Bumm... Bumm...*).
-    *   **Monitor / Machine (Wide & Hot):** Mechanical **Double-Tick** (*Tick-Tick...*).
-    *   **Small Object (Cup/Cat):** Fast **Geiger Counter** (*Tickticktick*).
-*   **Use Case:** Finding people in the dark, checking if electronics are running, locating pets.
+*   **Feedback:** See "Heat" section in the Dictionary above.
 
-### 3. Status Check (Battery & Distance)
+### 4. Status Check (Battery & Distance)
 *   **Long Press (> 2s) on Mode Button:** The device announces the battery status via haptic pulses.
     *   **4 Pulses:** Full
     *   **3 Pulses:** Good
