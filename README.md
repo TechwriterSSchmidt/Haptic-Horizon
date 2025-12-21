@@ -43,6 +43,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 | Vibration Motor | P0.06 (D1) | PWM (Direct) OR DRV2605L Output |
 | Buzzer | P0.24 | Piezo (+) to Pin, (-) to GND |
 | Mode Button | P0.29 (A2) | Button to GND (Internal Pullup) |
+| Trigger Button | P0.31 (D6) | Button to GND (Internal Pullup) |
 | Battery + | B+ | LiPo Positive |
 | Battery - | B- | LiPo Negative |
 
@@ -57,7 +58,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
     *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON) to save power.
 
 ### 2. Modes (Toggle via Button)
-Press the button to switch between modes.
+Press the **Mode Button** to switch between *Smart Terrain* and *Precision Mode*.
 
 #### A. Smart Terrain Mode (Default)
 Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D. The device compares the upper and lower zones of the sensor to distinguish between walls, stairs, and drop-offs.
@@ -80,10 +81,11 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 *   **Feedback:** **Sharp Clicks** (Geiger-Counter Style). Faster clicking = Closer.
 *   **Use Case:** Finding door handles, locating narrow gaps, or checking specific objects.
 
-#### C. Heat Vision Mode
-*   **Sound:** *High Pitch Pulse*
+#### C. Heat Vision Mode (Trigger Activated)
+*   **Activation:** Press and hold the **Trigger Button** (Abzugsfinger). Release to return to previous mode.
+*   **Sound:** *High Pitch Pulse* (On Activate) / *Low Pitch* (On Release)
 *   **Function:** Uses the Thermal Camera to detect heat sources (people, pets, electronics).
-*   **Feedback:** **Triple Buzz** on entry. **Pulsing Vibration** when heat > 28°C. Stronger vibration for hotter objects.
+*   **Feedback:** **Pulsing Vibration** when heat > 28°C. Stronger vibration for hotter objects.
 *   **Use Case:** Finding people in the dark, checking if electronics are running, locating pets.
 
 ### 3. Battery Check

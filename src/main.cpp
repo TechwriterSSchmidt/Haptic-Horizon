@@ -34,6 +34,7 @@ BLEDis  bledis;  // Device Information
 BLEUart bleuart; // UART over BLE
 
 OperationMode currentMode = MODE_SMART_TERRAIN;
+OperationMode previousMode = MODE_SMART_TERRAIN;
 // bool isDropOffActive = false; // Deprecated in favor of continuous Smart Terrain logic
 
 // Drop Beacon State
@@ -90,6 +91,7 @@ void setup() {
 
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
+  nrf_gpio_cfg_input(TRIGGER_PIN, NRF_GPIO_PIN_PULLUP);
 
   // Optional: Buzzer Setup
   #ifdef BUZZER_PIN
@@ -328,6 +330,31 @@ void loop() {
                   toggleMode();
               }
           }
+      }
+  }
+
+  // --- Trigger Handling (Heat Vision) ---
+  int triggerReading = nrf_gpio_pin_read(TRIGGER_PIN);
+  if (triggerReading == 0) { // Pressed
+      if (currentMode != MODE_HEAT_VISION) {
+          previousMode = currentMode;
+          currentMode = MODE_HEAT_VISION;
+          lastActivityTime = currentMillis;
+          
+          #ifdef BUZZER_PIN
+          // Sound: Heat Vision Activate (High Pitch Pulse)
+          playTone(880, 50, VOL_MODE_CHANGE);
+          #endif
+      }
+  } else { // Released
+      if (currentMode == MODE_HEAT_VISION) {
+          currentMode = previousMode;
+          lastActivityTime = currentMillis;
+          
+          #ifdef BUZZER_PIN
+          // Sound: Heat Vision Deactivate
+          playTone(440, 50, VOL_MODE_CHANGE);
+          #endif
       }
   }
 
@@ -732,30 +759,6 @@ void toggleMode() {
         nrf_gpio_pin_write(MOTOR_PIN, 0);
         #endif
     } 
-    else if (currentMode == MODE_PRECISION) {
-        currentMode = MODE_HEAT_VISION;
-        
-        #ifdef BUZZER_PIN
-        // Sound: Heat Vision (High Pitch Pulse)
-        playTone(880, 100, VOL_MODE_CHANGE); delay(20);
-        playTone(880, 100, VOL_MODE_CHANGE); delay(20);
-        playTone(880, 100, VOL_MODE_CHANGE); delay(20);
-        #endif
-
-        // Feedback: Triple Buzz
-        #ifdef ENABLE_DRV2605
-        drv.setWaveform(0, 12); // Effect 12: Triple Click 100%
-        drv.setWaveform(1, 0);  // End
-        drv.go();
-        #else
-        nrf_gpio_pin_write(MOTOR_PIN, 1); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 0); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 1); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 0); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 1); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 0);
-        #endif
-    }
     else {
         currentMode = MODE_SMART_TERRAIN;
         

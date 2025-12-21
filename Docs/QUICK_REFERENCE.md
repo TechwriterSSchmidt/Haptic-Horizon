@@ -35,21 +35,33 @@ Switch modes by pressing the button.
     *   *Signal:* Ascending Tone.
     *   *Use for:* Finding door handles, locating small objects.
     *   *Feedback:* Clicks like a Geiger counter.
+*   **Heat Vision Mode:**
+    *   *Activation:* Hold the **Trigger Button** (Abzugsfinger). Release to stop.
+    *   *Signal:* High Pitch Pulse.
+    *   *Use for:* Finding people, pets, or checking electronics.
+    *   *Feedback:* Pulsing vibration (Hotter = Faster).
 
-## 4. Battery Check
+## 4. Safety Features
 
-*   **Check Level:** Press and **hold the button for 2 seconds**.
+*   **Drop Beacon:**
+    *   If you drop the device hard, it waits 5 seconds.
+    *   If not picked up, it starts a **Loud Alarm** and flashes the vibration.
+    *   *Action:* Pick it up to stop the alarm.
+
+## 5. Battery Check
+
+*   **Check Level:** Press and **hold the Mode Button for 2 seconds**.
 *   **Signals:**
     *   4 Beeps: Full Battery.
     *   3 Beeps: Good.
     *   2 Beeps: Low.
     *   1 Long Beep: Critical (Charge soon!).
 
-## 5. Calibration
+## 6. Calibration
 
 If the device gives false alarms on flat ground:
 1.  Place the device on a flat table.
-2.  Press and **hold the button for 10 seconds**.
+2.  Press and **hold the Mode Button for 10 seconds**.
 3.  Wait for the "Success" melody.
 
 ## 6. Finding the Device

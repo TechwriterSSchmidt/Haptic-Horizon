@@ -13,6 +13,7 @@
 #define SDA_PIN   17  // P0.17
 #define SCL_PIN   20  // P0.20
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
+#define TRIGGER_PIN 31 // P0.31 (Second button for Heat Vision "Trigger")
 
 // Battery Measurement Pin (Requires Voltage Divider if Bat > 3.3V!)
 // Connect Battery (+) -> 100k Resistor -> A0 -> 100k Resistor -> GND
