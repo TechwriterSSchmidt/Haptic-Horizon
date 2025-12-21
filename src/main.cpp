@@ -365,10 +365,13 @@ void loop() {
   }
 
   // --- Sensor Handling ---
-  if (currentMode != MODE_HEAT_VISION && sensor.isDataReady()) {
+  // Always run sensor to keep measurementData fresh for Fusion
+  if (sensor.isDataReady()) {
     if (sensor.getRangingData(&measurementData)) {
       
-      if (currentMode == MODE_PRECISION) {
+      // Only do Haptic Logic if NOT in Heat Vision (Heat Vision handles its own haptics)
+      if (currentMode != MODE_HEAT_VISION) {
+          if (currentMode == MODE_PRECISION) {
         // MODE: Precision Pointer (Check CENTER zones only)
         int targetDistance = 9999;
         int validZones = 0;
@@ -654,6 +657,7 @@ void loop() {
       
       // Note: Activity Check is now handled by IMU (Gyro)
     }
+    } // End if (currentMode != MODE_HEAT_VISION)
   }
 }
 
@@ -1033,54 +1037,90 @@ void checkForDrop(int16_t* accelGyro) {
 }
 
 void runHeatVision() {
-    // Read pixels
+    // 1. Get Distance (Fusion)
+    // Use center zones (5,6,9,10) average
+    int centerDist = 2000; // Default far
+    int valid = 0;
+    int sum = 0;
+    int zones[] = {5, 6, 9, 10};
+    
+    for (int z : zones) {
+        if (measurementData.target_status[z] == 5 || measurementData.target_status[z] == 9) {
+            sum += measurementData.distance_mm[z];
+            valid++;
+        }
+    }
+    if (valid > 0) centerDist = sum / valid;
+
+    // 2. Read pixels
     amg.readPixels(amgPixels);
     
+    int hotPixelCount = 0;
     float maxTemp = 0;
-    int maxIndex = -1;
     
     for (int i=0; i<AMG88xx_PIXEL_ARRAY_SIZE; i++) {
-        if (amgPixels[i] > maxTemp) {
-            maxTemp = amgPixels[i];
-            maxIndex = i;
+        if (amgPixels[i] > HEAT_THRESHOLD_C) {
+            hotPixelCount++;
+            if (amgPixels[i] > maxTemp) maxTemp = amgPixels[i];
+        }
+    }
+    
+    // 3. Fusion Logic
+    bool isHuman = false;
+    bool isSmallObject = false;
+    
+    if (hotPixelCount > 0) {
+        if (centerDist < 1500) {
+            // Close range (< 1.5m)
+            // Human needs to be BIG (>= 5 pixels)
+            if (hotPixelCount >= 5) isHuman = true;
+            else isSmallObject = true; // Cat, Cup, Laptop
+        } else {
+            // Far range (> 1.5m)
+            // Human appears smaller (>= 2 pixels)
+            if (hotPixelCount >= 2) isHuman = true;
+            else isSmallObject = false; // Noise or too small
         }
     }
     
     // Feedback
-    if (maxTemp > HEAT_THRESHOLD_C) {
-        // Calculate Intensity
-        int intensity = map(maxTemp, HEAT_THRESHOLD_C, HEAT_MAX_C, 50, 255);
-        intensity = constrain(intensity, 0, 255);
-        
-        // Haptic Feedback
-        // We can pulse the motor based on intensity
-        #ifdef ENABLE_DRV2605
-        // Use Real-Time Playback or Library Effects
-        // For simplicity, let's use a strong click if very hot, or buzz.
-        if (maxTemp > HEAT_MAX_C) {
-             drv.setWaveform(0, 58); // Transition Ramp Up Long Smooth 1
-             drv.setWaveform(1, 0);
-             drv.go();
+    unsigned long now = millis();
+    
+    if (isHuman) {
+        // Feedback: Slow "Heartbeat" (Heavy Pulse)
+        // Interval: 1000ms
+        if (now % 1000 < 150) {
+            #ifdef ENABLE_DRV2605
+            drv.setWaveform(0, 12); // Effect 12: Triple Click (Heavy feel)
+            drv.setWaveform(1, 0);
+            drv.go();
+            #else
+            analogWrite(MOTOR_PIN, 255);
+            #endif
         } else {
-             // Intermittent buzz based on proximity?
-             // Or just vibrate.
-             // DRV2605 doesn't support PWM intensity easily in ROM mode.
-             // We can use RTP mode or just trigger effects.
-             
-             // Let's trigger a click proportional to heat? No.
-             // Let's just buzz if hot.
-             if (millis() % 500 < 100) { // Pulse
-                 drv.setWaveform(0, 1); // Strong Click
-                 drv.setWaveform(1, 0);
-                 drv.go();
-             }
+            #ifndef ENABLE_DRV2605
+            analogWrite(MOTOR_PIN, 0);
+            #endif
         }
-        #else
-        // PWM Motor
-        analogWrite(MOTOR_PIN, intensity);
-        #endif
-        
-        Serial.print("Max Temp: "); Serial.print(maxTemp); Serial.println("C");
+        Serial.print("Human Detected! Dist: "); Serial.print(centerDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
+    } 
+    else if (isSmallObject) {
+        // Feedback: Fast "Geiger Counter" Ticking
+        // Interval: 200ms
+        if (now % 200 < 50) {
+            #ifdef ENABLE_DRV2605
+            drv.setWaveform(0, 1); // Effect 1: Strong Click (Sharp feel)
+            drv.setWaveform(1, 0);
+            drv.go();
+            #else
+            analogWrite(MOTOR_PIN, 150);
+            #endif
+        } else {
+            #ifndef ENABLE_DRV2605
+            analogWrite(MOTOR_PIN, 0);
+            #endif
+        }
+        Serial.print("Small Object. Dist: "); Serial.print(centerDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
     } else {
         #ifndef ENABLE_DRV2605
         analogWrite(MOTOR_PIN, 0);
