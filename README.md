@@ -131,24 +131,27 @@ If the device is not detecting the ground correctly (e.g., false alarms on flat 
 3.  Wait for the **Success Triple Click**.
 4.  The new calibration is saved permanently.
 
-### 6. "Find Me" Feature (Bluetooth App)
-If the device is lost (even in Auto-Off mode), it can be found using a smartphone.
-1.  Open a BLE App (e.g., **nRF Connect** or **Adafruit Bluefruit**).
-2.  Connect to **"Haptic Horizon"**.
-3.  Select the **UART Service**.
-4.  Send the character **'B'** (or 'F').
-5.  The device will vibrate strongly (Pulsing Alarm).
+### 6. Find Me & Safety Features
+Haptic Horizon includes three ways to locate the device if it is dropped or misplaced. All methods trigger a **Loud Strobe Alarm** (Strong Pulsing Vibration).
 
-### 7. Safety Features
-*   **Drop Beacon:** If the device detects a hard fall (Impact > 2.5G), it waits 5 seconds. If not picked up, it triggers a strong pulsing vibration alarm for 30 seconds to help you find it on the floor.
+#### A. Drop Beacon (Automatic)
+*   **Trigger:** Detects a hard impact (> 2.5G) followed by stillness.
+*   **Behavior:** Waits 5 seconds (grace period). If not picked up, it alarms for 30 seconds.
+*   **Use Case:** You drop the device while walking and it rolls away.
 
-### 8. "Selfie Button" Finder (Tactile Remote)
-For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").
-1.  Enable `#define ENABLE_SELFIE_FINDER` in `include/config.h`.
-2.  Set the name of your remote in `SELFIE_BUTTON_NAME` (check via phone first).
-3.  When the device is in **Auto-Off** mode, it scans for the remote every 4 seconds.
-4.  Turn on or press the remote button.
-5.  The device will vibrate strongly (Pulsing Alarm).
+#### B. Smartphone Finder (App)
+*   **Trigger:** Bluetooth LE Command.
+*   **How to use:**
+    1.  Open **nRF Connect** or **Adafruit Bluefruit** app.
+    2.  Connect to **"Haptic Horizon"**.
+    3.  Send character **'B'** or **'F'** via UART.
+*   **Use Case:** Device is lost in the sofa cushions.
+
+#### C. "Selfie Button" Finder (Tactile Remote)
+*   **Trigger:** A standard Bluetooth Camera Shutter (e.g., "AB Shutter3").
+*   **How to use:** Press the button on the remote. The device wakes up and alarms.
+*   **Setup:** Enable `#define ENABLE_SELFIE_FINDER` in `config.h` and set your remote's name.
+*   **Use Case:** Finding the device without needing a smartphone app (Tactile & Fast).
 
 ## Documentation
 For a printable, easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](Docs/QUICK_REFERENCE.md).
