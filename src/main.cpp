@@ -26,6 +26,9 @@ DFRobot_BMI160 bmi160;
 Adafruit_MLX90640 mlx;
 DY::Player player(&Serial1);
 
+// Define Secondary I2C Bus (Wire1) using TWIM1
+TwoWire Wire1(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, SDA1_PIN, SCL1_PIN);
+
 #ifdef ENABLE_DRV2605
 Adafruit_DRV2605 drv;
 #endif
@@ -179,10 +182,15 @@ void setup() {
   // We don't start scanning yet, only in Standby
   #endif
 
-  // I2C Setup
+  // I2C Setup (Primary Bus)
   Wire.setPins(SDA_PIN, SCL_PIN);
   Wire.begin();
   Wire.setClock(I2C_FREQUENCY); 
+
+  // I2C Setup (Secondary Bus for Thermal Camera)
+  Wire1.setPins(SDA1_PIN, SCL1_PIN);
+  Wire1.begin();
+  Wire1.setClock(I2C_FREQUENCY);
 
   #ifdef ENABLE_DRV2605
   Serial.println("Initializing DRV2605L...");
@@ -255,10 +263,10 @@ void setup() {
   }
 
   Serial.println("Initializing MLX90640...");
-  if (!mlx.begin(MLX90640_I2CADDR_DEFAULT, &Wire)) {
-    Serial.println("MLX90640 not found!");
+  if (!mlx.begin(MLX90640_I2CADDR_DEFAULT, &Wire1)) {
+    Serial.println("MLX90640 not found on Secondary I2C!");
   } else {
-    Serial.println("MLX90640 Found!");
+    Serial.println("MLX90640 Found on Secondary I2C!");
     mlx.setMode(MLX90640_CHESS);
     mlx.setResolution(MLX90640_ADC_18BIT);
     mlx.setRefreshRate(MLX90640_2_HZ);

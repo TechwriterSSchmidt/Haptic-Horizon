@@ -41,20 +41,17 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 |-----------|---------------|-------------|
 | VL53L5CX SDA | P0.17 (D2) | I2C SDA (Shared) |
 | VL53L5CX SCL | P0.20 (D3) | I2C SCL (Shared) |
-| MLX90640 SDA | P0.17 (D2) | I2C SDA (Shared) |
-| MLX90640 SCL | P0.20 (D3) | I2C SCL (Shared) |
-| BMI160 SDA | P0.17 (D2) | I2C SDA (Shared) |
-| BMI160 SCL | P0.20 (D3) | I2C SCL (Shared) |
-| DRV2605L SDA | P0.17 (D2) | I2C SDA (Shared) |
-| DRV2605L SCL | P0.20 (D3) | I2C SCL (Shared) |
+| MLX90640 SDA | P0.06 | I2C SDA (Secondary Bus) |
+| MLX90640 SCL | P0.08 | I2C SCL (Secondary Bus) |
+| BMI160 SDA | P0.17 (D2) | I2C SDA (Primary Bus) |
+| BMI160 SCL | P0.20 (D3) | I2C SCL (Primary Bus) |
+| DRV2605L SDA | P0.17 (D2) | I2C SDA (Primary Bus) |
+| DRV2605L SCL | P0.20 (D3) | I2C SCL (Primary Bus) |
 | DRV2605L Trigger | - | I2C Controlled |
 | Sound Switch | P0.24 (D6) | Toggle Switch (GND = Mute) |
-| DY-SV17F TX | P0.08 (D10) | UART TX |
-| DY-SV17F RX | P0.06 (D9) | UART RX |
-| Battery Sense | P0.04 (A2) | Analog Input (Voltage Divider) |
-| DY-SV17F RX | P0.09 | UART RX (Connect to Module TX) |
 | DY-SV17F TX | P0.10 | UART TX (Connect to Module RX) |
-| Sound Switch | P0.24 | Toggle Switch (Open=On, Closed=Mute) |
+| DY-SV17F RX | P0.09 | UART RX (Connect to Module TX) |
+| Battery Sense | P0.02 (A0) | Analog Input (Voltage Divider) |
 | Mode Button | P0.29 (A2) | Button to GND (Internal Pullup) |
 | Trigger Button | P0.31 (D6) | Button to GND (Internal Pullup) |
 | Battery + | B+ | LiPo Positive |

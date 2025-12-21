@@ -6,8 +6,13 @@
 // might map "D1" to something else.
 // For safety, we define them as integers matching the GPIO port 0.
 
-#define SDA_PIN   17  // P0.17
-#define SCL_PIN   20  // P0.20
+#define SDA_PIN   17  // P0.17 (Primary I2C: ToF, IMU, Haptic)
+#define SCL_PIN   20  // P0.20 (Primary I2C)
+
+// Secondary I2C Bus for Thermal Camera (High Traffic)
+#define SDA1_PIN  6   // P0.06 (Dedicated for MLX90640)
+#define SCL1_PIN  8   // P0.08 (Dedicated for MLX90640)
+
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
 #define TRIGGER_PIN 31 // P0.31 (Second button for Heat Vision "Trigger")
 
