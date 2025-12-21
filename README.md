@@ -7,7 +7,7 @@ Haptic Horizon is a smart wearable **Electronic Travel Aid (ETA)** that fuses **
 Unlike simple proximity sensors, Haptic Horizon understands context:
 *   **Smart Terrain:** Detects walls, drop-offs, and stairs using 3D gradient analysis.
 *   **Heat Vision:** Identifies people, pets, and electronics by combining heat signatures with object size.
-*   **Safety First:** Includes a "Drop Beacon" that calls for help if the device falls.
+*   **Find Me:** Automatically vibrates if dropped so it can be easily located. Can also be triggered via Bluetooth (App or Camera Shutter).
 
 It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
 
