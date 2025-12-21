@@ -78,6 +78,7 @@ void playShutdownMelody();
 void playCalibrationSuccess();
 void announceStatus();
 void announceBatteryLevel();
+void updateThermalPerception(); // Forward declaration
 
 #ifdef ENABLE_SELFIE_FINDER
 void scan_callback(ble_gap_evt_adv_report_t* report);
@@ -392,6 +393,9 @@ void loop() {
 
 
   // --- Heat Vision Handling ---
+  // Always update perception (Sensor Fusion)
+  updateThermalPerception();
+
   if (currentMode == MODE_HEAT_VISION) {
       runHeatVision();
   }
@@ -955,8 +959,14 @@ void checkForDrop(int16_t* accelGyro) {
     }
 }
 
-void runHeatVision() {
-    // 1. Analyze ToF Width (Object Size)
+// Global Thermal State
+int thermalClassification = 0; // 0=None, 1=Small, 2=Human, 3=Machine
+int thermalAvgDist = 0;
+int thermalObjectWidth = 0;
+int thermalPixelCount = 0;
+
+void updateThermalPerception() {
+    // 1. Analyze ToF Width (Object Size) - Sensor Fusion
     // Check the middle horizontal slice (Zones 4,5,6,7)
     int objectWidth = 0;
     int validZones = 0;
@@ -973,11 +983,14 @@ void runHeatVision() {
         }
     }
     
-    int avgDist = (validZones > 0) ? (sumDist / validZones) : 2000;
+    thermalAvgDist = (validZones > 0) ? (sumDist / validZones) : 2000;
+    thermalObjectWidth = objectWidth;
 
     // 2. Read pixels (MLX90640 32x24 = 768 pixels)
+    // Note: getFrame might block for I2C transfer (~40ms). 
+    // We run this continuously to keep data fresh.
     if (mlx.getFrame(mlxPixels) != 0) {
-        Serial.println("Failed to read MLX90640 frame");
+        // Serial.println("Failed to read MLX90640 frame");
         return;
     }
     
@@ -990,35 +1003,35 @@ void runHeatVision() {
             if (mlxPixels[i] > maxTemp) maxTemp = mlxPixels[i];
         }
     }
+    thermalPixelCount = hotPixelCount;
     
     // 3. Classification Logic
-    int classification = 0; // 0=None, 1=Small(Cat/Cup), 2=Human, 3=Monitor/Machine
+    thermalClassification = 0; // Reset
     
     if (hotPixelCount > 0) {
         if (objectWidth >= 3) {
             // Wide object (> 60cm) + Heat -> Monitor / PC Tower / Radiator
-            classification = 3; 
+            thermalClassification = 3; 
         } else if (objectWidth >= 1) {
             // Narrower object (20-40cm) + Heat -> Human Head / Torso
-            // Check pixel count to distinguish from small cup
-            // MLX90640 has 12x more pixels than AMG8833. 
-            // Human face at 1m ~ 35 pixels.
-            if (hotPixelCount >= 20) classification = 2; // Human
-            else classification = 1; // Small object
+            if (hotPixelCount >= 20) thermalClassification = 2; // Human
+            else thermalClassification = 1; // Small object
         } else {
             // Heat but no ToF object? (Maybe out of range or reflection)
-            // Fallback to pixel count
-            if (hotPixelCount >= 25) classification = 2;
-            else classification = 1;
+            if (hotPixelCount >= 25) thermalClassification = 2;
+            else thermalClassification = 1;
         }
     }
+}
+
+void runHeatVision() {
+    // Deprecated: Logic moved to updateThermalPerception()
+    // This function now only handles FEEDBACK based on global state
     
-    // 4. Feedback
     unsigned long now = millis();
     
-    if (classification == 2) { // HUMAN
+    if (thermalClassification == 2) { // HUMAN
         // Feedback: Slow "Heartbeat" (Heavy Pulse)
-        // Interval: 1000ms
         if (now % 1000 < 150) {
             #ifdef ENABLE_DRV2605
             drv.setWaveform(0, 12); // Effect 12: Triple Click (Heavy feel)
@@ -1026,36 +1039,28 @@ void runHeatVision() {
             drv.go();
             #endif
         }
-        Serial.print("Human Detected! Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
+        Serial.print("Human Detected! Dist: "); Serial.print(thermalAvgDist); Serial.print(" Pixels: "); Serial.println(thermalPixelCount);
     } 
-    else if (classification == 3) { // MONITOR / MACHINE
+    else if (thermalClassification == 3) { // MONITOR / MACHINE
         // Feedback: Mechanical "Double Tick" (Artificial feel)
-        // Interval: 1000ms
         if (now % 1000 < 100) {
             #ifdef ENABLE_DRV2605
             drv.setWaveform(0, 10); // Effect 10: Double Click 100%
             drv.setWaveform(1, 0);
             drv.go();
             #endif
-        } else {
-            // No action needed
         }
-        Serial.print("Monitor Detected. Dist: "); Serial.print(avgDist); Serial.print(" Width: "); Serial.println(objectWidth);
+        Serial.print("Monitor Detected. Dist: "); Serial.print(thermalAvgDist); Serial.print(" Width: "); Serial.println(thermalObjectWidth);
     }
-    else if (classification == 1) { // SMALL OBJECT
+    else if (thermalClassification == 1) { // SMALL OBJECT
         // Feedback: Fast "Geiger Counter" Ticking
-        // Interval: 200ms
         if (now % 200 < 50) {
             #ifdef ENABLE_DRV2605
             drv.setWaveform(0, 1); // Effect 1: Strong Click (Sharp feel)
             drv.setWaveform(1, 0);
             drv.go();
             #endif
-        } else {
-            // No action needed
         }
-        Serial.print("Small Object. Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
-    } else {
-        // No action needed
+        Serial.print("Small Object. Dist: "); Serial.print(thermalAvgDist); Serial.print(" Pixels: "); Serial.println(thermalPixelCount);
     }
 }
