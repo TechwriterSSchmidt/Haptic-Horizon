@@ -40,10 +40,8 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ## Power Supply (Important!)
 *   **Recommended:** 3.7V LiPo/Li-Ion Battery.
     *   **Type:** 18650 Cell (2500mAh+) is excellent for a comfortable, grip-friendly handle design.
-    *   Connect to **B+** and **B-**.
     *   Charges automatically via USB-C.
 *   **Alternative:** Flat LiPo Pouch Cell (for slimmer designs).
-*   **NOT Recommended:** Coin Cells (CR2032/CR2450). They cannot handle the current spikes (~100mA).
 
 ## Pinout (SuperMini NRF52840)
 | GPIO Pin | Function | Connected Component(s) |
