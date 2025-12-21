@@ -2,7 +2,14 @@
 The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode! 🦇
 
 ## Overview
-Haptic Horizon is a compact wearable navigational aid that uses Time-of-Flight (ToF) laser technology to translate the distance of obstacles into haptic feedback. The closer the object, the faster the vibration.
+Haptic Horizon is a smart wearable navigational aid that fuses **LiDAR (ToF)**, **Thermal Imaging**, and **Motion Sensing** to translate the environment into a rich haptic language.
+
+Unlike simple proximity sensors, Haptic Horizon understands context:
+*   **Smart Terrain:** Detects walls, drop-offs, and stairs using 3D gradient analysis.
+*   **Heat Vision:** Identifies people, pets, and electronics by combining heat signatures with object size.
+*   **Safety First:** Includes a "Drop Beacon" that calls for help if the device falls.
+
+It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
 
 ## Support my projects
 
