@@ -304,6 +304,15 @@ void loop() {
             delay(500);
           }
           #endif
+
+          #ifdef ENABLE_VOICE
+          // Play "Found Remote" sound repeatedly
+          for(int i=0; i<3; i++) {
+            playSound(TRACK_FOUND_REMOTE);
+            delay(2000);
+          }
+          #endif
+
           // Reset activity timer so we don't sleep immediately
           lastActivityTime = millis();
       }

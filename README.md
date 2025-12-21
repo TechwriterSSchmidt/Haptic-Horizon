@@ -56,10 +56,10 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 
 ### 1. Power On / Off
 *   **Start / Wake Up:** Press any button **twice quickly** (Double Tap).
-    *   *Signal:* "La Marseillaise" melody.
+    *   *Signal:* **Startup Sound** (Track 1).
 *   **Auto-Off:** Automatically turns off after **2 minutes** of inactivity.
     *   **Smart Detection:** Stays on as long as you move (Gyroscope detection). Turns off if placed on a table or held still.
-    *   Sound: *Windows Shutdown* (Classic)
+    *   *Sound:* **Shutdown Sound** (Track 9).
     *   The device enters **Deep Sleep** (System OFF) to save power and prevent accidental wakeups.
     *   *Note:* Motion alone will NOT wake the device. You must double-tap a button.
 
@@ -110,7 +110,7 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 If the device is not detecting the ground correctly (e.g., false alarms on flat ground), you can recalibrate the "Zero" position.
 1.  Place the device **flat on a table** (or the surface you want to define as "level").
 2.  Press and **hold the Mode Button for 10 seconds**.
-3.  Wait for the **Success Melody** (Major Arpeggio).
+3.  Wait for the **Success Chime** (Track 8).
 4.  The new calibration is saved permanently.
 
 ### 6. "Find Me" Feature (Bluetooth App)
@@ -119,10 +119,10 @@ If the device is lost (even in Auto-Off mode), it can be found using a smartphon
 2.  Connect to **"Haptic Horizon"**.
 3.  Select the **UART Service**.
 4.  Send the character **'B'** (or 'F').
-5.  The device will play a loud **"Here I Am"** melody.
+5.  The device will play the **"Found Remote"** sound (Track 10) repeatedly.
 
 ### 7. Safety Features
-*   **Drop Beacon:** If the device detects a hard fall (Impact > 2.5G), it waits 5 seconds. If not picked up, it triggers a loud alarm and flashing haptics for 30 seconds to help you find it.
+*   **Drop Beacon:** If the device detects a hard fall (Impact > 2.5G), it waits 5 seconds. If not picked up, it triggers a loud alarm (Track 7) and flashing haptics for 30 seconds to help you find it.
 
 ### 8. "Selfie Button" Finder (Tactile Remote)
 For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").
@@ -130,7 +130,7 @@ For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote
 2.  Set the name of your remote in `SELFIE_BUTTON_NAME` (check via phone first).
 3.  When the device is in **Auto-Off** mode, it scans for the remote every 4 seconds.
 4.  Turn on or press the remote button.
-5.  The device plays *La Marseillaise* for ~20 seconds.
+5.  The device plays the **"Found Remote"** sound (Track 10) repeatedly.
 
 ## Documentation
 For a printable, easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](Docs/QUICK_REFERENCE.md).

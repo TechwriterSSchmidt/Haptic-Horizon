@@ -5,9 +5,9 @@
 ## 1. Turning On & Off
 
 *   **Turn On:** Press any button **twice quickly** (Double Tap).
-    *   *Signal:* "La Marseillaise" melody.
+    *   *Signal:* **Startup Sound**.
 *   **Turn Off:** Wait 2 minutes without moving.
-    *   *Signal:* Shutdown melody.
+    *   *Signal:* **Shutdown Sound**.
     *   *Note:* The device stays on as long as you are moving. It will NOT wake up from motion alone.
 
 ## 2. Haptic Language (Vibration Meanings)
@@ -65,9 +65,9 @@ Switch modes by pressing the button.
 If the device gives false alarms on flat ground:
 1.  Place the device on a flat table.
 2.  Press and **hold the Mode Button for 10 seconds**.
-3.  Wait for the "Success" melody.
+3.  Wait for the **Success Chime**.
 
-## 6. Finding the Device
+## 7. Finding the Device
 
 *   **If lost:** Use the "nRF Connect" app on your phone, connect to "Haptic Horizon", and send 'B' to the UART service.
-*   **Selfie Remote:** If enabled, press your Bluetooth shutter remote to make the device play a melody.
+*   **Selfie Remote:** If enabled, press your Bluetooth shutter remote to make the device play the **Found Remote Sound**.
