@@ -25,6 +25,9 @@
 // Uncomment to enable
 // #define BUZZER_PIN 24 // P0.24 (Check available pins)
 
+// ===== Haptic Driver =====
+#define ENABLE_DRV2605 // Enable DRV2605L Driver
+
 // ===== DY-SV17F (Voice Output) =====
 #define ENABLE_VOICE
 #define DYPLAYER_RX_PIN 9  // P0.09 (Connect to DY-SV17F TX)
@@ -44,11 +47,11 @@
 #define TRACK_CALIBRATION   8 // SFX: Success Chime
 #define TRACK_SHUTDOWN      9 // SFX: Power Down
 #define TRACK_FOUND_REMOTE  10 // SFX: Connection Chirp
-#define TRACK_WARN_CLIFF    11 // Voice: "Watch your step" / "Kante"
-#define TRACK_WARN_STAIRS   12 // Voice: "Stairs detected" / "Treppe"
+#define TRACK_WARN_CLIFF    11 // Voice: "Watch your step" / "Edge"
+#define TRACK_WARN_STAIRS   12 // Voice: "Stairs detected"
 #define TRACK_DIST_NEAR     13 // Voice: "< 1 Meter"
-#define TRACK_DIST_1M       14 // Voice: "1 Meter"Edge"
-#define TRACK_WARN_STAIRS   12 // Voice: "Stairs detected
+#define TRACK_DIST_1M       14 // Voice: "1 Meter"
+#define TRACK_DIST_2M       15 // Voice: "2 Meters"
 #define TRACK_DIST_3M       16 // Voice: "3 Meters"
 #define TRACK_DIST_4M       17 // Voice: "4 Meters"
 #define TRACK_DIST_FAR      18 // Voice: "> 4 Meters"

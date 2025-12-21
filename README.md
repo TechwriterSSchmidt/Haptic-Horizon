@@ -22,10 +22,10 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 - **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
 - **Thermal Camera**: MLX90640-BAB (32x24 Infrared Array)
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
-- **Haptic Driver**: DRV2605L (Optional - for advanced waveforms & LRA support)
-- **Output**: Vibration Motor (LRA Coin Type recommended, 1.2V, max 100mA)
+- **Haptic Driver**: DRV2605L (Required - for advanced waveforms & LRA support)
+- **Output**: LRA Vibration Motor (Connected to DRV2605L)
 - **Audio**: DY-SV17F Voice Module (4MB Flash)
-- **Input**: Momentary Push Button
+- **Input**: Toggle Switch (Mute/Unmute)
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
 
 ## Power Supply (Important!)
@@ -47,7 +47,11 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 | BMI160 SCL | P0.20 (D3) | I2C SCL (Shared) |
 | DRV2605L SDA | P0.17 (D2) | I2C SDA (Shared) |
 | DRV2605L SCL | P0.20 (D3) | I2C SCL (Shared) |
-| Vibration Motor | P0.06 (D1) | PWM (Direct) OR DRV2605L Output |
+| DRV2605L Trigger | - | I2C Controlled |
+| Sound Switch | P0.24 (D6) | Toggle Switch (GND = Mute) |
+| DY-SV17F TX | P0.08 (D10) | UART TX |
+| DY-SV17F RX | P0.06 (D9) | UART RX |
+| Battery Sense | P0.04 (A2) | Analog Input (Voltage Divider) |
 | DY-SV17F RX | P0.09 | UART RX (Connect to Module TX) |
 | DY-SV17F TX | P0.10 | UART TX (Connect to Module RX) |
 | Sound Switch | P0.24 | Toggle Switch (Open=On, Closed=Mute) |

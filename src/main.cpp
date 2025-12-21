@@ -783,11 +783,6 @@ void toggleMode() {
         drv.setWaveform(0, 10); // Effect 10: Double Click 100%
         drv.setWaveform(1, 0);  // End
         drv.go();
-        #else
-        nrf_gpio_pin_write(MOTOR_PIN, 1); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 0); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 1); delay(100);
-        nrf_gpio_pin_write(MOTOR_PIN, 0);
         #endif
     } 
     else {
@@ -807,7 +802,10 @@ void toggleMode() {
         #ifdef ENABLE_DRV2605
         drv.setWaveform(0, 15); // Effect 15: Soft Bump 100%
         drv.setWaveform(1, 0);  // End
-        drv.go(
+        drv.go();
+        #endif
+    }
+}
 
 // handleHapticsNavigation removed - replaced by Smart Terrain logic
 
@@ -839,10 +837,6 @@ void handleHapticsPrecision(int distance) {
         drv.setWaveform(0, 1); // Effect 1: Strong Click 100%
         drv.setWaveform(1, 0);
         drv.go();
-        #else
-        nrf_gpio_pin_write(MOTOR_PIN, 1);
-        delay(5); 
-        nrf_gpio_pin_write(MOTOR_PIN, 0);
         #endif
     }
 }
@@ -1235,13 +1229,7 @@ void runHeatVision() {
             drv.setWaveform(0, 12); // Effect 12: Triple Click (Heavy feel)
             drv.setWaveform(1, 0);
             drv.go();
-            #else
-            analogWrite(MOTOR_PIN, 255);
             #endif
-        } else {
-            #indif
-        } else {
-            // No action needed for DRV2605 (it handles waveforms)
         }
         Serial.print("Human Detected! Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
     } 
