@@ -162,6 +162,22 @@ Connect the DRV2605L Breakout Board:
 *   **SCL**: Connect to **P0.20**
 *   **Motor**: Connect motor wires to the output pads on the DRV2605L.
 
+## Audio Files (DY-SV17F)
+The device uses a DY-SV17F module with 4MB Flash storage. The files must be named exactly as follows and placed in the root directory of the module (connect via USB).
+
+| File Name | Track ID | Context | Suggested Text / Content |
+| :--- | :--- | :--- | :--- |
+| `00001.mp3` | `TRACK_STARTUP` | Power On | "System Online. Welcome, Batgirl." |
+| `00002.mp3` | `TRACK_MODE_TERRAIN` | Mode Switch | "Smart Terrain Mode active." |
+| `00003.mp3` | `TRACK_MODE_PRECISION` | Mode Switch | "Precision Mode active." |
+| `00004.mp3` | `TRACK_HEAT_ON` | Heat Vision | "Heat Vision activated." |
+| `00005.mp3` | `TRACK_HEAT_OFF` | Heat Vision | "Heat Vision deactivated." |
+| `00006.mp3` | `TRACK_BATTERY_LOW` | Battery Check | "Warning: Battery Low." |
+| `00007.mp3` | `TRACK_DROP_ALARM` | Drop Beacon | "I have fallen. Please help." (Looping Alarm) |
+| `00008.mp3` | `TRACK_CALIBRATION` | IMU Calib | "Calibration complete." |
+| `00009.mp3` | `TRACK_SHUTDOWN` | Auto-Off | "System shutting down." |
+| `00010.mp3` | `TRACK_FOUND_REMOTE` | Find Me | "Remote connected." |
+
 ## Battery Life Estimation
 *Estimates based on a **2500 mAh 18650 Cell**.*
 
