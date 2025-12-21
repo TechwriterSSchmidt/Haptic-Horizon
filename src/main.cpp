@@ -451,6 +451,7 @@ void loop() {
 
         int hapticMode = HAPTIC_NONE;
         int intensity = 0; // 0-255
+        int hapticInterval = 150; // Default interval for pulsing
 
         // --- SCENARIO 1: Looking Forward (Wall Detection) ---
         if (pitch > -15) { 
@@ -463,6 +464,11 @@ void loop() {
                 // Map intensity: 1.5m -> 50, 0.3m -> 255
                 intensity = map(forwardDist, 300, 1500, 255, 50);
                 intensity = constrain(intensity, 0, 255);
+
+                // Map interval: 1.5m -> 400ms (Slow), 0.3m -> 50ms (Fast)
+                // This "Pulsed Priority" prevents haptic fatigue (DIVA Paper)
+                hapticInterval = map(forwardDist, 300, 1500, 50, 400);
+                hapticInterval = constrain(hapticInterval, 50, 400);
             }
         }
         // --- SCENARIO 2: Looking Down (Terrain Analysis) ---
@@ -595,7 +601,8 @@ void loop() {
         else if (hapticMode == HAPTIC_WALL) {
             // Continuous Wall -> Use "Buzz" effect repeatedly or RTP
             // Effect 47: Buzz 1 100%
-            if (now - lastEffectTrigger > 150) { // Re-trigger every 150ms
+            // Use dynamic interval calculated in Scenario 1
+            if (now - lastEffectTrigger > hapticInterval) { 
                 drv.setWaveform(0, 47); 
                 drv.setWaveform(1, 0);
                 drv.go();

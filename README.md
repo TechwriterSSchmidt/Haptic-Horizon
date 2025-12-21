@@ -18,6 +18,8 @@ Our design is informed by research into assistive technologies, which highlights
 2.  **Cognitive Load Management:** Instead of complex "haptic Morse code," we use intuitive "Hapticons" (Haptic Icons) that mimic physical sensations (e.g., a "ramp up" feeling for startup, distinct pulses for battery levels).
 3.  **Vision Substitution:** Haptic Horizon acts as a near-field environmental scanner (ETA), complementing the white cane rather than replacing it.
 4.  **Multimodal Sensing:** We combine LiDAR (active) with Thermal Imaging (passive). As noted in [Sensors 2023, 23(16), 7198](https://www.mdpi.com/1424-8220/23/16/7198), thermal sensors can provide unique environmental cues (like detecting corners or occupancy) that other sensors might miss, while being energy efficient.
+5.  **Anti-Fatigue Feedback:** Based on findings from [DIVA Portal (Haptic Obstacle Detector)](https://www.diva-portal.org/smash/get/diva2:1666232/FULLTEXT01.pdf), continuous vibration can desensitize the skin ("Haptic Fatigue"). We implement **"Pulsed Priority"** feedback (variable rhythm) instead of just variable intensity. This keeps the user alert without numbing their senses.
+6.  **Semantic Navigation:** Inspired by [UZH Research](https://rpg.ifi.uzh.ch/docs/RAL18_Cioffi.pdf), we aim for "Semantic Haptics"—telling you *what* is there (Human vs. Wall), not just *that* something is there. This is realized through our "Heat Vision" mode.
 
 ## Support my projects
 
