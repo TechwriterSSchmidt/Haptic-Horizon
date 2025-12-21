@@ -50,7 +50,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 | Vibration Motor | P0.06 (D1) | PWM (Direct) OR DRV2605L Output |
 | DY-SV17F RX | P0.09 | UART RX (Connect to Module TX) |
 | DY-SV17F TX | P0.10 | UART TX (Connect to Module RX) |
-| Mute Switch | P0.08 | Switch to GND (Silent Mode) |
+| Sound Switch | P0.24 | Toggle Switch (Open=On, Closed=Mute) |
 | Mode Button | P0.29 (A2) | Button to GND (Internal Pullup) |
 | Trigger Button | P0.31 (D6) | Button to GND (Internal Pullup) |
 | Battery + | B+ | LiPo Positive |
@@ -106,9 +106,9 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
     1.  **Distance:** Announces the distance to the object in front (e.g., "Two Meters").
     2.  **Battery:** Announces the battery level (Beeps or Voice).
 
-### 4. Silent Mode (Mute Switch)
-*   **Switch ON (GND):** Silent Mode. All audio (Voice & SFX) is disabled. Haptics remain active.
-*   **Switch OFF (Open):** Audio Enabled.
+### 4. Sound Control (Toggle Switch)
+*   **Switch Open:** Sound ON (Default Volume).
+*   **Switch Closed:** Mute (Silent Mode).
 
 ### 5. Calibration (IMU)
 If the device is not detecting the ground correctly (e.g., false alarms on flat ground), you can recalibrate the "Zero" position.
@@ -188,6 +188,8 @@ The device uses a DY-SV17F module with 4MB Flash storage. The files must be name
 | `00016.mp3` | `TRACK_DIST_3M` | Status Check | "Three Meters" |
 | `00017.mp3` | `TRACK_DIST_4M` | Status Check | "Four Meters" |
 | `00018.mp3` | `TRACK_DIST_FAR` | Status Check | "Over 4 Meters" |
+| `00019.mp3` | `TRACK_OBS_LEFT` | Smart Terrain | "Obstacle Left" / "Links" |
+| `00020.mp3` | `TRACK_OBS_RIGHT` | Smart Terrain | "Obstacle Right" / "Rechts" |
 
 ## Battery Life Estimation
 *Estimates based on a **2500 mAh 18650 Cell**.*

@@ -56,6 +56,10 @@ unsigned long lastActivityTime = 0;
 unsigned long lastVoiceWarningTime = 0; // Cooldown for voice warnings
 // bool isStandby = false; // Removed: We use System OFF now
 
+// Volume Control
+int currentVolume = VOICE_VOL_DEFAULT;
+bool isMuted = false;
+
 // Button Debouncing
 int lastButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
@@ -72,11 +76,13 @@ void calibrateIMU();
 void checkForDrop(int16_t* accelGyro);
 void runHeatVision();
 void playSound(int trackId);
+void handleVolumeControl();
 
 void playStartupMelody();
 void playShutdownMelody();
 void playCalibrationSuccess();
 void playTone(unsigned int frequency, unsigned long duration, int volume);
+void announceStatus();
 void announceBatteryLevel();
 
 #ifdef ENABLE_SELFIE_FINDER
@@ -95,6 +101,7 @@ void setup() {
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_input(TRIGGER_PIN, NRF_GPIO_PIN_PULLUP);
+  nrf_gpio_cfg_input(SOUND_SWITCH_PIN, NRF_GPIO_PIN_PULLUP); // Sound Toggle Switch
 
   // --- DOUBLE TAP WAKEUP CHECK ---
   // If we woke up from System OFF via Button, the button is likely still pressed.
@@ -132,7 +139,7 @@ void setup() {
   #ifdef ENABLE_VOICE
   Serial1.setPins(DYPLAYER_RX_PIN, DYPLAYER_TX_PIN);
   player.begin();
-  player.setVolume(VOICE_VOL_DEFAULT);
+  player.setVolume(currentVolume);
   playSound(TRACK_STARTUP);
   Serial.println("DY-SV17F Initialized.");
   #endif
@@ -274,6 +281,9 @@ void loop() {
   // Feed the Watchdog
   NRF_WDT->RR[0] = WDT_RR_RR_Reload;
 
+  // --- Volume Control ---
+  handleVolumeControl();
+
   // --- BLE Handling (Find Me) ---
   // If connected via BLE, check for commands
   if (Bluefruit.connected() && bleuart.notifyEnabled()) {
@@ -352,8 +362,8 @@ void loop() {
               lastActivityTime = currentMillis;
               
               if (duration > 2000) {
-                  // Long Press (> 2s) -> Battery
-                  announceBatteryLevel();
+                  // Long Press (> 2s) -> Status Check (Distance + Battery)
+                  announceStatus();
               } else {
                   // Short Press -> Toggle Mode
                   toggleMode();
@@ -593,6 +603,21 @@ void loop() {
                         hapticMode = HAPTIC_GAP;
                     }
                 }
+                
+                // --- NEW: Directional Obstacle Warning ---
+                // If one side is blocked and the other is free
+                #ifdef ENABLE_VOICE
+                if (millis() - lastVoiceWarningTime > 5000) { // 5s Cooldown
+                    if (distLeft < 1000 && distRight > 1500) {
+                        playSound(TRACK_OBS_LEFT);
+                        lastVoiceWarningTime = millis();
+                    }
+                    else if (distRight < 1000 && distLeft > 1500) {
+                        playSound(TRACK_OBS_RIGHT);
+                        lastVoiceWarningTime = millis();
+                    }
+                }
+                #endif
             }
         }
 
@@ -893,9 +918,49 @@ void playTone(unsigned int frequency, unsigned long duration, int volume) {
 }
 
 void playSound(int trackId) {
+    // Check Mute State
+    if (isMuted) {
+        return;
+    }
+
     #ifdef ENABLE_VOICE
     player.playSpecified(trackId);
     #endif
+}
+
+void handleVolumeControl() {
+    // Read Switch State
+    // LOW (Closed) = Mute (Volume 0)
+    // HIGH (Open) = Sound On (Volume VOICE_VOL_DEFAULT)
+    
+    static int lastSwitchState = -1;
+    int switchState = nrf_gpio_pin_read(SOUND_SWITCH_PIN);
+    
+    if (switchState != lastSwitchState) {
+        // Debounce slightly
+        delay(20); 
+        switchState = nrf_gpio_pin_read(SOUND_SWITCH_PIN);
+        
+        if (switchState == LOW) {
+            // Switch Closed -> Mute
+            isMuted = true;
+            currentVolume = 0;
+            #ifdef ENABLE_VOICE
+            player.setVolume(0);
+            #endif
+            Serial.println("Sound Switch: Muted");
+        } else {
+            // Switch Open -> Sound On
+            isMuted = false;
+            currentVolume = VOICE_VOL_DEFAULT;
+            #ifdef ENABLE_VOICE
+            player.setVolume(currentVolume);
+            #endif
+            Serial.println("Sound Switch: Sound ON");
+        }
+        lastSwitchState = switchState;
+        lastActivityTime = millis();
+    }
 }
 
 void playStartupMelody() {
@@ -936,6 +1001,38 @@ void playShutdownMelody() {
         delay(durations[i] * 0.10); // Gap
     }
     #endif
+}
+
+void announceStatus() {
+    // 1. Announce Distance (Center)
+    // We need the latest measurement data. It's global 'measurementData'.
+    // Check center zones (5,6,9,10)
+    int centerZones[] = {5, 6, 9, 10};
+    int sumDist = 0;
+    int validCount = 0;
+    
+    for (int i : centerZones) {
+        if (measurementData.target_status[i] == 5 || measurementData.target_status[i] == 9) {
+            sumDist += measurementData.distance_mm[i];
+            validCount++;
+        }
+    }
+    
+    int avgDist = (validCount > 0) ? (sumDist / validCount) : 9999;
+    
+    #ifdef ENABLE_VOICE
+    if (avgDist < 1000) playSound(TRACK_DIST_NEAR);
+    else if (avgDist < 1500) playSound(TRACK_DIST_1M);
+    else if (avgDist < 2500) playSound(TRACK_DIST_2M);
+    else if (avgDist < 3500) playSound(TRACK_DIST_3M);
+    else if (avgDist < 4500) playSound(TRACK_DIST_4M);
+    else playSound(TRACK_DIST_FAR);
+    
+    delay(2000); // Wait for voice
+    #endif
+
+    // 2. Announce Battery
+    announceBatteryLevel();
 }
 
 void announceBatteryLevel() {

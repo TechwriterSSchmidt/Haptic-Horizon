@@ -14,7 +14,12 @@
 #define SCL_PIN   20  // P0.20
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
 #define TRIGGER_PIN 31 // P0.31 (Second button for Heat Vision "Trigger")
-#define MUTE_PIN    8  // P0.08 (Toggle Switch: GND = Silent, Open = Audio On)
+
+// ===== Sound Toggle Switch =====
+// Replaces Rotary Encoder. 
+// Switch Open (HIGH) = Sound ON
+// Switch Closed (LOW) = Sound OFF (Mute)
+#define SOUND_SWITCH_PIN 24 // P0.24 (Was ENC_SW_PIN)
 
 // Battery Measurement Pin (Requires Voltage Divider if Bat > 3.3V!)
 // Connect Battery (+) -> 100k Resistor -> A0 -> 100k Resistor -> GND
@@ -30,6 +35,7 @@
 #define DYPLAYER_TX_PIN 10 // P0.10 (Connect to DY-SV17F RX)
 #define VOICE_VOL_DEFAULT 20 // 0-30
 #define VOICE_VOL_ALARM   30
+#define VOICE_VOL_STEP    2  // Volume change per click
 
 // Voice Track IDs (Files must be named 00001.mp3, 00002.mp3, etc.)
 #define TRACK_STARTUP       1 // SFX: Boot Up
@@ -50,6 +56,8 @@
 #define TRACK_DIST_3M       16 // Voice: "3 Meters"
 #define TRACK_DIST_4M       17 // Voice: "4 Meters"
 #define TRACK_DIST_FAR      18 // Voice: "> 4 Meters"
+#define TRACK_OBS_LEFT      19 // Voice: "Obstacle Left"
+#define TRACK_OBS_RIGHT     20 // Voice: "Obstacle Right"
 
 // ===== Haptic Feedback Thresholds (in mm) =====
 #define DIST_FAR    2500     // > 2.5m No vibration
