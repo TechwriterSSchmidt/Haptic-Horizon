@@ -5,9 +5,9 @@
 ## 1. Turning On & Off
 
 *   **Turn On:** Press any button **twice quickly** (Double Tap).
-    *   *Signal:* **Startup Sound**.
+    *   *Signal:* **Haptic Ramp Up** (Vibration increases).
 *   **Turn Off:** Wait 2 minutes without moving.
-    *   *Signal:* **Shutdown Sound**.
+    *   *Signal:* **Haptic Ramp Down** (Vibration fades out).
     *   *Note:* The device stays on as long as you are moving. It will NOT wake up from motion alone.
 
 ## 2. Haptic Language (Vibration Meanings)
@@ -29,15 +29,12 @@ The device talks to you through different vibration patterns.
 Switch modes by pressing the button.
 
 *   **Smart Terrain Mode (Default):**
-    *   *Signal:* Descending Tone.
     *   *Use for:* Walking, exploring, detecting stairs and obstacles.
 *   **Precision Mode:**
-    *   *Signal:* Ascending Tone.
     *   *Use for:* Finding door handles, locating small objects.
     *   *Feedback:* Clicks like a Geiger counter.
 *   **Heat Vision Mode:**
     *   *Activation:* Hold the **Trigger Button** (Abzugsfinger). Release to stop.
-    *   *Signal:* High Pitch Pulse.
     *   *Use for:* Finding people, pets, or checking electronics.
     *   *Feedback:*
         *   **Heartbeat:** Human detected.
@@ -48,26 +45,26 @@ Switch modes by pressing the button.
 
 *   **Drop Beacon:**
     *   If you drop the device hard, it waits 5 seconds.
-    *   If not picked up, it starts a **Loud Alarm** and flashes the vibration.
+    *   If not picked up, it starts a **Strong Pulsing Vibration**.
     *   *Action:* Pick it up to stop the alarm.
 
 ## 5. Battery Check
 
 *   **Check Level:** Press and **hold the Mode Button for 2 seconds**.
 *   **Signals:**
-    *   4 Beeps: Full Battery.
-    *   3 Beeps: Good.
-    *   2 Beeps: Low.
-    *   1 Long Beep: Critical (Charge soon!).
+    *   4 Pulses: Full Battery.
+    *   3 Pulses: Good.
+    *   2 Pulses: Low.
+    *   1 Long Pulse: Critical (Charge soon!).
 
 ## 6. Calibration
 
 If the device gives false alarms on flat ground:
 1.  Place the device on a flat table.
 2.  Press and **hold the Mode Button for 10 seconds**.
-3.  Wait for the **Success Chime**.
+3.  Wait for the **Success Triple Click**.
 
 ## 7. Finding the Device
 
 *   **If lost:** Use the "nRF Connect" app on your phone, connect to "Haptic Horizon", and send 'B' to the UART service.
-*   **Selfie Remote:** If enabled, press your Bluetooth shutter remote to make the device play the **Found Remote Sound**.
+*   **Selfie Remote:** If enabled, press your Bluetooth shutter remote to make the device **Vibrate Strongly**.

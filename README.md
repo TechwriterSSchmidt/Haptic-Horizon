@@ -24,8 +24,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Required - for advanced waveforms & LRA support)
 - **Output**: LRA Vibration Motor (Connected to DRV2605L)
-- **Audio**: DY-SV17F Voice Module (4MB Flash)
-- **Input**: Toggle Switch (Mute/Unmute)
+- **Input**: Mode Button, Trigger Button
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
 
 ## Power Supply (Important!)
@@ -43,9 +42,6 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 | **P0.20** | I2C SCL (Primary) | VL53L5CX, BMI160, DRV2605L |
 | **P0.06** | I2C SDA (Secondary) | MLX90640 (Thermal Camera) |
 | **P0.08** | I2C SCL (Secondary) | MLX90640 (Thermal Camera) |
-| **P0.09** | UART RX | DY-SV17F (Connect to Module TX) |
-| **P0.10** | UART TX | DY-SV17F (Connect to Module RX) |
-| **P0.24** | Digital Input | Sound Switch (Toggle) |
 | **P0.29** | Digital Input | Mode Button |
 | **P0.31** | Digital Input | Trigger Button |
 | **P0.02** | Analog Input | Battery Voltage Divider |
@@ -56,10 +52,10 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 
 ### 1. Power On / Off
 *   **Start / Wake Up:** Press any button **twice quickly** (Double Tap).
-    *   *Signal:* **Startup Sound** (Track 1).
+    *   *Signal:* **Haptic Ramp Up** (Vibration increases).
 *   **Auto-Off:** Automatically turns off after **2 minutes** of inactivity.
     *   **Smart Detection:** Stays on as long as you move (Gyroscope detection). Turns off if placed on a table or held still.
-    *   *Sound:* **Shutdown Sound** (Track 9).
+    *   *Signal:* **Haptic Ramp Down** (Vibration fades out).
     *   The device enters **Deep Sleep** (System OFF) to save power and prevent accidental wakeups.
     *   *Note:* Motion alone will NOT wake the device. You must double-tap a button.
 
@@ -82,14 +78,12 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 | **Flat Ground** | Consistent gradient | **Silence** | Safe to walk. |
 
 #### B. Precision Mode
-*   **Sound:** *Zoom In* (Ascending Tones)
 *   **Function:** Scans only the center point (Tunnel Vision).
 *   **Feedback:** **Sharp Clicks** (Geiger-Counter Style). Faster clicking = Closer.
 *   **Use Case:** Finding door handles, locating narrow gaps, or checking specific objects.
 
 #### C. Heat Vision Mode (Trigger Activated)
 *   **Activation:** Press and hold the **Trigger Button** (Abzugsfinger). Release to return to previous mode.
-*   **Sound:** *High Pitch Pulse* (On Activate) / *Low Pitch* (On Release)
 *   **Function:** Uses Sensor Fusion (Thermal + ToF) to identify heat sources.
 *   **Feedback:**
     *   **Human (Narrow & Hot):** Slow **Heartbeat** (*Bumm... Bumm...*).
@@ -98,19 +92,17 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
 *   **Use Case:** Finding people in the dark, checking if electronics are running, locating pets.
 
 ### 3. Status Check (Battery & Distance)
-*   **Long Press (> 2s) on Mode Button:** The device announces the current status.
-    1.  **Distance:** Announces the distance to the object in front (e.g., "Two Meters").
-    2.  **Battery:** Announces the battery level (Beeps or Voice).
+*   **Long Press (> 2s) on Mode Button:** The device announces the battery status via haptic pulses.
+    *   **4 Pulses:** Full
+    *   **3 Pulses:** Good
+    *   **2 Pulses:** Low
+    *   **1 Long Pulse:** Critical
 
-### 4. Sound Control (Toggle Switch)
-*   **Switch Open:** Sound ON (Default Volume).
-*   **Switch Closed:** Mute (Silent Mode).
-
-### 5. Calibration (IMU)
+### 4. Calibration (IMU)
 If the device is not detecting the ground correctly (e.g., false alarms on flat ground), you can recalibrate the "Zero" position.
 1.  Place the device **flat on a table** (or the surface you want to define as "level").
 2.  Press and **hold the Mode Button for 10 seconds**.
-3.  Wait for the **Success Chime** (Track 8).
+3.  Wait for the **Success Triple Click**.
 4.  The new calibration is saved permanently.
 
 ### 6. "Find Me" Feature (Bluetooth App)
@@ -119,10 +111,10 @@ If the device is lost (even in Auto-Off mode), it can be found using a smartphon
 2.  Connect to **"Haptic Horizon"**.
 3.  Select the **UART Service**.
 4.  Send the character **'B'** (or 'F').
-5.  The device will play the **"Found Remote"** sound (Track 10) repeatedly.
+5.  The device will vibrate strongly (Pulsing Alarm).
 
 ### 7. Safety Features
-*   **Drop Beacon:** If the device detects a hard fall (Impact > 2.5G), it waits 5 seconds. If not picked up, it triggers a loud alarm (Track 7) and flashing haptics for 30 seconds to help you find it.
+*   **Drop Beacon:** If the device detects a hard fall (Impact > 2.5G), it waits 5 seconds. If not picked up, it triggers a strong pulsing vibration alarm for 30 seconds to help you find it on the floor.
 
 ### 8. "Selfie Button" Finder (Tactile Remote)
 For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote (e.g., "AB Shutter3").
@@ -130,7 +122,7 @@ For a phone-free experience, you can use a cheap Bluetooth Camera Shutter remote
 2.  Set the name of your remote in `SELFIE_BUTTON_NAME` (check via phone first).
 3.  When the device is in **Auto-Off** mode, it scans for the remote every 4 seconds.
 4.  Turn on or press the remote button.
-5.  The device plays the **"Found Remote"** sound (Track 10) repeatedly.
+5.  The device will vibrate strongly (Pulsing Alarm).
 
 ## Documentation
 For a printable, easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](Docs/QUICK_REFERENCE.md).
@@ -153,32 +145,6 @@ Connect the DRV2605L Breakout Board:
 *   **SDA**: Connect to **P0.17** (Primary Bus)
 *   **SCL**: Connect to **P0.20** (Primary Bus)
 *   **Motor**: Connect LRA motor wires to the output pads on the DRV2605L.
-
-## Audio Files (DY-SV17F)
-The device uses a DY-SV17F module with 4MB Flash storage. The files must be named exactly as follows and placed in the root directory of the module (connect via USB).
-
-| File Name | Track ID | Context | Suggested SFX / Content |
-| :--- | :--- | :--- | :--- |
-| `00001.mp3` | `TRACK_STARTUP` | Power On | Futuristic Computer Boot / Power Up |
-| `00002.mp3` | `TRACK_MODE_TERRAIN` | Mode Switch | Sonar Ping / Radar Sweep (Wide feel) |
-| `00003.mp3` | `TRACK_MODE_PRECISION` | Mode Switch | Camera Zoom / Lens Focus (Tight feel) |
-| `00004.mp3` | `TRACK_HEAT_ON` | Heat Vision | Light Saber Ignite (Hum) |
-| `00005.mp3` | `TRACK_HEAT_OFF` | Heat Vision | Light Saber Retract (Power Down) |
-| `00006.mp3` | `TRACK_BATTERY_LOW` | Battery Check | Low Energy Shield / Warning Beep |
-| `00007.mp3` | `TRACK_DROP_ALARM` | Drop Beacon | Loud Distress Beacon / Siren |
-| `00008.mp3` | `TRACK_CALIBRATION` | IMU Calib | Success Chime / Level Up |
-| `00009.mp3` | `TRACK_SHUTDOWN` | Auto-Off | Sci-Fi Power Down |
-| `00010.mp3` | `TRACK_FOUND_REMOTE` | Find Me | Connection Chirp / Pairing Sound |
-| `00011.mp3` | `TRACK_WARN_CLIFF` | Smart Terrain | "Caution: Drop off" / "Achtung: Absatz" |
-| `00012.mp3` | `TRACK_WARN_STAIRS` | Smart Terrain | "Stairs detected" / "Treppe erkannt" |
-| `00013.mp3` | `TRACK_DIST_NEAR` | Status Check | "Less than 1 Meter" |
-| `00014.mp3` | `TRACK_DIST_1M` | Status Check | "One Meter" |
-| `00015.mp3` | `TRACK_DIST_2M` | Status Check | "Two Meters" |
-| `00016.mp3` | `TRACK_DIST_3M` | Status Check | "Three Meters" |
-| `00017.mp3` | `TRACK_DIST_4M` | Status Check | "Four Meters" |
-| `00018.mp3` | `TRACK_DIST_FAR` | Status Check | "Over 4 Meters" |
-| `00019.mp3` | `TRACK_OBS_LEFT` | Smart Terrain | "Obstacle Left" / "Links" |
-| `00020.mp3` | `TRACK_OBS_RIGHT` | Smart Terrain | "Obstacle Right" / "Rechts" |
 
 ## Battery Life Estimation
 *Estimates based on a **2500 mAh 18650 Cell**.*

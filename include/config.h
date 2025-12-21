@@ -16,52 +16,12 @@
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
 #define TRIGGER_PIN 31 // P0.31 (Second button for Heat Vision "Trigger")
 
-// ===== Sound Toggle Switch =====
-// Replaces Rotary Encoder. 
-// Switch Open (HIGH) = Sound ON
-// Switch Closed (LOW) = Sound OFF (Mute)
-#define SOUND_SWITCH_PIN 24 // P0.24 (Was ENC_SW_PIN)
-
 // Battery Measurement Pin (Requires Voltage Divider if Bat > 3.3V!)
 // Connect Battery (+) -> 100k Resistor -> A0 -> 100k Resistor -> GND
 #define BATTERY_PIN 2 // P0.02 (A0)
 
-// Optional: Piezo Buzzer for Startup Melody
-// Uncomment to enable
-// #define BUZZER_PIN 24 // P0.24 (Check available pins)
-
 // ===== Haptic Driver =====
 #define ENABLE_DRV2605 // Enable DRV2605L Driver
-
-// ===== DY-SV17F (Voice Output) =====
-#define ENABLE_VOICE
-#define DYPLAYER_RX_PIN 9  // P0.09 (Connect to DY-SV17F TX)
-#define DYPLAYER_TX_PIN 10 // P0.10 (Connect to DY-SV17F RX)
-#define VOICE_VOL_DEFAULT 20 // 0-30
-#define VOICE_VOL_ALARM   30
-#define VOICE_VOL_STEP    2  // Volume change per click
-
-// Voice Track IDs (Files must be named 00001.mp3, 00002.mp3, etc.)
-#define TRACK_STARTUP       1 // SFX: Boot Up
-#define TRACK_MODE_TERRAIN  2 // SFX: Sonar Ping
-#define TRACK_MODE_PRECISION 3 // SFX: Camera Focus
-#define TRACK_HEAT_ON       4 // SFX: Light Saber Ignite
-#define TRACK_HEAT_OFF      5 // SFX: Light Saber Retract
-#define TRACK_BATTERY_LOW   6 // SFX: Low Energy Warning
-#define TRACK_DROP_ALARM    7 // SFX: Distress Beacon
-#define TRACK_CALIBRATION   8 // SFX: Success Chime
-#define TRACK_SHUTDOWN      9 // SFX: Power Down
-#define TRACK_FOUND_REMOTE  10 // SFX: Connection Chirp
-#define TRACK_WARN_CLIFF    11 // Voice: "Watch your step" / "Edge"
-#define TRACK_WARN_STAIRS   12 // Voice: "Stairs detected"
-#define TRACK_DIST_NEAR     13 // Voice: "< 1 Meter"
-#define TRACK_DIST_1M       14 // Voice: "1 Meter"
-#define TRACK_DIST_2M       15 // Voice: "2 Meters"
-#define TRACK_DIST_3M       16 // Voice: "3 Meters"
-#define TRACK_DIST_4M       17 // Voice: "4 Meters"
-#define TRACK_DIST_FAR      18 // Voice: "> 4 Meters"
-#define TRACK_OBS_LEFT      19 // Voice: "Obstacle Left"
-#define TRACK_OBS_RIGHT     20 // Voice: "Obstacle Right"
 
 // ===== Haptic Feedback Thresholds (in mm) =====
 #define DIST_FAR    2500     // > 2.5m No vibration

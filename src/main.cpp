@@ -7,7 +7,6 @@
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <Adafruit_MLX90640.h>
-#include <DYPlayerArduino.h>
 
 #ifdef ENABLE_DRV2605
 #include <Adafruit_DRV2605.h>
@@ -24,7 +23,6 @@ SparkFun_VL53L5CX sensor;
 VL53L5CX_ResultsData measurementData;
 DFRobot_BMI160 bmi160;
 Adafruit_MLX90640 mlx;
-DY::Player player(&Serial1);
 
 // Define Secondary I2C Bus (Wire1) using TWIM1
 TwoWire Wire1(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, SDA1_PIN, SCL1_PIN);
@@ -59,10 +57,6 @@ unsigned long lastActivityTime = 0;
 unsigned long lastVoiceWarningTime = 0; // Cooldown for voice warnings
 // bool isStandby = false; // Removed: We use System OFF now
 
-// Volume Control
-int currentVolume = VOICE_VOL_DEFAULT;
-bool isMuted = false;
-
 // Button Debouncing
 int lastButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
@@ -78,13 +72,10 @@ void goToSleep(); // Replaces enterStandby
 void calibrateIMU();
 void checkForDrop(int16_t* accelGyro);
 void runHeatVision();
-void playSound(int trackId);
-void handleVolumeControl();
 
 void playStartupMelody();
 void playShutdownMelody();
 void playCalibrationSuccess();
-void playTone(unsigned int frequency, unsigned long duration, int volume);
 void announceStatus();
 void announceBatteryLevel();
 
@@ -101,7 +92,6 @@ void setup() {
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_input(TRIGGER_PIN, NRF_GPIO_PIN_PULLUP);
-  nrf_gpio_cfg_input(SOUND_SWITCH_PIN, NRF_GPIO_PIN_PULLUP); // Sound Toggle Switch
 
   // --- DOUBLE TAP WAKEUP CHECK ---
   // If we woke up from System OFF via Button, the button is likely still pressed.
@@ -129,20 +119,6 @@ void setup() {
       }
   }
   // If no button pressed (Battery Insert), we boot normally.
-
-  // Optional: Buzzer Setup
-  #ifdef BUZZER_PIN
-  pinMode(BUZZER_PIN, OUTPUT);
-  playStartupMelody();
-  #endif
-
-  #ifdef ENABLE_VOICE
-  Serial1.setPins(DYPLAYER_RX_PIN, DYPLAYER_TX_PIN);
-  player.begin();
-  player.setVolume(currentVolume);
-  playSound(TRACK_STARTUP);
-  Serial.println("DY-SV17F Initialized.");
-  #endif
 
   // BLE Setup
   // Note: 1 connection for phone, 1 for potential central role if needed
@@ -224,6 +200,9 @@ void setup() {
     Serial.print("DRV2605L Voltage Limit set to: ");
     Serial.print(MOTOR_RATED_VOLTAGE);
     Serial.println("V");
+
+    // Play Startup Haptic
+    playStartupMelody();
   }
   #endif
 
@@ -287,9 +266,6 @@ void loop() {
   // Feed the Watchdog
   NRF_WDT->RR[0] = WDT_RR_RR_Reload;
 
-  // --- Volume Control ---
-  handleVolumeControl();
-
   // --- BLE Handling (Find Me) ---
   // If connected via BLE, check for commands
   if (Bluefruit.connected() && bleuart.notifyEnabled()) {
@@ -297,19 +273,13 @@ void loop() {
       uint8_t ch = (uint8_t) bleuart.read();
       // If we receive 'B' (Beep) or 'F' (Find), play melody
       if (ch == 'B' || ch == 'F' || ch == 'b' || ch == 'f') {
-          #ifdef BUZZER_PIN
-          // Play Marseillaise (Loop for visibility)
+          #ifdef ENABLE_DRV2605
+          // Play "Found Remote" haptic pattern repeatedly
           for(int i=0; i<5; i++) {
-            playStartupMelody();
-            delay(500);
-          }
-          #endif
-
-          #ifdef ENABLE_VOICE
-          // Play "Found Remote" sound repeatedly
-          for(int i=0; i<3; i++) {
-            playSound(TRACK_FOUND_REMOTE);
-            delay(2000);
+            drv.setWaveform(0, 47); // 47 = Pulsing Sharp 1
+            drv.setWaveform(1, 0);
+            drv.go();
+            delay(1000);
           }
           #endif
 
@@ -516,13 +486,6 @@ void loop() {
             if (isDropOff) {
                 hapticMode = HAPTIC_DROPOFF;
                 intensity = 255; 
-                
-                #ifdef ENABLE_VOICE
-                if (millis() - lastVoiceWarningTime > 4000) {
-                    playSound(TRACK_WARN_CLIFF);
-                    lastVoiceWarningTime = millis();
-                }
-                #endif
             } 
             else {
                 // B) Stairs Up / Obstacle Detection
@@ -540,13 +503,6 @@ void loop() {
                     // It's a staircase! (Multiple steps)
                     hapticMode = HAPTIC_STAIRS_UP;
                     intensity = 200;
-
-                    #ifdef ENABLE_VOICE
-                    if (millis() - lastVoiceWarningTime > 4000) {
-                        playSound(TRACK_WARN_STAIRS);
-                        lastVoiceWarningTime = millis();
-                    }
-                    #endif
                 }
                 else if (step1 > STAIR_STEP_MIN_HEIGHT) {
                     // Just one step or obstacle (Curb)
@@ -576,10 +532,6 @@ void loop() {
         if (glassDetected && hapticMode == HAPTIC_NONE) {
             // Only warn if we don't have a more urgent alarm (like Dropoff)
             hapticMode = HAPTIC_GLASS;
-            // Optional: Short audio ping for glass
-            #ifdef BUZZER_PIN
-            playTone(2000, 50, VOL_ALARM); 
-            #endif
         }
 
         // --- NEW: GAP HUNTER (Door Finder) ---
@@ -618,21 +570,6 @@ void loop() {
                         hapticMode = HAPTIC_GAP;
                     }
                 }
-                
-                // --- NEW: Directional Obstacle Warning ---
-                // If one side is blocked and the other is free
-                #ifdef ENABLE_VOICE
-                if (millis() - lastVoiceWarningTime > 5000) { // 5s Cooldown
-                    if (distLeft < 1000 && distRight > 1500) {
-                        playSound(TRACK_OBS_LEFT);
-                        lastVoiceWarningTime = millis();
-                    }
-                    else if (distRight < 1000 && distLeft > 1500) {
-                        playSound(TRACK_OBS_RIGHT);
-                        lastVoiceWarningTime = millis();
-                    }
-                }
-                #endif
             }
         }
 
@@ -765,12 +702,11 @@ void scan_callback(ble_gap_evt_adv_report_t* report) {
           // For simplicity, let's just play the sound once per scan hit.
           // The scanner will keep finding it if it's advertising.
           
-          #ifdef BUZZER_PIN
-          playStartupMelody();
-          #endif
-
-          #ifdef ENABLE_VOICE
-          playSound(TRACK_FOUND_REMOTE);
+          #ifdef ENABLE_DRV2605
+          // Effect 47: Pulsing Sharp 1
+          drv.setWaveform(0, 47); 
+          drv.setWaveform(1, 0);
+          drv.go();
           #endif
           
           // Wake up fully
@@ -785,16 +721,6 @@ void toggleMode() {
     if (currentMode == MODE_SMART_TERRAIN) {
         currentMode = MODE_PRECISION;
         
-        #ifdef BUZZER_PIN
-        // Sound: Zoom In (Ascending C5 -> E5)
-        playTone(523, 100, VOL_MODE_CHANGE); delay(20);
-        playTone(659, 100, VOL_MODE_CHANGE); delay(20);
-        #endif
-
-        #ifdef ENABLE_VOICE
-        playSound(TRACK_MODE_PRECISION);
-        #endif
-
         // Feedback: Double Buzz
         #ifdef ENABLE_DRV2605
         drv.setWaveform(0, 10); // Effect 10: Double Click 100%
@@ -805,16 +731,6 @@ void toggleMode() {
     else {
         currentMode = MODE_SMART_TERRAIN;
         
-        #ifdef BUZZER_PIN
-        // Sound: Zoom Out (Descending E5 -> C5)
-        playTone(659, 100, VOL_MODE_CHANGE); delay(20);
-        playTone(523, 100, VOL_MODE_CHANGE); delay(20);
-        #endif
-
-        #ifdef ENABLE_VOICE
-        playSound(TRACK_MODE_TERRAIN);
-        #endif
-
         // Feedback: Single Long Buzz
         #ifdef ENABLE_DRV2605
         drv.setWaveform(0, 15); // Effect 15: Soft Bump 100%
@@ -858,143 +774,29 @@ void handleHapticsPrecision(int distance) {
     }
 }
 
-void playTone(int frequency, int duration, int volume) {
-    #ifdef BUZZER_PIN
-    if (frequency == 0 || volume == 0) {
-        delay(duration);
-        return;
-    }
-    
-    unsigned long period = 1000000 / frequency;
-    unsigned long onTime = period * volume * 5 / 100; // volume(1-10) * 5%
-    unsigned long offTime = period - onTime;
-    
-    unsigned long startTime = millis();
-    while (millis() - startTime < duration) {
-        nrf_gpio_pin_write(BUZZER_PIN, 1);
-        delayMicroseconds(onTime);
-        nrf_gpio_pin_write(BUZZER_PIN, 0);
-        delayMicroseconds(offTime);
-    }
-    #else
-    delay(duration); // Just wait if no buzzer
-    #endif
-}
-
-void playSound(int trackId) {
-    // Check Mute State
-    if (isMuted) {
-        return;
-    }
-
-    #ifdef ENABLE_VOICE
-    player.playSpecified(trackId);
-    #endif
-}
-
-void handleVolumeControl() {
-    // Read Switch State
-    // LOW (Closed) = Mute (Volume 0)
-    // HIGH (Open) = Sound On (Volume VOICE_VOL_DEFAULT)
-    
-    static int lastSwitchState = -1;
-    int switchState = nrf_gpio_pin_read(SOUND_SWITCH_PIN);
-    
-    if (switchState != lastSwitchState) {
-        // Debounce slightly
-        delay(20); 
-        switchState = nrf_gpio_pin_read(SOUND_SWITCH_PIN);
-        
-        if (switchState == LOW) {
-            // Switch Closed -> Mute
-            isMuted = true;
-            currentVolume = 0;
-            #ifdef ENABLE_VOICE
-            player.setVolume(0);
-            #endif
-            Serial.println("Sound Switch: Muted");
-        } else {
-            // Switch Open -> Sound On
-            isMuted = false;
-            currentVolume = VOICE_VOL_DEFAULT;
-            #ifdef ENABLE_VOICE
-            player.setVolume(currentVolume);
-            #endif
-            Serial.println("Sound Switch: Sound ON");
-        }
-        lastSwitchState = switchState;
-        lastActivityTime = millis();
-    }
-}
-
 void playStartupMelody() {
-    #ifdef ENABLE_VOICE
-    playSound(TRACK_STARTUP);
-    #endif
-
-    #ifdef BUZZER_PIN
-    // La Marseillaise Opening (Extended)
-    // D4, D4, D4, G4, G4, A4, A4, D5 ... B4, B4
-    // "Al-lons en-fants de la Pa-trie... Le jour..."
-    
-    int melody[] = { 294, 294, 294, 392, 392, 440, 440, 587, 494, 494 };
-    int durations[] = { 150, 150, 150, 400, 400, 400, 400, 800, 300, 300 };
-    
-    for (int i = 0; i < 10; i++) {
-        playTone(melody[i], durations[i], VOL_STARTUP);
-        delay(durations[i] * 0.30); // Gap
-    }
+    #ifdef ENABLE_DRV2605
+    // Effect 118: Long Ramp Up
+    drv.setWaveform(0, 118); 
+    drv.setWaveform(1, 0);
+    drv.go();
     #endif
 }
 
 void playShutdownMelody() {
-    #ifdef ENABLE_VOICE
-    playSound(TRACK_SHUTDOWN);
-    delay(2000); // Wait for voice to finish
-    #endif
-
-    #ifdef BUZZER_PIN
-    // Windows XP Shutdown Style
-    // Eb5, Bb4, G4, Eb4
-    
-    int melody[] = { 622, 466, 392, 311 };
-    int durations[] = { 300, 300, 300, 1000 };
-    
-    for (int i = 0; i < 4; i++) {
-        playTone(melody[i], durations[i], VOL_SHUTDOWN);
-        delay(durations[i] * 0.10); // Gap
-    }
+    #ifdef ENABLE_DRV2605
+    // Effect 119: Long Ramp Down
+    drv.setWaveform(0, 119); 
+    drv.setWaveform(1, 0);
+    drv.go();
+    delay(500); // Wait for effect
     #endif
 }
 
 void announceStatus() {
-    // 1. Announce Distance (Center)
-    // We need the latest measurement data. It's global 'measurementData'.
-    // Check center zones (5,6,9,10)
-    int centerZones[] = {5, 6, 9, 10};
-    int sumDist = 0;
-    int validCount = 0;
+    // 1. Announce Distance (Center) - REMOVED (Haptic Only)
+    // We rely on the real-time haptic feedback for distance.
     
-    for (int i : centerZones) {
-        if (measurementData.target_status[i] == 5 || measurementData.target_status[i] == 9) {
-            sumDist += measurementData.distance_mm[i];
-            validCount++;
-        }
-    }
-    
-    int avgDist = (validCount > 0) ? (sumDist / validCount) : 9999;
-    
-    #ifdef ENABLE_VOICE
-    if (avgDist < 1000) playSound(TRACK_DIST_NEAR);
-    else if (avgDist < 1500) playSound(TRACK_DIST_1M);
-    else if (avgDist < 2500) playSound(TRACK_DIST_2M);
-    else if (avgDist < 3500) playSound(TRACK_DIST_3M);
-    else if (avgDist < 4500) playSound(TRACK_DIST_4M);
-    else playSound(TRACK_DIST_FAR);
-    
-    delay(2000); // Wait for voice
-    #endif
-
     // 2. Announce Battery
     announceBatteryLevel();
 }
@@ -1008,43 +810,36 @@ void announceBatteryLevel() {
     int raw = analogRead(BATTERY_PIN);
     float voltage = (raw / 1023.0) * 3.3 * 2.0; 
     
-    // Debug
-    // Serial.print("Bat Raw: "); Serial.print(raw);
-    // Serial.print(" V: "); Serial.println(voltage);
+    #ifdef ENABLE_DRV2605
+    int pulses = 0;
+    if (voltage > 4.0) pulses = 4;      // Full
+    else if (voltage > 3.7) pulses = 3; // Good
+    else if (voltage > 3.4) pulses = 2; // Low
+    else pulses = 1;                    // Critical
 
-    #ifdef BUZZER_PIN
-    if (voltage > 4.0) {
-        // Full: 4 Beeps
-        for(int i=0; i<4; i++) { playTone(1000, 100, VOL_BATTERY); delay(100); }
-    } else if (voltage > 3.7) {
-        // Good: 3 Beeps
-        for(int i=0; i<3; i++) { playTone(1000, 100, VOL_BATTERY); delay(100); }
-    } else if (voltage > 3.4) {
-        // Low: 2 Beeps
-        for(int i=0; i<2; i++) { playTone(1000, 100, VOL_BATTERY); delay(100); }
-    } else {
-        // Critical: 1 Long Low Beep
-        playTone(500, 500, VOL_BATTERY);
+    for(int i=0; i<pulses; i++) {
+        drv.setWaveform(0, 64); // Effect 64: Strong Click 100%
+        drv.setWaveform(1, 0);
+        drv.go();
+        delay(400); // Gap between pulses
+    }
+    
+    if (pulses == 1) {
+        // Critical Warning: Long Buzz
+        delay(500);
+        drv.setWaveform(0, 47); // Pulsing Sharp
+        drv.setWaveform(1, 0);
+        drv.go();
     }
     #endif
-
-    if (voltage <= 3.4) {
-        #ifdef ENABLE_VOICE
-        playSound(TRACK_BATTERY_LOW);
-        #endif
-    }
 }
 
 void playCalibrationSuccess() {
-    #ifdef BUZZER_PIN
-    // Positive Sequence: C5, E5, G5, C6 (Major Arpeggio)
-    int melody[] = { 523, 659, 784, 1047 };
-    int durations[] = { 100, 100, 100, 300 };
-    
-    for (int i = 0; i < 4; i++) {
-        playTone(melody[i], durations[i], VOL_STARTUP);
-        delay(50);
-    }
+    #ifdef ENABLE_DRV2605
+    // Effect 12: Triple Click
+    drv.setWaveform(0, 12);
+    drv.setWaveform(1, 0);
+    drv.go();
     #endif
 }
 
@@ -1087,12 +882,7 @@ void calibrateIMU() {
             file.close();
             Serial.println("Calibration Saved.");
             
-            #ifdef BUZZER_PIN
             playCalibrationSuccess();
-            #endif
-            #ifdef ENABLE_VOICE
-            playSound(TRACK_CALIBRATION);
-            #endif
         } else {
             Serial.println("Failed to save calibration.");
         }
@@ -1145,21 +935,7 @@ void checkForDrop(int16_t* accelGyro) {
                 Serial.println("DROP ALARM ACTIVE");
             }
             
-            // Play Alarm Sound / Haptics
-            #ifdef BUZZER_PIN
-            if (millis() % 1000 < 500) {
-                playTone(2000, 100, VOL_ALARM);
-            }
-            #endif
-
-            #ifdef ENABLE_VOICE
-            // Play alarm track repeatedly (every 3 seconds approx, depending on track length)
-            if (millis() % 3000 < 100) {
-                player.setVolume(VOICE_VOL_ALARM);
-                playSound(TRACK_DROP_ALARM);
-            }
-            #endif
-            
+            // Play Alarm Haptics
             #ifdef ENABLE_DRV2605
             if (millis() % 1000 < 200) {
                 drv.setWaveform(0, 47); // Buzz
