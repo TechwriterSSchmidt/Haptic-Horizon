@@ -101,14 +101,16 @@ Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D
     *   **Small Object (Cup/Cat):** Fast **Geiger Counter** (*Tickticktick*).
 *   **Use Case:** Finding people in the dark, checking if electronics are running, locating pets.
 
-### 3. Battery Check
-*   **Long Press (> 2s):** The device announces the battery level.
-    *   4 Beeps: Full (> 4.0V)
-    *   3 Beeps: Good (> 3.7V)
-    *   2 Beeps: Low (> 3.4V)
-    *   1 Long Beep: Critical (< 3.4V)
+### 3. Status Check (Battery & Distance)
+*   **Long Press (> 2s) on Mode Button:** The device announces the current status.
+    1.  **Distance:** Announces the distance to the object in front (e.g., "Two Meters").
+    2.  **Battery:** Announces the battery level (Beeps or Voice).
 
-### 4. Calibration (IMU)
+### 4. Silent Mode (Mute Switch)
+*   **Switch ON (GND):** Silent Mode. All audio (Voice & SFX) is disabled. Haptics remain active.
+*   **Switch OFF (Open):** Audio Enabled.
+
+### 5. Calibration (IMU)
 If the device is not detecting the ground correctly (e.g., false alarms on flat ground), you can recalibrate the "Zero" position.
 1.  Place the device **flat on a table** (or the surface you want to define as "level").
 2.  Press and **hold the button for 10 seconds**.
