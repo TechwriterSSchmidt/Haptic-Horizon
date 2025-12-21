@@ -154,7 +154,7 @@ Haptic Horizon includes three ways to locate the device if it is dropped or misp
 *   **Use Case:** Finding the device without needing a smartphone app (Tactile & Fast).
 
 ## Documentation
-For a printable, easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](Docs/QUICK_REFERENCE.md).
+For an easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](Docs/QUICK_REFERENCE.md).
 
 ## Configuration (`include/config.h`)
 You can customize the device behavior by editing `include/config.h`:

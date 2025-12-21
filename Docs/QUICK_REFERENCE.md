@@ -1,80 +1,77 @@
 # Quick Reference Guide: Haptic Horizon
 
-*Welcome, Batgirl. Here is your mission briefing for the Haptic Horizon device.*
+*Your silent sixth sense for navigation. Simple, intuitive, and discreet.*
 
-> **Note:** This device is a "Silent UI" system. It uses only vibration to communicate, ensuring you can always hear your surroundings clearly.
+> **Concept:** This device translates the physical world into vibration patterns ("Hapticons"). It does not use sound, so you can stay focused on your environment.
 
-## 1. Turning On & Off
+---
 
-*   **Turn On:** Press any button **twice quickly** (Double Tap).
-    *   *Signal:* **Haptic Ramp Up** (Vibration increases).
-*   **Turn Off:** Wait 2 minutes without moving.
-    *   *Signal:* **Haptic Ramp Down** (Vibration fades out).
-    *   *Note:* The device stays on as long as you are moving. It will NOT wake up from motion alone.
+## 1. The Haptic Dictionary (What you feel)
 
-## 2. Haptic Language (Vibration Meanings)
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning | Action |
+| :--- | :--- | :--- | :--- | :--- |
+| **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. | Stop or go around. |
+| **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). | **STOP immediately!** |
+| **Stairs Up** | **Ramp Up** | Rising Sensation | Ground rises (Stairs up). | Lift your foot. |
+| **Gap / Door** | **Double Click** | *Click-Click* | Open space between obstacles. | Path found. |
+| **Glass Warning** | **Sharp Tick** | *Tick* | Confusing reflection (Mirror/Glass). | Proceed with caution. |
+| **Human** | **Heartbeat** | *Bumm-Bumm...* | Warm object (Person). | - |
+| **Machine** | **Double Tick** | *Tick-Tick...* | Warm electronics (Monitor/PC). | - |
+| **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
+| **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). | Pick up device. |
 
-The device talks to you through different vibration patterns.
+---
 
-| What you feel | What it means | Action required |
-| :--- | :--- | :--- |
-| **Continuous Buzz** | **Wall / Obstacle** | Stop or go around. The stronger the buzz, the closer the object. |
-| **Falling Sensation** (Ramp Down) | **Drop-off / Hole** | **STOP!** There is a cliff, stairs down, or a hole in front of you. |
-| **Rising Sensation** (Ramp Up) | **Stairs Up** | Lift your foot. There are stairs going up. |
-| **Soft Bump** | **Trip Hazard** | Be careful. There is a curb or small object on the floor. |
-| **Double Click** | **Gap / Door** | You found a way through! There is a gap between obstacles (like an open door). |
-| **Sharp Tick** | **Bat-in-danger Mode** | **Caution!** Glass or Mirror detected. The sensor is confused by reflections. |
-| **Silence** | **Clear Path** | Safe to walk. |
+## 2. Basic Controls
 
-## 3. Modes
+### Power
+*   **Turn On:** Double-tap any button. (Feels: *Ramp Up*)
+*   **Turn Off:** Automatic after 2 minutes of no movement. (Feels: *Ramp Down*)
 
-Switch modes by pressing the button.
+### Modes (Click Mode Button)
+1.  **Smart Terrain (Default):**
+    *   *Best for:* Walking, exploring.
+    *   *Function:* Detects walls, holes, and stairs automatically.
+2.  **Precision Mode:**
+    *   *Best for:* Finding handles, narrow gaps.
+    *   *Function:* Laser-pointer style. Faster clicks = Closer object.
 
-*   **Smart Terrain Mode (Default):**
-    *   *Use for:* Walking, exploring, detecting stairs and obstacles.
-    *   *Switch Signal:* **Single Long Bump**.
-*   **Precision Mode:**
-    *   *Use for:* Finding door handles, locating small objects.
-    *   *Switch Signal:* **Double Click**.
-    *   *Feedback:* Clicks like a Geiger counter (Faster = Closer).
-*   **Heat Vision Mode:**
-    *   *Activation:* Hold the **Trigger Button** (Abzugsfinger). Release to stop.
-    *   *Use for:* Finding people, pets, or checking electronics.
-    *   *Feedback:*
-        *   **Heartbeat (Triple Click):** Human detected.
-        *   **Double-Click:** Monitor/Machine detected.
-        *   **Fast Ticking:** Small object (Cup/Cat).
+### Heat Vision (Hold Trigger)
+*   **Action:** Press and hold the **Trigger Button**.
+*   **Function:** Scans for heat sources (People, Pets, Electronics).
+*   **Stereo Note:** If you have two motors, the side with the vibration indicates the direction of the person.
 
-## 4. Other Signals
+---
 
-*   **Battery Level:**
-    *   Long press button (> 2s).
-    *   *Signal:* 1 to 4 **Strong Clicks** (4 = Full, 1 = Critical).
-*   **Calibration Success:**
-    *   Long press button (> 10s).
-    *   *Signal:* **Triple Click**.
-*   **Drop Beacon:**
-    *   If you drop the device hard, it waits 5 seconds.
-    *   If not picked up, it starts a **Strong Pulsing Vibration**.
-    *   *Action:* Pick it up to stop the alarm.
+## 3. Advanced Features
 
-## 5. Battery Check
+### Stereo Haptics (Directional Feedback)
+*If your device has two motors (Left/Right):*
+*   **Navigation:** If the **Left Handle** vibrates, the obstacle is on the **Left**. Steer away from the vibration.
+*   **Heat Vision:** If the **Right Handle** pulses, the person is on the **Right**.
 
-*   **Check Level:** Press and **hold the Mode Button for 2 seconds**.
-*   **Signals:**
-    *   4 Pulses: Full Battery.
-    *   3 Pulses: Good.
-    *   2 Pulses: Low.
-    *   1 Long Pulse: Critical (Charge soon!).
+### Status Check
+*   **Battery Level:** Press and hold **Mode Button** for 2 seconds. Count the clicks (4 is best).
 
-## 6. Calibration
+### Calibration
+*   *If the device gives false alarms on flat ground:*
+    1.  Place flat on a table.
+    2.  Hold **Mode Button** for **10 seconds**.
+    3.  Wait for the **Triple Click**.
 
-If the device gives false alarms on flat ground:
-1.  Place the device on a flat table.
-2.  Press and **hold the Mode Button for 10 seconds**.
-3.  Wait for the **Success Triple Click**.
+---
 
-## 7. Finding the Device
+## 4. Drop Beacon & Find Me
 
-*   **If lost:** Use the "nRF Connect" app on your phone, connect to "Haptic Horizon", and send 'B' to the UART service.
-*   **Selfie Remote:** If enabled, press your Bluetooth shutter remote to make the device **Vibrate Strongly**.
+### Drop Beacon (Automatic)
+*   **Scenario:** You drop the device.
+*   **Action:** It waits 5 seconds. If not picked up, it starts a **Loud Strobe Alarm**.
+*   **Stop:** Pick it up or press a button.
+
+### Find via Smartphone
+*   **Scenario:** Device is lost nearby.
+*   **Action:** Connect via App (nRF Connect) and send **'B'**. Device will alarm.
+
+### Find via Remote (Selfie Button)
+*   **Scenario:** Device is lost, phone is not handy.
+*   **Action:** Press your Bluetooth Camera Shutter. Device will alarm.
