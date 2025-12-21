@@ -131,7 +131,7 @@ If the device is not detecting the ground correctly (e.g., false alarms on flat 
 3.  Wait for the **Success Triple Click**.
 4.  The new calibration is saved permanently.
 
-### 6. Find Me & Safety Features
+### 6. Find Me & Drop Beacon Features
 Haptic Horizon includes three ways to locate the device if it is dropped or misplaced. All methods trigger a **Loud Strobe Alarm** (Strong Pulsing Vibration).
 
 #### A. Drop Beacon (Automatic)
