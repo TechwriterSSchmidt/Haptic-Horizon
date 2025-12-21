@@ -98,6 +98,7 @@ This table lists every signal the device can produce.
 | **Heat** | Human | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warm & Narrow). |
 | **Heat** | Machine | **Double Tick** | *Tick-Tick...* | Electronics detected (Warm & Wide). |
 | **Heat** | Small Object | **Geiger Counter** | *Trrrrr...* | Small heat source (Cup, Pet). |
+| **Heat** | Hot Surface | **Fast Stutter** | *Bz-Bz-Bz-Bz* | **DANGER!** Very hot surface (>60°C). |
 | **Alarm** | Drop Beacon | **Loud Strobe** | *BZZZ-BZZZ-BZZZ* | "I fell down! Pick me up!" |
 | **Alarm** | Find Me | **Loud Strobe** | *BZZZ-BZZZ-BZZZ* | "Here I am!" (Triggered via App). |
 

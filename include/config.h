@@ -73,6 +73,7 @@ enum OperationMode {
 // Default I2C address is 0x33
 #define HEAT_THRESHOLD_C 28   // Temperature in Celsius to trigger haptic feedback (Body heat is ~37C, surface temp lower)
 #define HEAT_MAX_C 40         // Temperature for maximum vibration intensity
+#define HEAT_DANGER_C 60      // Temperature in Celsius for "Hot Surface" Warning (Stove, Iron, etc.)
 
 // ===== IMU Settings (BMI160) =====
 #define BMI160_I2C_ADDR 0x69 // Default is often 0x68 or 0x69. Check your module!

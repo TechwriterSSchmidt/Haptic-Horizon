@@ -1021,7 +1021,7 @@ void checkForDrop(int16_t* accelGyro) {
 }
 
 // Global Thermal State
-int thermalClassification = 0; // 0=None, 1=Small, 2=Human, 3=Machine
+int thermalClassification = 0; // 0=None, 1=Small, 2=Human, 3=Machine, 4=DANGER_HOT
 int thermalAvgDist = 0;
 int thermalObjectWidth = 0;
 int thermalPixelCount = 0;
@@ -1059,8 +1059,12 @@ void updateThermalPerception() {
     int hotPixelCount = 0;
     float maxTemp = 0;
     long sumX = 0;
+    bool dangerHot = false;
     
     for (int i=0; i<768; i++) {
+        if (mlxPixels[i] > HEAT_DANGER_C) {
+            dangerHot = true;
+        }
         if (mlxPixels[i] > HEAT_THRESHOLD_C) {
             hotPixelCount++;
             sumX += (i % 32); // Accumulate X coordinate
@@ -1077,7 +1081,10 @@ void updateThermalPerception() {
     // 3. Classification Logic
     thermalClassification = 0; // Reset
     
-    if (hotPixelCount > 0) {
+    if (dangerHot) {
+        thermalClassification = 4; // DANGER HOT
+    }
+    else if (hotPixelCount > 0) {
         if (objectWidth >= 3) {
             // Wide object (> 60cm) + Heat -> Monitor / PC Tower / Radiator
             thermalClassification = 3; 
@@ -1171,5 +1178,24 @@ void runHeatVision() {
             #endif
         }
         Serial.print("Small Object. Dist: "); Serial.print(thermalAvgDist); Serial.print(" Pixels: "); Serial.println(thermalPixelCount);
+    }
+    else if (thermalClassification == 4) { // DANGER HOT
+        // Feedback: Very Fast Alarm (Stutter)
+        if (now % 100 < 50) {
+            #ifdef ENABLE_DRV2605
+            int effect = 47; // Buzz 100%
+            
+            #ifdef ENABLE_STEREO_HAPTICS
+            // Always vibrate BOTH for danger
+            drv.setWaveform(0, effect); drv.setWaveform(1, 0); drv.go();
+            drv2.setWaveform(0, effect); drv2.setWaveform(1, 0); drv2.go();
+            #else
+            drv.setWaveform(0, effect); 
+            drv.setWaveform(1, 0);
+            drv.go();
+            #endif
+            #endif
+        }
+        Serial.println("DANGER: HOT SURFACE DETECTED!");
     }
 }

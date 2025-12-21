@@ -17,6 +17,7 @@
 | **Glass Warning** | **Sharp Tick** | *Tick* | Confusing reflection (Mirror/Glass). | Proceed with caution. |
 | **Human** | **Heartbeat** | *Bumm-Bumm...* | Warm object (Person). | - |
 | **Machine** | **Double Tick** | *Tick-Tick...* | Warm electronics (Monitor/PC). | - |
+| **Hot Surface** | **Fast Stutter** | *Bz-Bz-Bz-Bz* | **DANGER!** Very hot surface (>60°C). | **Do not touch!** |
 | **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
 | **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). | Pick up device. |
 
