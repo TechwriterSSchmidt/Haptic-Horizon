@@ -7,6 +7,7 @@
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <Adafruit_MLX90640.h>
+#include <DFRobotDFPlayerMini.h>
 
 #ifdef ENABLE_DRV2605
 #include <Adafruit_DRV2605.h>
@@ -23,6 +24,7 @@ SparkFun_VL53L5CX sensor;
 VL53L5CX_ResultsData measurementData;
 DFRobot_BMI160 bmi160;
 Adafruit_MLX90640 mlx;
+DFRobotDFPlayerMini myDFPlayer;
 
 #ifdef ENABLE_DRV2605
 Adafruit_DRV2605 drv;
@@ -68,13 +70,13 @@ void goToSleep(); // Replaces enterStandby
 void calibrateIMU();
 void checkForDrop(int16_t* accelGyro);
 void runHeatVision();
-#ifdef BUZZER_PIN
+void playVoice(int trackId);
+
 void playStartupMelody();
 void playShutdownMelody();
 void playCalibrationSuccess();
 void playTone(unsigned int frequency, unsigned long duration, int volume);
 void announceBatteryLevel();
-#endif
 
 #ifdef ENABLE_SELFIE_FINDER
 void scan_callback(ble_gap_evt_adv_report_t* report);
@@ -124,6 +126,18 @@ void setup() {
   #ifdef BUZZER_PIN
   pinMode(BUZZER_PIN, OUTPUT);
   playStartupMelody();
+  #endif
+
+  #ifdef ENABLE_VOICE
+  Serial1.setPins(DFPLAYER_RX_PIN, DFPLAYER_TX_PIN);
+  Serial1.begin(9600);
+  if (!myDFPlayer.begin(Serial1)) {
+    Serial.println("DFPlayer Error!");
+  } else {
+    Serial.println("DFPlayer Online.");
+    myDFPlayer.volume(VOICE_VOL_DEFAULT);
+    playVoice(TRACK_STARTUP);
+  }
   #endif
 
   // BLE Setup
@@ -342,9 +356,7 @@ void loop() {
               
               if (duration > 2000) {
                   // Long Press (> 2s) -> Battery
-                  #ifdef BUZZER_PIN
                   announceBatteryLevel();
-                  #endif
               } else {
                   // Short Press -> Toggle Mode
                   toggleMode();
@@ -365,6 +377,10 @@ void loop() {
           // Sound: Heat Vision Activate (High Pitch Pulse)
           playTone(880, 50, VOL_MODE_CHANGE);
           #endif
+
+          #ifdef ENABLE_VOICE
+          playVoice(TRACK_HEAT_ON);
+          #endif
       }
   } else { // Released
       if (currentMode == MODE_HEAT_VISION) {
@@ -374,6 +390,10 @@ void loop() {
           #ifdef BUZZER_PIN
           // Sound: Heat Vision Deactivate
           playTone(440, 50, VOL_MODE_CHANGE);
+          #endif
+
+          #ifdef ENABLE_VOICE
+          playVoice(TRACK_HEAT_OFF);
           #endif
       }
   }
@@ -727,6 +747,13 @@ void scan_callback(ble_gap_evt_adv_report_t* report) {
              delay(500);
           }
           #endif
+
+          #ifdef ENABLE_VOICE
+          for(int loop=0; loop<5; loop++) {
+             playVoice(TRACK_FOUND_REMOTE);
+             delay(3000); // Wait for track
+          }
+          #endif
           
           // Wake up fully after alarm
           lastActivityTime = millis();
@@ -743,6 +770,10 @@ void toggleMode() {
         // Sound: Zoom In (Ascending C5 -> E5)
         playTone(523, 100, VOL_MODE_CHANGE); delay(20);
         playTone(659, 100, VOL_MODE_CHANGE); delay(20);
+        #endif
+
+        #ifdef ENABLE_VOICE
+        playVoice(TRACK_MODE_PRECISION);
         #endif
 
         // Feedback: Double Buzz
@@ -764,6 +795,10 @@ void toggleMode() {
         // Sound: Zoom Out (Descending E5 -> C5)
         playTone(659, 100, VOL_MODE_CHANGE); delay(20);
         playTone(523, 100, VOL_MODE_CHANGE); delay(20);
+        #endif
+
+        #ifdef ENABLE_VOICE
+        playVoice(TRACK_MODE_TERRAIN);
         #endif
 
         // Feedback: Single Long Buzz
@@ -821,10 +856,10 @@ void handleHapticsPrecision(int distance) {
     }
 }
 
-#ifdef BUZZER_PIN
 // Helper for Volume Control (Software PWM)
 // Volume: 1-10 (1 = Quiet, 10 = Max/50% Duty)
 void playTone(unsigned int frequency, unsigned long duration, int volume) {
+    #ifdef BUZZER_PIN
     if (frequency == 0 || volume == 0) {
         delay(duration);
         return;
@@ -841,9 +876,23 @@ void playTone(unsigned int frequency, unsigned long duration, int volume) {
         nrf_gpio_pin_write(BUZZER_PIN, 0);
         delayMicroseconds(offTime);
     }
+    #else
+    delay(duration); // Just wait if no buzzer
+    #endif
+}
+
+void playVoice(int trackId) {
+    #ifdef ENABLE_VOICE
+    myDFPlayer.play(trackId);
+    #endif
 }
 
 void playStartupMelody() {
+    #ifdef ENABLE_VOICE
+    playVoice(TRACK_STARTUP);
+    #endif
+
+    #ifdef BUZZER_PIN
     // La Marseillaise Opening (Extended)
     // D4, D4, D4, G4, G4, A4, A4, D5 ... B4, B4
     // "Al-lons en-fants de la Pa-trie... Le jour..."
@@ -855,9 +904,16 @@ void playStartupMelody() {
         playTone(melody[i], durations[i], VOL_STARTUP);
         delay(durations[i] * 0.30); // Gap
     }
+    #endif
 }
 
 void playShutdownMelody() {
+    #ifdef ENABLE_VOICE
+    playVoice(TRACK_SHUTDOWN);
+    delay(2000); // Wait for voice to finish
+    #endif
+
+    #ifdef BUZZER_PIN
     // Windows XP Shutdown Style
     // Eb5, Bb4, G4, Eb4
     
@@ -868,6 +924,7 @@ void playShutdownMelody() {
         playTone(melody[i], durations[i], VOL_SHUTDOWN);
         delay(durations[i] * 0.10); // Gap
     }
+    #endif
 }
 
 void announceBatteryLevel() {
@@ -883,6 +940,7 @@ void announceBatteryLevel() {
     // Serial.print("Bat Raw: "); Serial.print(raw);
     // Serial.print(" V: "); Serial.println(voltage);
 
+    #ifdef BUZZER_PIN
     if (voltage > 4.0) {
         // Full: 4 Beeps
         for(int i=0; i<4; i++) { playTone(1000, 100, VOL_BATTERY); delay(100); }
@@ -896,9 +954,17 @@ void announceBatteryLevel() {
         // Critical: 1 Long Low Beep
         playTone(500, 500, VOL_BATTERY);
     }
+    #endif
+
+    if (voltage <= 3.4) {
+        #ifdef ENABLE_VOICE
+        playVoice(TRACK_BATTERY_LOW);
+        #endif
+    }
 }
 
 void playCalibrationSuccess() {
+    #ifdef BUZZER_PIN
     // Positive Sequence: C5, E5, G5, C6 (Major Arpeggio)
     int melody[] = { 523, 659, 784, 1047 };
     int durations[] = { 100, 100, 100, 300 };
@@ -907,8 +973,8 @@ void playCalibrationSuccess() {
         playTone(melody[i], durations[i], VOL_STARTUP);
         delay(50);
     }
+    #endif
 }
-#endif
 
 void calibrateIMU() {
     Serial.println("Calibrating IMU...");
@@ -951,6 +1017,9 @@ void calibrateIMU() {
             
             #ifdef BUZZER_PIN
             playCalibrationSuccess();
+            #endif
+            #ifdef ENABLE_VOICE
+            playVoice(TRACK_CALIBRATION);
             #endif
         } else {
             Serial.println("Failed to save calibration.");
@@ -1008,6 +1077,14 @@ void checkForDrop(int16_t* accelGyro) {
             #ifdef BUZZER_PIN
             if (millis() % 1000 < 500) {
                 playTone(2000, 100, VOL_ALARM);
+            }
+            #endif
+
+            #ifdef ENABLE_VOICE
+            // Play alarm track repeatedly (every 3 seconds approx, depending on track length)
+            if (millis() % 3000 < 100) {
+                myDFPlayer.volume(VOICE_VOL_ALARM);
+                playVoice(TRACK_DROP_ALARM);
             }
             #endif
             

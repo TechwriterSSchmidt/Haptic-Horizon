@@ -21,7 +21,26 @@
 
 // Optional: Piezo Buzzer for Startup Melody
 // Uncomment to enable
-#define BUZZER_PIN 24 // P0.24 (Check available pins)
+// #define BUZZER_PIN 24 // P0.24 (Check available pins)
+
+// ===== DFPlayer Mini (Voice Output) =====
+#define ENABLE_VOICE
+#define DFPLAYER_RX_PIN 9  // P0.09 (Connect to DFPlayer TX)
+#define DFPLAYER_TX_PIN 10 // P0.10 (Connect to DFPlayer RX)
+#define VOICE_VOL_DEFAULT 20
+#define VOICE_VOL_ALARM   30
+
+// Voice Track IDs
+#define TRACK_STARTUP       1 // "System Online. Welcome, Batgirl."
+#define TRACK_MODE_TERRAIN  2 // "Smart Terrain Mode active."
+#define TRACK_MODE_PRECISION 3 // "Precision Mode active."
+#define TRACK_HEAT_ON       4 // "Heat Vision activated."
+#define TRACK_HEAT_OFF      5 // "Heat Vision deactivated."
+#define TRACK_BATTERY_LOW   6 // "Warning: Battery Low."
+#define TRACK_DROP_ALARM    7 // "I have fallen. Please help."
+#define TRACK_CALIBRATION   8 // "Calibration complete."
+#define TRACK_SHUTDOWN      9 // "System shutting down."
+#define TRACK_FOUND_REMOTE  10 // "Remote connected."
 
 // ===== Haptic Feedback Thresholds (in mm) =====
 #define DIST_FAR    2500     // > 2.5m No vibration
