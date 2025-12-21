@@ -50,13 +50,21 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 | :--- | :--- | :--- |
 | **P0.17** | I2C SDA (Primary) | VL53L5CX, BMI160, DRV2605L |
 | **P0.20** | I2C SCL (Primary) | VL53L5CX, BMI160, DRV2605L |
-| **P0.06** | I2C SDA (Secondary) | MLX90640 (Thermal Camera) |
-| **P0.08** | I2C SCL (Secondary) | MLX90640 (Thermal Camera) |
+| **P0.06** | I2C SDA (Secondary) | MLX90640 (Thermal Camera), Optional 2nd DRV2605L |
+| **P0.08** | I2C SCL (Secondary) | MLX90640 (Thermal Camera), Optional 2nd DRV2605L |
 | **P0.29** | Digital Input | Mode Button |
 | **P0.31** | Digital Input | Trigger Button |
 | **P0.02** | Analog Input | Battery Voltage Divider |
 | **B+** | Power | LiPo Battery Positive |
 | **B-** | Power | LiPo Battery Negative |
+
+## Advanced Features
+
+### Stereo Haptics (Optional)
+If a second DRV2605L driver is connected to the secondary I2C bus (SDA1/SCL1), the device enables **Directional Feedback**:
+*   **Wall Detection:** If a wall is closer on the left, the Left LRA vibrates stronger.
+*   **Heat Vision:** If a person is to the left, the Left LRA pulses.
+*   **Benefit:** Allows for intuitive navigation ("Follow the vibration") without mental effort.
 
 ## User Guide
 

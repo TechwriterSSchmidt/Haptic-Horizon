@@ -84,6 +84,11 @@ enum OperationMode {
 // Uncomment to enable the DRV2605L I2C Driver
 #define ENABLE_DRV2605
 
+// Uncomment to enable STEREO HAPTICS (Requires 2nd DRV2605L on Secondary I2C Bus)
+// This allows for Left/Right directional feedback.
+// Connect the second driver to SDA1/SCL1.
+#define ENABLE_STEREO_HAPTICS 
+
 // Uncomment if you are using a Linear Resonant Actuator (LRA) motor.
 // Default is ERM (Eccentric Rotating Mass - the standard offset weight motor).
 #define DRV2605_MOTOR_TYPE_LRA 

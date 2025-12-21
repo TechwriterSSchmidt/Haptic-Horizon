@@ -29,6 +29,9 @@ TwoWire Wire1(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, SDA1
 
 #ifdef ENABLE_DRV2605
 Adafruit_DRV2605 drv;
+#ifdef ENABLE_STEREO_HAPTICS
+Adafruit_DRV2605 drv2; // Second driver on Wire1
+#endif
 #endif
 
 // Bluetooth Services
@@ -201,6 +204,24 @@ void setup() {
     Serial.print("DRV2605L Voltage Limit set to: ");
     Serial.print(MOTOR_RATED_VOLTAGE);
     Serial.println("V");
+
+    #ifdef ENABLE_STEREO_HAPTICS
+    Serial.println("Initializing Secondary DRV2605L (Stereo)...");
+    if (!drv2.begin(&Wire1)) {
+        Serial.println("Secondary DRV2605L not found on Wire1!");
+    } else {
+        drv2.selectLibrary(1);
+        drv2.setMode(DRV2605_MODE_INTTRIG);
+        #ifdef DRV2605_MOTOR_TYPE_LRA
+        drv2.useLRA();
+        #else
+        drv2.useERM();
+        #endif
+        drv2.writeRegister8(DRV2605_REG_RATEDV, rated_val);
+        drv2.writeRegister8(DRV2605_REG_CLAMPV, clamp_val);
+        Serial.println("Secondary DRV2605L Configured.");
+    }
+    #endif
 
     // Play Startup Haptic
     playStartupMelody();
@@ -452,6 +473,7 @@ void loop() {
         int hapticMode = HAPTIC_NONE;
         int intensity = 0; // 0-255
         int hapticInterval = 150; // Default interval for pulsing
+        int wallDirection = 0; // 0=Center, -1=Left, 1=Right
 
         // --- SCENARIO 1: Looking Forward (Wall Detection) ---
         if (pitch > -15) { 
@@ -469,6 +491,27 @@ void loop() {
                 // This "Pulsed Priority" prevents haptic fatigue (DIVA Paper)
                 hapticInterval = map(forwardDist, 300, 1500, 50, 400);
                 hapticInterval = constrain(hapticInterval, 50, 400);
+
+                // Calculate Direction (Left vs Right)
+                // Check Rows 0 & 1 (Indices 0-7)
+                long sumLeft = 0, sumRight = 0;
+                int countLeft = 0, countRight = 0;
+                
+                // Left: Col 0 (Indices 0, 4)
+                if (measurementData.target_status[0] == 5) { sumLeft += measurementData.distance_mm[0]; countLeft++; }
+                if (measurementData.target_status[4] == 5) { sumLeft += measurementData.distance_mm[4]; countLeft++; }
+                
+                // Right: Col 3 (Indices 3, 7)
+                if (measurementData.target_status[3] == 5) { sumRight += measurementData.distance_mm[3]; countRight++; }
+                if (measurementData.target_status[7] == 5) { sumRight += measurementData.distance_mm[7]; countRight++; }
+                
+                if (countLeft > 0 && countRight > 0) {
+                    int avgLeft = sumLeft / countLeft;
+                    int avgRight = sumRight / countRight;
+                    
+                    if (avgLeft < avgRight - 300) wallDirection = -1; // Left is closer
+                    else if (avgRight < avgLeft - 300) wallDirection = 1; // Right is closer
+                }
             }
         }
         // --- SCENARIO 2: Looking Down (Terrain Analysis) ---
@@ -603,9 +646,20 @@ void loop() {
             // Effect 47: Buzz 1 100%
             // Use dynamic interval calculated in Scenario 1
             if (now - lastEffectTrigger > hapticInterval) { 
+                #ifdef ENABLE_STEREO_HAPTICS
+                if (wallDirection == -1) { // Left
+                    drv.setWaveform(0, 47); drv.setWaveform(1, 0); drv.go();
+                } else if (wallDirection == 1) { // Right
+                    drv2.setWaveform(0, 47); drv2.setWaveform(1, 0); drv2.go();
+                } else { // Center
+                    drv.setWaveform(0, 47); drv.setWaveform(1, 0); drv.go();
+                    drv2.setWaveform(0, 47); drv2.setWaveform(1, 0); drv2.go();
+                }
+                #else
                 drv.setWaveform(0, 47); 
                 drv.setWaveform(1, 0);
                 drv.go();
+                #endif
                 lastEffectTrigger = now;
             }
         }
@@ -971,6 +1025,7 @@ int thermalClassification = 0; // 0=None, 1=Small, 2=Human, 3=Machine
 int thermalAvgDist = 0;
 int thermalObjectWidth = 0;
 int thermalPixelCount = 0;
+int thermalCenterX = 16; // 0-31, Center is 16
 
 void updateThermalPerception() {
     // 1. Analyze ToF Width (Object Size) - Sensor Fusion
@@ -1003,14 +1058,21 @@ void updateThermalPerception() {
     
     int hotPixelCount = 0;
     float maxTemp = 0;
+    long sumX = 0;
     
     for (int i=0; i<768; i++) {
         if (mlxPixels[i] > HEAT_THRESHOLD_C) {
             hotPixelCount++;
+            sumX += (i % 32); // Accumulate X coordinate
             if (mlxPixels[i] > maxTemp) maxTemp = mlxPixels[i];
         }
     }
     thermalPixelCount = hotPixelCount;
+    if (hotPixelCount > 0) {
+        thermalCenterX = sumX / hotPixelCount;
+    } else {
+        thermalCenterX = 16; // Reset to center
+    }
     
     // 3. Classification Logic
     thermalClassification = 0; // Reset
@@ -1041,9 +1103,23 @@ void runHeatVision() {
         // Feedback: Slow "Heartbeat" (Heavy Pulse)
         if (now % 1000 < 150) {
             #ifdef ENABLE_DRV2605
-            drv.setWaveform(0, 12); // Effect 12: Triple Click (Heavy feel)
+            int effect = 12; // Triple Click
+            
+            #ifdef ENABLE_STEREO_HAPTICS
+            // Directional Logic
+            if (thermalCenterX < 10) { // Left
+                drv.setWaveform(0, effect); drv.setWaveform(1, 0); drv.go();
+            } else if (thermalCenterX > 22) { // Right
+                drv2.setWaveform(0, effect); drv2.setWaveform(1, 0); drv2.go();
+            } else { // Center
+                drv.setWaveform(0, effect); drv.setWaveform(1, 0); drv.go();
+                drv2.setWaveform(0, effect); drv2.setWaveform(1, 0); drv2.go();
+            }
+            #else
+            drv.setWaveform(0, effect); 
             drv.setWaveform(1, 0);
             drv.go();
+            #endif
             #endif
         }
         Serial.print("Human Detected! Dist: "); Serial.print(thermalAvgDist); Serial.print(" Pixels: "); Serial.println(thermalPixelCount);
@@ -1052,9 +1128,22 @@ void runHeatVision() {
         // Feedback: Mechanical "Double Tick" (Artificial feel)
         if (now % 1000 < 100) {
             #ifdef ENABLE_DRV2605
-            drv.setWaveform(0, 10); // Effect 10: Double Click 100%
+            int effect = 10; // Double Click
+            
+            #ifdef ENABLE_STEREO_HAPTICS
+            if (thermalCenterX < 10) {
+                drv.setWaveform(0, effect); drv.setWaveform(1, 0); drv.go();
+            } else if (thermalCenterX > 22) {
+                drv2.setWaveform(0, effect); drv2.setWaveform(1, 0); drv2.go();
+            } else {
+                drv.setWaveform(0, effect); drv.setWaveform(1, 0); drv.go();
+                drv2.setWaveform(0, effect); drv2.setWaveform(1, 0); drv2.go();
+            }
+            #else
+            drv.setWaveform(0, effect); 
             drv.setWaveform(1, 0);
             drv.go();
+            #endif
             #endif
         }
         Serial.print("Monitor Detected. Dist: "); Serial.print(thermalAvgDist); Serial.print(" Width: "); Serial.println(thermalObjectWidth);
@@ -1063,9 +1152,22 @@ void runHeatVision() {
         // Feedback: Fast "Geiger Counter" Ticking
         if (now % 200 < 50) {
             #ifdef ENABLE_DRV2605
-            drv.setWaveform(0, 1); // Effect 1: Strong Click (Sharp feel)
+            int effect = 1; // Strong Click
+            
+            #ifdef ENABLE_STEREO_HAPTICS
+            if (thermalCenterX < 10) {
+                drv.setWaveform(0, effect); drv.setWaveform(1, 0); drv.go();
+            } else if (thermalCenterX > 22) {
+                drv2.setWaveform(0, effect); drv2.setWaveform(1, 0); drv2.go();
+            } else {
+                drv.setWaveform(0, effect); drv.setWaveform(1, 0); drv.go();
+                drv2.setWaveform(0, effect); drv2.setWaveform(1, 0); drv2.go();
+            }
+            #else
+            drv.setWaveform(0, effect); 
             drv.setWaveform(1, 0);
             drv.go();
+            #endif
             #endif
         }
         Serial.print("Small Object. Dist: "); Serial.print(thermalAvgDist); Serial.print(" Pixels: "); Serial.println(thermalPixelCount);
