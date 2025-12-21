@@ -94,9 +94,13 @@ void setup() {
   // Give Serial some time to start
   delay(100);
   
-  // Motor Setup
+  // Motor Setup (Only if NOT using DRV2605)
+  #ifndef ENABLE_DRV2605
+  #ifdef MOTOR_PIN
   nrf_gpio_cfg_output(MOTOR_PIN);
   nrf_gpio_pin_write(MOTOR_PIN, 0);
+  #endif
+  #endif
 
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
@@ -248,13 +252,14 @@ void setup() {
   Serial.println("Initializing VL53L5CX...");
   
   if (sensor.begin() == false) {
-    Serial.println("Sensor not found - check wiring. Freezing");
-    while (1);
+    Serial.println("Sensor not found - check wiring. Continuing without ToF...");
+    // Don't freeze, just warn.
+    // while (1); 
+  } else {
+    sensor.setResolution(SENSOR_RESOLUTION); 
+    sensor.setRangingFrequency(SENSOR_RANGING_FREQ);
+    sensor.startRanging();
   }
-
-  sensor.setResolution(SENSOR_RESOLUTION); 
-  sensor.setRangingFrequency(SENSOR_RANGING_FREQ);
-  sensor.startRanging();
 
   Serial.println("Initializing MLX90640...");
   if (!mlx.begin(MLX90640_I2CADDR_DEFAULT, &Wire)) {
@@ -775,22 +780,20 @@ void scan_callback(ble_gap_evt_adv_report_t* report) {
       
       if (strstr(name, SELFIE_BUTTON_NAME) != NULL || strstr(name, "Remote") != NULL || strstr(name, "Shutter") != NULL) {
           Serial.println("FOUND SELFIE BUTTON! TRIGGERING ALARM!");
+          // Trigger Alarm State (Non-blocking)
+          // We set a flag or just play one sound and let the loop handle it?
+          // For simplicity, let's just play the sound once per scan hit.
+          // The scanner will keep finding it if it's advertising.
           
           #ifdef BUZZER_PIN
-          // Play Marseillaise (Loop for ~20 seconds)
-          for(int loop=0; loop<5; loop++) {
-             playStartupMelody();
-             delay(500);
-          }
+          playStartupMelody();
           #endif
 
           #ifdef ENABLE_VOICE
-          for(int loop=0; loop<5; loop++) {
-             playSound(TRACK_FOUND_REMOTE);
-             delay(3000); // Wait for track
-          }
+          playSound(TRACK_FOUND_REMOTE);
           #endif
           
+          // Wake up fully
           // Wake up fully after alarm
           lastActivityTime = millis();
       }

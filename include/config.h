@@ -9,7 +9,6 @@
 // if we are careful, or use the P0_06 macros if defined.
 // For safety, we define them as integers matching the GPIO port 0.
 
-#define MOTOR_PIN 6   // P0.06
 #define SDA_PIN   17  // P0.17
 #define SCL_PIN   20  // P0.20
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
