@@ -94,13 +94,6 @@ void setup() {
   // Give Serial some time to start
   delay(100);
   
-  // Motor Setup (Only if NOT using DRV2605)
-  #ifndef ENABLE_DRV2605
-  #ifdef MOTOR_PIN
-  nrf_gpio_cfg_output(MOTOR_PIN);
-  nrf_gpio_pin_write(MOTOR_PIN, 0);
-  #endif
-  #endif
 
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
@@ -703,36 +696,6 @@ void loop() {
         }
         lastHapticMode = hapticMode;
         
-        #else
-        // Standard GPIO Logic (PWM/Strobe)
-        if (hapticMode == HAPTIC_NONE) {
-            nrf_gpio_pin_write(MOTOR_PIN, 0);
-        }
-        else if (hapticMode == HAPTIC_WALL) {
-            if (intensity > 200) {
-                nrf_gpio_pin_write(MOTOR_PIN, 1); // Full ON
-            } else {
-                // Soft vibration (50% duty cycle at high freq)
-                if ((now / 10) % 2 == 0) nrf_gpio_pin_write(MOTOR_PIN, 1);
-                else nrf_gpio_pin_write(MOTOR_PIN, 0);
-            }
-        }
-        else if (hapticMode == HAPTIC_DROPOFF) {
-            // Fast Strobe (Nervous) -> 50ms ON, 50ms OFF
-            if ((now / 50) % 2 == 0) nrf_gpio_pin_write(MOTOR_PIN, 1);
-            else nrf_gpio_pin_write(MOTOR_PIN, 0);
-        }
-        else if (hapticMode == HAPTIC_OBSTACLE) {
-            // Slow Heavy Pulse -> 200ms ON, 200ms OFF
-            if ((now / 200) % 2 == 0) nrf_gpio_pin_write(MOTOR_PIN, 1);
-            else nrf_gpio_pin_write(MOTOR_PIN, 0);
-        }
-        else if (hapticMode == HAPTIC_STAIRS_UP) {
-            // Double Pulse -> 100ms ON, 100ms OFF, 100ms ON, 300ms OFF
-            int cycle = now % 600;
-            if (cycle < 100 || (cycle > 200 && cycle < 300)) nrf_gpio_pin_write(MOTOR_PIN, 1);
-            else nrf_gpio_pin_write(MOTOR_PIN, 0);
-        }
         #endif
       }
       
@@ -844,15 +807,7 @@ void toggleMode() {
         #ifdef ENABLE_DRV2605
         drv.setWaveform(0, 15); // Effect 15: Soft Bump 100%
         drv.setWaveform(1, 0);  // End
-        drv.go();
-        #else
-        nrf_gpio_pin_write(MOTOR_PIN, 1); delay(300);
-        nrf_gpio_pin_write(MOTOR_PIN, 0);
-        #endif
-    }
-    
-    Serial.print("Mode Changed: "); Serial.println(currentMode);
-}
+        drv.go(
 
 // handleHapticsNavigation removed - replaced by Smart Terrain logic
 
@@ -867,9 +822,6 @@ void handleHapticsPrecision(int distance) {
 
     if (distance > 2000) {
         // Silence
-        #ifndef ENABLE_DRV2605
-        nrf_gpio_pin_write(MOTOR_PIN, 0);
-        #endif
         return;
     }
     
@@ -895,11 +847,7 @@ void handleHapticsPrecision(int distance) {
     }
 }
 
-// Helper for Volume Control (Software PWM)
-// Volume: 1-10 (1 = Quiet, 10 = Max/50% Duty)
-void playTone(unsigned int frequency, unsigned long duration, int volume) {
-    #ifdef BUZZER_PIN
-    if (frequency == 0 || volume == 0) {
+// Helper equency == 0 || volume == 0) {
         delay(duration);
         return;
     }
@@ -1291,9 +1239,9 @@ void runHeatVision() {
             analogWrite(MOTOR_PIN, 255);
             #endif
         } else {
-            #ifndef ENABLE_DRV2605
-            analogWrite(MOTOR_PIN, 0);
-            #endif
+            #indif
+        } else {
+            // No action needed for DRV2605 (it handles waveforms)
         }
         Serial.print("Human Detected! Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
     } 
@@ -1305,13 +1253,9 @@ void runHeatVision() {
             drv.setWaveform(0, 52); // Pulsing Strong 1
             drv.setWaveform(1, 0);
             drv.go();
-            #else
-            analogWrite(MOTOR_PIN, 100);
             #endif
         } else {
-            #ifndef ENABLE_DRV2605
-            analogWrite(MOTOR_PIN, 0);
-            #endif
+            // No action needed
         }
         Serial.print("Monitor Detected. Dist: "); Serial.print(avgDist); Serial.print(" Width: "); Serial.println(objectWidth);
     }
@@ -1323,18 +1267,10 @@ void runHeatVision() {
             drv.setWaveform(0, 1); // Effect 1: Strong Click (Sharp feel)
             drv.setWaveform(1, 0);
             drv.go();
-            #else
-            analogWrite(MOTOR_PIN, 150);
             #endif
         } else {
-            #ifndef ENABLE_DRV2605
-            analogWrite(MOTOR_PIN, 0);
-            #endif
+            // No action needed
         }
         Serial.print("Small Object. Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
     } else {
-        #ifndef ENABLE_DRV2605
-        analogWrite(MOTOR_PIN, 0);
-        #endif
-    }
-}
+        // No action needed
