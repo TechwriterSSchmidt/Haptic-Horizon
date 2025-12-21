@@ -841,7 +841,9 @@ void handleHapticsPrecision(int distance) {
     }
 }
 
-// Helper equency == 0 || volume == 0) {
+void playTone(int frequency, int duration, int volume) {
+    #ifdef BUZZER_PIN
+    if (frequency == 0 || volume == 0) {
         delay(duration);
         return;
     }
@@ -1262,3 +1264,5 @@ void runHeatVision() {
         Serial.print("Small Object. Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
     } else {
         // No action needed
+    }
+}
