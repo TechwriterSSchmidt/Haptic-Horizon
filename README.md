@@ -11,6 +11,12 @@ Unlike simple proximity sensors, Haptic Horizon understands context:
 
 It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
 
+## Support my projects
+
+Your tip motivates me to continue developing nerdy stuff for the DIY community. Thank you very much for your support!
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D01HVT9A)
+
 ## Design Philosophy & Research
 Our design is informed by research into assistive technologies, which highlights the importance of:
 
@@ -20,12 +26,6 @@ Our design is informed by research into assistive technologies, which highlights
 4.  **Multimodal Sensing:** We combine LiDAR (active) with Thermal Imaging (passive). As noted in [Sensors 2023, 23(16), 7198](https://www.mdpi.com/1424-8220/23/16/7198), thermal sensors can provide unique environmental cues (like detecting corners or occupancy) that other sensors might miss, while being energy efficient.
 5.  **Anti-Fatigue Feedback:** Based on findings from [DIVA Portal (Haptic Obstacle Detector)](https://www.diva-portal.org/smash/get/diva2:1666232/FULLTEXT01.pdf), continuous vibration can desensitize the skin ("Haptic Fatigue"). We implement **"Pulsed Priority"** feedback (variable rhythm) instead of just variable intensity. This keeps the user alert without numbing their senses.
 6.  **Semantic Navigation:** Inspired by [UZH Research](https://rpg.ifi.uzh.ch/docs/RAL18_Cioffi.pdf), we aim for "Semantic Haptics"—telling you *what* is there (Human vs. Wall), not just *that* something is there. This is realized through our "Heat Vision" mode.
-
-## Support my projects
-
-Your tip motivates me to continue developing nerdy stuff for the DIY community. Thank you very much for your support!
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D01HVT9A)
 
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
@@ -173,11 +173,12 @@ Connect the DRV2605L Breakout Board:
 *   **Motor**: Connect LRA motor wires to the output pads on the DRV2605L.
 
 ## Battery Life Estimation
-*Estimates based on a **2500 mAh 18650 Cell**.*
+*Estimates based on a **2500 mAh 18650 Cell** with **Continuous Sensor Fusion** (LiDAR + Thermal always active).*
 
 | Scenario | Avg. Current | Estimated Runtime |
 | :--- | :--- | :--- |
-| **Active Use (LRA Haptics)** | ~80-120 mA | **~20-30 Hours** |
+| **Active (Single Motor)** | ~130 mA | **~18-20 Hours** |
+| **Active (Stereo Motors)** | ~170 mA | **~14-16 Hours** |
 | **BLE Standby** (App Find only) | ~0.5 mA | **~6-8 Months** |
 | **BLE Standby + Selfie Scanner** | ~1.0 mA | **~3-4 Months** |
 | **Deep Sleep** (Off) | ~0.05 mA | **Years** |
