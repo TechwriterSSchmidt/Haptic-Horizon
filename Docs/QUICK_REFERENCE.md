@@ -2,6 +2,8 @@
 
 *Welcome, Batgirl. Here is your mission briefing for the Haptic Horizon device.*
 
+> **Note:** This device is a "Silent UI" system. It uses only vibration to communicate, ensuring you can always hear your surroundings clearly.
+
 ## 1. Turning On & Off
 
 *   **Turn On:** Press any button **twice quickly** (Double Tap).

@@ -2,7 +2,7 @@
 The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode! 🦇
 
 ## Overview
-Haptic Horizon is a smart wearable navigational aid that fuses **LiDAR (ToF)**, **Thermal Imaging**, and **Motion Sensing** to translate the environment into a rich haptic language.
+Haptic Horizon is a smart wearable **Electronic Travel Aid (ETA)** that fuses **LiDAR (ToF)**, **Thermal Imaging**, and **Motion Sensing** to translate the environment into a rich haptic language.
 
 Unlike simple proximity sensors, Haptic Horizon understands context:
 *   **Smart Terrain:** Detects walls, drop-offs, and stairs using 3D gradient analysis.
@@ -10,6 +10,12 @@ Unlike simple proximity sensors, Haptic Horizon understands context:
 *   **Safety First:** Includes a "Drop Beacon" that calls for help if the device falls.
 
 It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
+
+## Design Philosophy & Research
+Our design is informed by research into assistive technologies (such as [PMC5375851](https://pmc.ncbi.nlm.nih.gov/articles/PMC5375851/)), which highlights the importance of:
+1.  **Silent UI:** We strictly avoid audio feedback (beeps/voice) to prevent masking environmental sounds that are critical for situational awareness.
+2.  **Cognitive Load Management:** Instead of complex "haptic Morse code," we use intuitive "Hapticons" (Haptic Icons) that mimic physical sensations (e.g., a "ramp up" feeling for startup, distinct pulses for battery levels).
+3.  **Vision Substitution:** Haptic Horizon acts as a near-field environmental scanner (ETA), complementing the white cane rather than replacing it.
 
 ## Support my projects
 
