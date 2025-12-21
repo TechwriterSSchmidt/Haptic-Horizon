@@ -53,6 +53,7 @@ int pulseState = 0;
 
 // Power Management
 unsigned long lastActivityTime = 0;
+unsigned long lastVoiceWarningTime = 0; // Cooldown for voice warnings
 // bool isStandby = false; // Removed: We use System OFF now
 
 // Button Debouncing
@@ -70,7 +71,7 @@ void goToSleep(); // Replaces enterStandby
 void calibrateIMU();
 void checkForDrop(int16_t* accelGyro);
 void runHeatVision();
-void playVoice(int trackId);
+void playSound(int trackId);
 
 void playStartupMelody();
 void playShutdownMelody();
@@ -132,7 +133,7 @@ void setup() {
   Serial1.setPins(DYPLAYER_RX_PIN, DYPLAYER_TX_PIN);
   player.begin();
   player.setVolume(VOICE_VOL_DEFAULT);
-  playVoice(TRACK_STARTUP);
+  playSound(TRACK_STARTUP);
   Serial.println("DY-SV17F Initialized.");
   #endif
 
@@ -375,7 +376,7 @@ void loop() {
           #endif
 
           #ifdef ENABLE_VOICE
-          playVoice(TRACK_HEAT_ON);
+          playSound(TRACK_HEAT_ON);
           #endif
       }
   } else { // Released
@@ -389,7 +390,7 @@ void loop() {
           #endif
 
           #ifdef ENABLE_VOICE
-          playVoice(TRACK_HEAT_OFF);
+          playSound(TRACK_HEAT_OFF);
           #endif
       }
   }
@@ -490,6 +491,13 @@ void loop() {
             if (isDropOff) {
                 hapticMode = HAPTIC_DROPOFF;
                 intensity = 255; 
+                
+                #ifdef ENABLE_VOICE
+                if (millis() - lastVoiceWarningTime > 4000) {
+                    playSound(TRACK_WARN_CLIFF);
+                    lastVoiceWarningTime = millis();
+                }
+                #endif
             } 
             else {
                 // B) Stairs Up / Obstacle Detection
@@ -507,6 +515,13 @@ void loop() {
                     // It's a staircase! (Multiple steps)
                     hapticMode = HAPTIC_STAIRS_UP;
                     intensity = 200;
+
+                    #ifdef ENABLE_VOICE
+                    if (millis() - lastVoiceWarningTime > 4000) {
+                        playSound(TRACK_WARN_STAIRS);
+                        lastVoiceWarningTime = millis();
+                    }
+                    #endif
                 }
                 else if (step1 > STAIR_STEP_MIN_HEIGHT) {
                     // Just one step or obstacle (Curb)
@@ -746,7 +761,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report) {
 
           #ifdef ENABLE_VOICE
           for(int loop=0; loop<5; loop++) {
-             playVoice(TRACK_FOUND_REMOTE);
+             playSound(TRACK_FOUND_REMOTE);
              delay(3000); // Wait for track
           }
           #endif
@@ -769,7 +784,7 @@ void toggleMode() {
         #endif
 
         #ifdef ENABLE_VOICE
-        playVoice(TRACK_MODE_PRECISION);
+        playSound(TRACK_MODE_PRECISION);
         #endif
 
         // Feedback: Double Buzz
@@ -794,7 +809,7 @@ void toggleMode() {
         #endif
 
         #ifdef ENABLE_VOICE
-        playVoice(TRACK_MODE_TERRAIN);
+        playSound(TRACK_MODE_TERRAIN);
         #endif
 
         // Feedback: Single Long Buzz
@@ -877,7 +892,7 @@ void playTone(unsigned int frequency, unsigned long duration, int volume) {
     #endif
 }
 
-void playVoice(int trackId) {
+void playSound(int trackId) {
     #ifdef ENABLE_VOICE
     player.playSpecified(trackId);
     #endif
@@ -885,7 +900,7 @@ void playVoice(int trackId) {
 
 void playStartupMelody() {
     #ifdef ENABLE_VOICE
-    playVoice(TRACK_STARTUP);
+    playSound(TRACK_STARTUP);
     #endif
 
     #ifdef BUZZER_PIN
@@ -905,7 +920,7 @@ void playStartupMelody() {
 
 void playShutdownMelody() {
     #ifdef ENABLE_VOICE
-    playVoice(TRACK_SHUTDOWN);
+    playSound(TRACK_SHUTDOWN);
     delay(2000); // Wait for voice to finish
     #endif
 
@@ -954,7 +969,7 @@ void announceBatteryLevel() {
 
     if (voltage <= 3.4) {
         #ifdef ENABLE_VOICE
-        playVoice(TRACK_BATTERY_LOW);
+        playSound(TRACK_BATTERY_LOW);
         #endif
     }
 }
@@ -1015,7 +1030,7 @@ void calibrateIMU() {
             playCalibrationSuccess();
             #endif
             #ifdef ENABLE_VOICE
-            playVoice(TRACK_CALIBRATION);
+            playSound(TRACK_CALIBRATION);
             #endif
         } else {
             Serial.println("Failed to save calibration.");
@@ -1080,7 +1095,7 @@ void checkForDrop(int16_t* accelGyro) {
             // Play alarm track repeatedly (every 3 seconds approx, depending on track length)
             if (millis() % 3000 < 100) {
                 player.setVolume(VOICE_VOL_ALARM);
-                playVoice(TRACK_DROP_ALARM);
+                playSound(TRACK_DROP_ALARM);
             }
             #endif
             

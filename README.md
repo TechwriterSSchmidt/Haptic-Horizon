@@ -50,6 +50,7 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 | Vibration Motor | P0.06 (D1) | PWM (Direct) OR DRV2605L Output |
 | DY-SV17F RX | P0.09 | UART RX (Connect to Module TX) |
 | DY-SV17F TX | P0.10 | UART TX (Connect to Module RX) |
+| Mute Switch | P0.08 | Switch to GND (Silent Mode) |
 | Mode Button | P0.29 (A2) | Button to GND (Internal Pullup) |
 | Trigger Button | P0.31 (D6) | Button to GND (Internal Pullup) |
 | Battery + | B+ | LiPo Positive |
@@ -165,18 +166,26 @@ Connect the DRV2605L Breakout Board:
 ## Audio Files (DY-SV17F)
 The device uses a DY-SV17F module with 4MB Flash storage. The files must be named exactly as follows and placed in the root directory of the module (connect via USB).
 
-| File Name | Track ID | Context | Suggested Text / Content |
+| File Name | Track ID | Context | Suggested SFX / Content |
 | :--- | :--- | :--- | :--- |
-| `00001.mp3` | `TRACK_STARTUP` | Power On | "System Online. Welcome, Batgirl." |
-| `00002.mp3` | `TRACK_MODE_TERRAIN` | Mode Switch | "Smart Terrain Mode active." |
-| `00003.mp3` | `TRACK_MODE_PRECISION` | Mode Switch | "Precision Mode active." |
-| `00004.mp3` | `TRACK_HEAT_ON` | Heat Vision | "Heat Vision activated." |
-| `00005.mp3` | `TRACK_HEAT_OFF` | Heat Vision | "Heat Vision deactivated." |
-| `00006.mp3` | `TRACK_BATTERY_LOW` | Battery Check | "Warning: Battery Low." |
-| `00007.mp3` | `TRACK_DROP_ALARM` | Drop Beacon | "I have fallen. Please help." (Looping Alarm) |
-| `00008.mp3` | `TRACK_CALIBRATION` | IMU Calib | "Calibration complete." |
-| `00009.mp3` | `TRACK_SHUTDOWN` | Auto-Off | "System shutting down." |
-| `00010.mp3` | `TRACK_FOUND_REMOTE` | Find Me | "Remote connected." |
+| `00001.mp3` | `TRACK_STARTUP` | Power On | Futuristic Computer Boot / Power Up |
+| `00002.mp3` | `TRACK_MODE_TERRAIN` | Mode Switch | Sonar Ping / Radar Sweep (Wide feel) |
+| `00003.mp3` | `TRACK_MODE_PRECISION` | Mode Switch | Camera Zoom / Lens Focus (Tight feel) |
+| `00004.mp3` | `TRACK_HEAT_ON` | Heat Vision | Light Saber Ignite (Hum) |
+| `00005.mp3` | `TRACK_HEAT_OFF` | Heat Vision | Light Saber Retract (Power Down) |
+| `00006.mp3` | `TRACK_BATTERY_LOW` | Battery Check | Low Energy Shield / Warning Beep |
+| `00007.mp3` | `TRACK_DROP_ALARM` | Drop Beacon | Loud Distress Beacon / Siren |
+| `00008.mp3` | `TRACK_CALIBRATION` | IMU Calib | Success Chime / Level Up |
+| `00009.mp3` | `TRACK_SHUTDOWN` | Auto-Off | Sci-Fi Power Down |
+| `00010.mp3` | `TRACK_FOUND_REMOTE` | Find Me | Connection Chirp / Pairing Sound |
+| `00011.mp3` | `TRACK_WARN_CLIFF` | Smart Terrain | "Caution: Drop off" / "Achtung: Absatz" |
+| `00012.mp3` | `TRACK_WARN_STAIRS` | Smart Terrain | "Stairs detected" / "Treppe erkannt" |
+| `00013.mp3` | `TRACK_DIST_NEAR` | Status Check | "Less than 1 Meter" |
+| `00014.mp3` | `TRACK_DIST_1M` | Status Check | "One Meter" |
+| `00015.mp3` | `TRACK_DIST_2M` | Status Check | "Two Meters" |
+| `00016.mp3` | `TRACK_DIST_3M` | Status Check | "Three Meters" |
+| `00017.mp3` | `TRACK_DIST_4M` | Status Check | "Four Meters" |
+| `00018.mp3` | `TRACK_DIST_FAR` | Status Check | "Over 4 Meters" |
 
 ## Battery Life Estimation
 *Estimates based on a **2500 mAh 18650 Cell**.*

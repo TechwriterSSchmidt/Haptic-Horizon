@@ -14,6 +14,7 @@
 #define SCL_PIN   20  // P0.20
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
 #define TRIGGER_PIN 31 // P0.31 (Second button for Heat Vision "Trigger")
+#define MUTE_PIN    8  // P0.08 (Toggle Switch: GND = Silent, Open = Audio On)
 
 // Battery Measurement Pin (Requires Voltage Divider if Bat > 3.3V!)
 // Connect Battery (+) -> 100k Resistor -> A0 -> 100k Resistor -> GND
@@ -31,16 +32,24 @@
 #define VOICE_VOL_ALARM   30
 
 // Voice Track IDs (Files must be named 00001.mp3, 00002.mp3, etc.)
-#define TRACK_STARTUP       1 // "System Online. Welcome, Batgirl."
-#define TRACK_MODE_TERRAIN  2 // "Smart Terrain Mode active."
-#define TRACK_MODE_PRECISION 3 // "Precision Mode active."
-#define TRACK_HEAT_ON       4 // "Heat Vision activated."
-#define TRACK_HEAT_OFF      5 // "Heat Vision deactivated."
-#define TRACK_BATTERY_LOW   6 // "Warning: Battery Low."
-#define TRACK_DROP_ALARM    7 // "I have fallen. Please help."
-#define TRACK_CALIBRATION   8 // "Calibration complete."
-#define TRACK_SHUTDOWN      9 // "System shutting down."
-#define TRACK_FOUND_REMOTE  10 // "Remote connected."
+#define TRACK_STARTUP       1 // SFX: Boot Up
+#define TRACK_MODE_TERRAIN  2 // SFX: Sonar Ping
+#define TRACK_MODE_PRECISION 3 // SFX: Camera Focus
+#define TRACK_HEAT_ON       4 // SFX: Light Saber Ignite
+#define TRACK_HEAT_OFF      5 // SFX: Light Saber Retract
+#define TRACK_BATTERY_LOW   6 // SFX: Low Energy Warning
+#define TRACK_DROP_ALARM    7 // SFX: Distress Beacon
+#define TRACK_CALIBRATION   8 // SFX: Success Chime
+#define TRACK_SHUTDOWN      9 // SFX: Power Down
+#define TRACK_FOUND_REMOTE  10 // SFX: Connection Chirp
+#define TRACK_WARN_CLIFF    11 // Voice: "Watch your step" / "Kante"
+#define TRACK_WARN_STAIRS   12 // Voice: "Stairs detected" / "Treppe"
+#define TRACK_DIST_NEAR     13 // Voice: "< 1 Meter"
+#define TRACK_DIST_1M       14 // Voice: "1 Meter"
+#define TRACK_DIST_2M       15 // Voice: "2 Meters"
+#define TRACK_DIST_3M       16 // Voice: "3 Meters"
+#define TRACK_DIST_4M       17 // Voice: "4 Meters"
+#define TRACK_DIST_FAR      18 // Voice: "> 4 Meters"
 
 // ===== Haptic Feedback Thresholds (in mm) =====
 #define DIST_FAR    2500     // > 2.5m No vibration
