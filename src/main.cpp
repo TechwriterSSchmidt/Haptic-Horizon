@@ -1037,20 +1037,24 @@ void checkForDrop(int16_t* accelGyro) {
 }
 
 void runHeatVision() {
-    // 1. Get Distance (Fusion)
-    // Use center zones (5,6,9,10) average
-    int centerDist = 2000; // Default far
-    int valid = 0;
-    int sum = 0;
-    int zones[] = {5, 6, 9, 10};
+    // 1. Analyze ToF Width (Object Size)
+    // Check the middle horizontal slice (Zones 4,5,6,7)
+    int objectWidth = 0;
+    int validZones = 0;
+    int sumDist = 0;
     
-    for (int z : zones) {
-        if (measurementData.target_status[z] == 5 || measurementData.target_status[z] == 9) {
-            sum += measurementData.distance_mm[z];
-            valid++;
+    // We check zones 4,5,6,7 (Row 1)
+    for (int i=4; i<=7; i++) {
+        if (measurementData.target_status[i] == 5 || measurementData.target_status[i] == 9) {
+            if (measurementData.distance_mm[i] < 2000) { // Only consider objects within 2m
+                objectWidth++;
+                sumDist += measurementData.distance_mm[i];
+                validZones++;
+            }
         }
     }
-    if (valid > 0) centerDist = sum / valid;
+    
+    int avgDist = (validZones > 0) ? (sumDist / validZones) : 2000;
 
     // 2. Read pixels
     amg.readPixels(amgPixels);
@@ -1065,28 +1069,30 @@ void runHeatVision() {
         }
     }
     
-    // 3. Fusion Logic
-    bool isHuman = false;
-    bool isSmallObject = false;
+    // 3. Classification Logic
+    int classification = 0; // 0=None, 1=Small(Cat/Cup), 2=Human, 3=Monitor/Machine
     
     if (hotPixelCount > 0) {
-        if (centerDist < 1500) {
-            // Close range (< 1.5m)
-            // Human needs to be BIG (>= 5 pixels)
-            if (hotPixelCount >= 5) isHuman = true;
-            else isSmallObject = true; // Cat, Cup, Laptop
+        if (objectWidth >= 3) {
+            // Wide object (> 60cm) + Heat -> Monitor / PC Tower / Radiator
+            classification = 3; 
+        } else if (objectWidth >= 1) {
+            // Narrower object (20-40cm) + Heat -> Human Head / Torso
+            // Check pixel count to distinguish from small cup
+            if (hotPixelCount >= 3) classification = 2; // Human
+            else classification = 1; // Small object
         } else {
-            // Far range (> 1.5m)
-            // Human appears smaller (>= 2 pixels)
-            if (hotPixelCount >= 2) isHuman = true;
-            else isSmallObject = false; // Noise or too small
+            // Heat but no ToF object? (Maybe out of range or reflection)
+            // Fallback to pixel count
+            if (hotPixelCount >= 4) classification = 2;
+            else classification = 1;
         }
     }
     
-    // Feedback
+    // 4. Feedback
     unsigned long now = millis();
     
-    if (isHuman) {
+    if (classification == 2) { // HUMAN
         // Feedback: Slow "Heartbeat" (Heavy Pulse)
         // Interval: 1000ms
         if (now % 1000 < 150) {
@@ -1102,9 +1108,27 @@ void runHeatVision() {
             analogWrite(MOTOR_PIN, 0);
             #endif
         }
-        Serial.print("Human Detected! Dist: "); Serial.print(centerDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
+        Serial.print("Human Detected! Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
     } 
-    else if (isSmallObject) {
+    else if (classification == 3) { // MONITOR / MACHINE
+        // Feedback: Mechanical "Double Tick" (Artificial feel)
+        // Interval: 1000ms
+        if (now % 1000 < 100) {
+            #ifdef ENABLE_DRV2605
+            drv.setWaveform(0, 52); // Pulsing Strong 1
+            drv.setWaveform(1, 0);
+            drv.go();
+            #else
+            analogWrite(MOTOR_PIN, 100);
+            #endif
+        } else {
+            #ifndef ENABLE_DRV2605
+            analogWrite(MOTOR_PIN, 0);
+            #endif
+        }
+        Serial.print("Monitor Detected. Dist: "); Serial.print(avgDist); Serial.print(" Width: "); Serial.println(objectWidth);
+    }
+    else if (classification == 1) { // SMALL OBJECT
         // Feedback: Fast "Geiger Counter" Ticking
         // Interval: 200ms
         if (now % 200 < 50) {
@@ -1120,7 +1144,7 @@ void runHeatVision() {
             analogWrite(MOTOR_PIN, 0);
             #endif
         }
-        Serial.print("Small Object. Dist: "); Serial.print(centerDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
+        Serial.print("Small Object. Dist: "); Serial.print(avgDist); Serial.print(" Pixels: "); Serial.println(hotPixelCount);
     } else {
         #ifndef ENABLE_DRV2605
         analogWrite(MOTOR_PIN, 0);
