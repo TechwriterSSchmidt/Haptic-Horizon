@@ -4,11 +4,11 @@
 
 ## 1. Turning On & Off
 
-*   **Turn On:** Press the button once.
+*   **Turn On:** Press any button **twice quickly** (Double Tap).
     *   *Signal:* "La Marseillaise" melody.
 *   **Turn Off:** Wait 2 minutes without moving.
     *   *Signal:* Shutdown melody.
-    *   *Note:* The device stays on as long as you are moving.
+    *   *Note:* The device stays on as long as you are moving. It will NOT wake up from motion alone.
 
 ## 2. Haptic Language (Vibration Meanings)
 

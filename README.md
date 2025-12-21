@@ -57,12 +57,13 @@ Your tip motivates me to continue developing nerdy stuff for the DIY community. 
 ## User Guide
 
 ### 1. Power On / Off
-*   **Start / Wake Up:** Press the **Mode Button** once.
-    *   Sound: *La Marseillaise* (Opening)
+*   **Start / Wake Up:** Press any button **twice quickly** (Double Tap).
+    *   *Signal:* "La Marseillaise" melody.
 *   **Auto-Off:** Automatically turns off after **2 minutes** of inactivity.
     *   **Smart Detection:** Stays on as long as you move (Gyroscope detection). Turns off if placed on a table or held still.
     *   Sound: *Windows Shutdown* (Classic)
-    *   The device enters **BLE Standby Mode** (Sensor OFF, Bluetooth ON) to save power.
+    *   The device enters **Deep Sleep** (System OFF) to save power and prevent accidental wakeups.
+    *   *Note:* Motion alone will NOT wake the device. You must double-tap a button.
 
 ### 2. Modes (Toggle via Button)
 Press the **Mode Button** to switch between *Smart Terrain* and *Precision Mode*.

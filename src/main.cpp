@@ -51,7 +51,7 @@ int pulseState = 0;
 
 // Power Management
 unsigned long lastActivityTime = 0;
-bool isStandby = false; // New State for "Find Me" mode
+// bool isStandby = false; // Removed: We use System OFF now
 
 // Button Debouncing
 int lastButtonState = HIGH;
@@ -63,8 +63,8 @@ bool calibrationTriggered = false; // Flag to prevent double action on release
 // void handleHapticsNavigation(int distance); // Removed
 void handleHapticsPrecision(int distance);
 void toggleMode();
-void enterStandby();
-void wakeUp();
+void goToSleep(); // Replaces enterStandby
+// void wakeUp(); // Removed: Reset handles wakeup
 void calibrateIMU();
 void checkForDrop(int16_t* accelGyro);
 void runHeatVision();
@@ -92,6 +92,33 @@ void setup() {
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_input(TRIGGER_PIN, NRF_GPIO_PIN_PULLUP);
+
+  // --- DOUBLE TAP WAKEUP CHECK ---
+  // If we woke up from System OFF via Button, the button is likely still pressed.
+  if (nrf_gpio_pin_read(BUTTON_PIN) == 0 || nrf_gpio_pin_read(TRIGGER_PIN) == 0) {
+      // 1. Wait for Release (Debounce)
+      unsigned long start = millis();
+      while ((nrf_gpio_pin_read(BUTTON_PIN) == 0 || nrf_gpio_pin_read(TRIGGER_PIN) == 0) && millis() - start < 500) {
+          delay(10);
+      }
+      
+      // 2. Wait for Second Tap (1000ms Window)
+      bool secondTap = false;
+      start = millis();
+      while (millis() - start < 1000) {
+          if (nrf_gpio_pin_read(BUTTON_PIN) == 0 || nrf_gpio_pin_read(TRIGGER_PIN) == 0) {
+              secondTap = true;
+              break;
+          }
+          delay(10);
+      }
+      
+      if (!secondTap) {
+          // No second tap -> Go back to sleep
+          goToSleep();
+      }
+  }
+  // If no button pressed (Battery Insert), we boot normally.
 
   // Optional: Buzzer Setup
   #ifdef BUZZER_PIN
@@ -242,25 +269,8 @@ void loop() {
           #endif
           // Reset activity timer so we don't sleep immediately
           lastActivityTime = millis();
-          if (isStandby) wakeUp();
       }
     }
-  }
-
-  // --- Standby Mode Handling ---
-  if (isStandby) {
-      // In Standby, we just wait for Button or BLE
-      // Blink LED or sleep CPU lightly could go here
-      
-      // Check Button to Wake Up
-      int reading = nrf_gpio_pin_read(BUTTON_PIN);
-      if (reading == LOW) { // Button Pressed
-          wakeUp();
-      }
-      
-      // Low Power Wait (System ON, waiting for interrupts/events)
-      sd_app_evt_wait(); 
-      return; // Skip the rest of the loop
   }
 
   unsigned long currentMillis = millis();
@@ -289,7 +299,7 @@ void loop() {
 
   // --- Auto-Off Check ---
   if (currentMillis - lastActivityTime > AUTO_OFF_MS) {
-      enterStandby();
+      goToSleep();
   }
 
   // --- Button Handling ---
@@ -661,52 +671,26 @@ void loop() {
   }
 }
 
-void enterStandby() {
-    Serial.println("Auto-Off: Entering BLE Standby.");
+// enterStandby removed - replaced by goToSleep
+
+void goToSleep() {
+    Serial.println("Going to System OFF (Deep Sleep)...");
+    delay(100); // Allow serial to flush
     
     #ifdef BUZZER_PIN
     playShutdownMelody();
     #endif
     
+    // Configure Wakeup Pins (Sense LOW)
+    nrf_gpio_cfg_sense_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(TRIGGER_PIN, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    
+    // Turn off sensors
     sensor.stopRanging();
-    isStandby = true;
     
-    // Slow down advertising to save power
-    Bluefruit.Advertising.stop();
-    Bluefruit.Advertising.setInterval(3200, 3200); // 2 seconds interval
-    Bluefruit.Advertising.start(0);
-
-    #ifdef ENABLE_SELFIE_FINDER
-    // Start scanning with low duty cycle
-    // Interval: 4000ms (0x1900 units of 0.625ms = 6400)
-    // Window: 200ms (0xC8 units of 0.625ms = 320)
-    // Note: Bluefruit.Scanner.setInterval(window, interval)
-    Bluefruit.Scanner.setInterval(SCAN_WINDOW_MS/0.625, SCAN_INTERVAL_MS/0.625);
-    Bluefruit.Scanner.start(0);
-    Serial.println("Scanner started (Low Duty Cycle)");
-    #endif
-}
-
-void wakeUp() {
-    Serial.println("Waking Up!");
-    isStandby = false;
-    lastActivityTime = millis();
-    
-    #ifdef ENABLE_SELFIE_FINDER
-    Bluefruit.Scanner.stop();
-    #endif
-
-    // Restart Sensor
-    sensor.startRanging();
-    
-    // Speed up advertising
-    Bluefruit.Advertising.stop();
-    Bluefruit.Advertising.setInterval(32, 244);
-    Bluefruit.Advertising.start(0);
-    
-    #ifdef BUZZER_PIN
-    playStartupMelody();
-    #endif
+    // Enter System OFF
+    NRF_POWER->SYSTEMOFF = 1;
+    while(1); // Wait for shutdown
 }
 
 #ifdef ENABLE_SELFIE_FINDER
