@@ -38,12 +38,14 @@ float pitchOffset = MOUNTING_PITCH_OFFSET;
 
 // Power Management
 unsigned long lastActivityTime = 0;
+unsigned long lastTempCheck = 0;
 
 // Forward declaration
 void goToSleep();
 void calibrateIMU();
 void checkForDrop(int16_t* accelGyro);
 void announceBatteryLevel();
+void checkInternalTemperature();
 
 #ifdef ENABLE_SELFIE_FINDER
 void scan_callback(ble_gap_evt_adv_report_t* report);
@@ -159,6 +161,12 @@ void loop() {
   }
 
   unsigned long currentMillis = millis();
+
+  // --- Temperature Check ---
+  if (currentMillis - lastTempCheck > TEMP_CHECK_INTERVAL_MS) {
+      lastTempCheck = currentMillis;
+      checkInternalTemperature();
+  }
 
   // --- IMU Handling ---
   int16_t accelGyro[6]={0};
@@ -355,3 +363,43 @@ void checkForDrop(int16_t* accelGyro) {
         }
     }
 }
+
+void checkInternalTemperature() {
+    // Read BMI160 Temperature (0x20, 0x21)
+    Wire.beginTransmission(BMI160_I2C_ADDR);
+    Wire.write(0x20);
+    Wire.endTransmission();
+    
+    Wire.requestFrom((uint8_t)BMI160_I2C_ADDR, (uint8_t)2);
+    if (Wire.available() == 2) {
+        uint8_t lsb = Wire.read();
+        uint8_t msb = Wire.read();
+        int16_t rawTemp = (int16_t)((msb << 8) | lsb);
+        
+        // Formula from BMI160 Datasheet: 23°C + (raw * 0.001953°C)
+        // 0x0000 is 23°C.
+        float tempC = 23.0 + (rawTemp * 0.001953);
+        
+        // Debug output (optional, can be commented out)
+        // Serial.print("Internal Temp: "); Serial.println(tempC);
+        
+        if (tempC > TEMP_CRITICAL_THRESHOLD) {
+            Serial.print("CRITICAL: Overheat Shutdown! Temp: "); Serial.println(tempC);
+            // Emergency Shutdown Sequence (Long Buzz x2)
+            haptics.playEffect(EFFECT_BUZZ, 0);
+            delay(500);
+            haptics.playEffect(EFFECT_BUZZ, 0);
+            delay(500);
+            goToSleep();
+        } else if (tempC > TEMP_WARNING_THRESHOLD) {
+            Serial.print("WARNING: Overheat! Temp: "); Serial.println(tempC);
+            // Trigger Haptic Warning (3 short pulses)
+            haptics.playEffect(EFFECT_DOUBLE_CLICK, 0); 
+            delay(200);
+            haptics.playEffect(EFFECT_DOUBLE_CLICK, 0);
+            delay(200);
+            haptics.playEffect(EFFECT_DOUBLE_CLICK, 0);
+        }
+    }
+}
+

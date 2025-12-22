@@ -118,6 +118,11 @@ enum OperationMode {
 
 #define WATCHDOG_TIMEOUT_SEC 3 // 3 Seconds Timeout for system freeze protection
 
+// ===== Temperature Monitoring =====
+#define TEMP_WARNING_THRESHOLD 65 // Celsius. Warning if internal temp exceeds this.
+#define TEMP_CRITICAL_THRESHOLD 75 // Celsius. Automatic Shutdown if temp exceeds this.
+#define TEMP_CHECK_INTERVAL_MS 10000 // Check every 10 seconds
+
 // ===== Audio Volume (1-10) =====
 #define VOL_STARTUP     8
 #define VOL_SHUTDOWN    5

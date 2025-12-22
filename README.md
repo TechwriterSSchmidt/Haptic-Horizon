@@ -109,7 +109,16 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode. |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |
+| **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. |
+| **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. |
 | **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). |
+
+### 4. Safety Features
+*   **Drop Alarm:** If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
+*   **Overheat Protection:**
+    *   **Warning (>65°C):** Triple Click (*Click-Click-Click*).
+    *   **Shutdown (>75°C):** Emergency Shutdown (*Long Buzz x2*).
+*   **Find Me:** Use a Bluetooth Camera Shutter (e.g., "AB Shutter3") to make the device buzz if you misplaced it.
 
 ## Advanced Features
 
