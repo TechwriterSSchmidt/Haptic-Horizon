@@ -127,14 +127,13 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. |
 | **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. |
 | **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |
-| **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). |
+| **Drop Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). |
 
 ### 5. Safety Features
 *   **Drop Alarm:** If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
 *   **Overheat Protection:**
     *   **Warning (>65°C):** Triple Click (*Click-Click-Click*).
     *   **Shutdown (>75°C):** Emergency Shutdown (*Long Buzz x2*).
-*   **Find Me:** Use a Bluetooth Camera Shutter (e.g., "AB Shutter3") to make the device buzz if you misplaced it.
 
 ## Advanced Features
 
