@@ -277,6 +277,7 @@ void loop() {
 
 
   // --- SENSOR FUSION & LOGIC ---
+  // Important: updateThermal() must be called to detect hot surfaces!
   terrain.updateThermal();
   terrain.update(pitch);
 

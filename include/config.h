@@ -150,13 +150,6 @@ enum OperationMode {
 #define DROPOFF_MAX_GROUND_MM 3000       // If ground is further than this, it's a drop-off
 #define DIRECTION_SENSITIVITY_MM 300     // Difference in mm to trigger left/right guidance
 
-// ===== Audio Volume (1-10) =====
-#define VOL_STARTUP     8
-#define VOL_SHUTDOWN    5
-#define VOL_MODE_CHANGE 7
-#define VOL_ALARM       10
-#define VOL_BATTERY     8  // Volume for battery announcement
-
 // ===== Find Me Features =====
 // Uncomment to enable searching for a Bluetooth Selfie Button (e.g. "AB Shutter3")
 #define ENABLE_SELFIE_FINDER 
