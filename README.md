@@ -14,6 +14,8 @@ Unlike simple proximity sensors, Haptic Horizon understands context:
 
 It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
 
+👉 **[Printable Quick Reference Guide](docs/QUICK_REFERENCE.md)**
+
 ## Support my projects
 
 Your tip motivates me to continue developing nerdy stuff for the DIY community. Thank you very much for your support!
