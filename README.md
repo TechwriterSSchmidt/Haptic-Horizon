@@ -122,19 +122,36 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Low Battery** | Battery < 15%. | **Soft bump (5min).** | Reminds you to charge soon. |
 
 ### 4. The Haptic Dictionary
+
+#### Cluster A: Navigation & Environment (Continuous / "Analog")
+*Feedback that guides you through the world. These signals are rhythmic and change speed with distance.*
+
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
 | :--- | :--- | :--- | :--- |
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
 | **Stairs Up** | **Ascending Pulse** | *Bzz-BZZ-BZZZ* | Ground level is rising (Stairs/Ramp). |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). |
 | **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). |
-| **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). |
 | **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). |
+
+#### Cluster B: System Status (Discrete / "Digital")
+*Short confirmations for settings and modes. These do not persist.*
+
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning |
+| :--- | :--- | :--- | :--- |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode. |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |
+| **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |
+
+#### Cluster C: Safety & Alerts (Intense / "Urgent")
+*Aggressive signals that demand immediate attention.*
+
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning |
+| :--- | :--- | :--- | :--- |
+| **Glass Alarm** | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). |
+| **Thermal Danger** | **Panic Strobe** | *Panic Pulse* | External object > 60°C (Burn Risk). |
 | **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. |
 | **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. |
-| **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |
 | **Drop Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). |
 
 ### 5. Safety Features

@@ -8,18 +8,34 @@
 
 ## 1. The Haptic Dictionary (What you feel)
 
+### Cluster A: Navigation & Environment
+*Continuous feedback that guides you.*
+
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning | Action |
 | :--- | :--- | :--- | :--- | :--- |
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. | Stop or go around. |
+| **Stairs Up** | **Ascending Pulse** | *Bzz-BZZ-BZZZ* | Ground level is rising (Stairs/Ramp). | Lift feet higher. |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). | **STOP immediately!** |
 | **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). | Proceed with caution. |
 | **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). | - |
+
+### Cluster B: System Status
+*Short confirmations. Information only.*
+
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning | Action |
+| :--- | :--- | :--- | :--- | :--- |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode (Short Range). | - |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode (Long Range). | - |
 | **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
-| **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). | **STOP!** Do not walk through. |
+
+### Cluster C: Safety & Alerts
+*Urgent warnings. Stop immediately.*
+
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning | Action |
+| :--- | :--- | :--- | :--- | :--- |
+| **Glass Alarm** | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). | **STOP!** Do not walk through. |
+| **Hot Surface** | **Fast Strobe** | *Panic Pulse* | External Heat Source > 60°C. | **STOP!** Hot surface nearby. |
 | **Impact Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). | Pick up device. |
-| **Hot Surface (Danger)** | **Fast Strobe** | *Panic Pulse* | External Heat Source > 60°C. | **STOP!** Hot surface nearby. |
 | **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. | Turn off & Cool down. |
 | **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. | **Device turns OFF.** |
 
