@@ -56,13 +56,24 @@ void setup() {
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
 
-  // --- WAKEUP CHECK ---
-  // If button is held during boot, wait to see if it's a spurious wake or intentional
+  // --- WAKEUP CHECK (Enforce 2s Hold) ---
+  // Only check if button is pressed (Wake from Sleep)
   if (nrf_gpio_pin_read(BUTTON_PIN) == 0) {
-      delay(50); // Debounce
-      if (nrf_gpio_pin_read(BUTTON_PIN) != 0) {
-          // It was a glitch, go back to sleep
-          goToSleep();
+      unsigned long startHold = millis();
+      bool validWake = false;
+      while (nrf_gpio_pin_read(BUTTON_PIN) == 0) {
+          if (millis() - startHold > POWER_PRESS_MS) {
+              validWake = true;
+              break; 
+          }
+          delay(10);
+      }
+      
+      if (!validWake) {
+          // Go back to sleep silently (Button released too early)
+          nrf_gpio_cfg_sense_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+          NRF_POWER->SYSTEMOFF = 1;
+          while(1);
       }
   }
 
