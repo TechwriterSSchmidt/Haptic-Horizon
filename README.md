@@ -115,7 +115,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Anti-Fog** | Laser sees "wall" (<1m), Ultrasonic sees "clear" (>2m). | **Ignores laser.** | Prevents false alarms in fog/rain. |
 | **Glass Alarm** | Laser sees "clear" (>2m), Ultrasonic sees "wall" (<1m). | **Sharp tick.** | Warns of invisible glass doors. |
 | **Impact Alarm** | Freefall detected (>2.5g). | **Loud strobe.** | Helps you find the device if dropped. |
-| **Overheat** | Internal temp > 65°C. | **Triple click.** | Warns before damage occurs. |
+| **Overheat** | Internal temp > 65°C. | **Triple click.** | Warns before damage occurs. Safety-off at 75°C. |
 | **Low Battery** | Battery < 15%. | **Soft bump (5min).** | Reminds you to charge soon. |
 
 ### 4. The Haptic Dictionary
