@@ -7,7 +7,6 @@
 #include <InternalFileSystem.h>
 #include <hal/nrf_gpio.h>
 #include <nrf_soc.h>
-#include <bluefruit.h>
 
 // --- NEW CLASSES ---
 #include "SmartTerrain.h"
@@ -22,11 +21,6 @@ HapticEngine haptics;
 
 // Define Secondary I2C Bus (Wire1) using TWIM1
 TwoWire Wire1(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, SDA1_PIN, SCL1_PIN);
-
-// Bluetooth Services
-BLEDfu  bledfu;
-BLEDis  bledis;
-BLEUart bleuart;
 
 // Drop Beacon State
 bool dropDetected = false;
@@ -50,13 +44,11 @@ void checkForDrop(int16_t* accelGyro);
 void announceBatteryLevel();
 void checkInternalTemperature();
 
-#ifdef ENABLE_SELFIE_FINDER
-void scan_callback(ble_gap_evt_adv_report_t* report);
-#endif
-
 void setup() {
+  #ifdef DEBUG_OUTPUT
   Serial.begin(115200);
   delay(100);
+  #endif
 
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
@@ -82,31 +74,6 @@ void setup() {
       }
   }
 
-  // BLE Setup
-  Bluefruit.begin(1, 1); 
-  Bluefruit.setTxPower(4);
-  Bluefruit.setName("Haptic Horizon");
-  bledfu.begin();
-  bledis.setManufacturer("Haptic Horizon Team");
-  bledis.setModel("V1.0");
-  bledis.begin();
-  bleuart.begin();
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addService(bleuart);
-  Bluefruit.ScanResponse.addName();
-  Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244);
-  Bluefruit.Advertising.setFastTimeout(30);
-  Bluefruit.Advertising.start(0);
-
-  #ifdef ENABLE_SELFIE_FINDER
-  Bluefruit.Scanner.setRxCallback(scan_callback);
-  Bluefruit.Scanner.restartOnDisconnect(true);
-  Bluefruit.Scanner.setInterval(160, 80);
-  Bluefruit.Scanner.useActiveScan(true);
-  #endif
-
   // I2C Setup
   Wire.setPins(SDA_PIN, SCL_PIN);
   Wire.begin();
@@ -116,9 +83,17 @@ void setup() {
   Wire1.setClock(I2C_FREQUENCY);
 
   // Init Haptics
-  Serial.println("Initializing Haptics...");
+  DEBUG_PRINTLN("Initializing Haptics...");
   haptics.begin(&Wire, &Wire1);
+  
+  // --- STARTUP SEQUENCE ---
+  // 1. Play Startup Haptic
   haptics.playStartup();
+  
+  // 2. Wait for Sensors to Stabilize (2 Seconds)
+  // This prevents wild vibrations from initial sensor noise
+  DEBUG_PRINTLN("Waiting for sensors to stabilize...");
+  delay(2000);
 
   // Init File System
   if (InternalFS.begin()) {
@@ -132,14 +107,14 @@ void setup() {
   }
 
   // Init BMI160
-  if (bmi160.softReset() != BMI160_OK) Serial.println("BMI160 Reset Failed");
-  if (bmi160.I2cInit(BMI160_I2C_ADDR) != BMI160_OK) Serial.println("BMI160 Init Failed");
+  if (bmi160.softReset() != BMI160_OK) DEBUG_PRINTLN("BMI160 Reset Failed");
+  if (bmi160.I2cInit(BMI160_I2C_ADDR) != BMI160_OK) DEBUG_PRINTLN("BMI160 Init Failed");
 
   // Init Smart Terrain (Sensors)
-  Serial.println("Initializing Sensors...");
+  DEBUG_PRINTLN("Initializing Sensors...");
   terrain.begin(&Wire, &Wire1);
 
-  Serial.println("Haptic Horizon Started");
+  DEBUG_PRINTLN("Haptic Horizon Started");
   lastActivityTime = millis();
 
   // Watchdog
@@ -151,17 +126,6 @@ void setup() {
 
 void loop() {
   NRF_WDT->RR[0] = WDT_RR_RR_Reload;
-
-  // --- BLE Handling ---
-  if (Bluefruit.connected() && bleuart.notifyEnabled()) {
-    while (bleuart.available()) {
-      uint8_t ch = (uint8_t) bleuart.read();
-      if (ch == 'B' || ch == 'F' || ch == 'b' || ch == 'f') {
-          haptics.playFindMe();
-          lastActivityTime = millis();
-      }
-    }
-  }
 
   unsigned long currentMillis = millis();
 
@@ -288,7 +252,7 @@ void loop() {
       if (restModeStartTime == 0) restModeStartTime = currentMillis;
       
       if (currentMillis - restModeStartTime > AUTO_OFF_REST_MS) {
-          Serial.println("Auto-Off: Rest Mode Timeout");
+          DEBUG_PRINTLN("Auto-Off: Rest Mode Timeout");
           goToSleep();
       }
   } else {
@@ -305,7 +269,7 @@ void loop() {
 }
 
 void goToSleep() {
-    Serial.println("Going to System OFF...");
+    DEBUG_PRINTLN("Going to System OFF...");
     delay(100);
     haptics.playShutdown();
     terrain.stop();
@@ -316,22 +280,6 @@ void goToSleep() {
     NRF_POWER->SYSTEMOFF = 1;
     while(1);
 }
-
-#ifdef ENABLE_SELFIE_FINDER
-void scan_callback(ble_gap_evt_adv_report_t* report) {
-  uint8_t buffer[32];
-  memset(buffer, 0, sizeof(buffer));
-  if (Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME, buffer, sizeof(buffer)) ||
-      Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME, buffer, sizeof(buffer))) 
-  {
-      const char* name = (const char*)buffer;
-      if (strstr(name, SELFIE_BUTTON_NAME) != NULL || strstr(name, "Remote") != NULL || strstr(name, "Shutter") != NULL) {
-          haptics.playEffect(EFFECT_PULSING_SHARP, 0);
-          lastActivityTime = millis();
-      }
-  }
-}
-#endif
 
 void announceBatteryLevel() {
     // 1. Silence everything for accurate reading
@@ -356,7 +304,7 @@ void calibrateIMU() {
     // For now, removing the 10s hold from the main loop to simplify.
     // If needed, we can add it back as a triple click or >10s hold.
     
-    Serial.println("Calibrating IMU...");
+    DEBUG_PRINTLN("Calibrating IMU...");
     int16_t accelGyro[6]={0};
     float sumPitch = 0;
     int samples = 0;
@@ -421,10 +369,10 @@ void checkInternalTemperature() {
         float tempC = 23.0 + (rawTemp * 0.001953);
         
         // Debug output (optional, can be commented out)
-        // Serial.print("Internal Temp: "); Serial.println(tempC);
+        // DEBUG_PRINT("Internal Temp: "); DEBUG_PRINTLN(tempC);
         
         if (tempC > TEMP_CRITICAL_THRESHOLD) {
-            Serial.print("CRITICAL: Overheat Shutdown! Temp: "); Serial.println(tempC);
+            DEBUG_PRINT("CRITICAL: Overheat Shutdown! Temp: "); DEBUG_PRINTLN(tempC);
             // Emergency Shutdown Sequence (Long Buzz x2)
             haptics.playEffect(EFFECT_BUZZ, 0);
             delay(500);
@@ -432,7 +380,7 @@ void checkInternalTemperature() {
             delay(500);
             goToSleep();
         } else if (tempC > TEMP_WARNING_THRESHOLD) {
-            Serial.print("WARNING: Overheat! Temp: "); Serial.println(tempC);
+            DEBUG_PRINT("WARNING: Overheat! Temp: "); DEBUG_PRINTLN(tempC);
             // Trigger Haptic Warning (3 short pulses)
             haptics.playEffect(EFFECT_DOUBLE_CLICK, 0); 
             delay(200);

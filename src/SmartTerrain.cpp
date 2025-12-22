@@ -31,13 +31,13 @@ bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
     }
     
     if (_sensorFocus->begin() != 0) { // 0 = Success in STM32duino lib
-        Serial.println("SmartTerrain: VL53L4CX (Focus) not found on Bus 1");
+        DEBUG_PRINTLN("SmartTerrain: VL53L4CX (Focus) not found on Bus 1");
         success = false;
     } else {
         _sensorFocus->VL53L4CX_Off(); // Reset
         _sensorFocus->VL53L4CX_On();
         _sensorFocus->VL53L4CX_StartMeasurement();
-        Serial.println("SmartTerrain: Focus Sensor OK");
+        DEBUG_PRINTLN("SmartTerrain: Focus Sensor OK");
     }
 
     // --- 2. Init Matrix Sensor (VL53L8CX) on Secondary Bus (Wire1) ---
@@ -46,23 +46,23 @@ bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
     }
     
     if (_sensorMatrix->begin() != 0) { // 0 = Success
-        Serial.println("SmartTerrain: VL53L8CX (Matrix) not found on Bus 2");
+        DEBUG_PRINTLN("SmartTerrain: VL53L8CX (Matrix) not found on Bus 2");
         success = false;
     } else {
         _sensorMatrix->init_sensor();
         _sensorMatrix->vl53l8cx_start_ranging();
-        Serial.println("SmartTerrain: Matrix Sensor OK");
+        DEBUG_PRINTLN("SmartTerrain: Matrix Sensor OK");
     }
 
     // --- 3. Init Thermal (MLX90640) on Secondary Bus (Wire1) ---
     if (!_mlx.begin(MLX90640_I2CADDR_DEFAULT, wireSecondary)) {
-        Serial.println("SmartTerrain: MLX90640 not found on Bus 2");
+        DEBUG_PRINTLN("SmartTerrain: MLX90640 not found on Bus 2");
         success = false;
     } else {
         _mlx.setMode(MLX90640_CHESS);
         _mlx.setResolution(MLX90640_ADC_18BIT);
         _mlx.setRefreshRate(MLX90640_2_HZ);
-        Serial.println("SmartTerrain: Thermal Cam OK");
+        DEBUG_PRINTLN("SmartTerrain: Thermal Cam OK");
     }
     
     return success;
@@ -80,8 +80,8 @@ void SmartTerrain::start() {
 
 void SmartTerrain::toggleProfile() {
     _isOutdoor = !_isOutdoor;
-    Serial.print("Profile Switched: ");
-    Serial.println(_isOutdoor ? "OUTDOOR" : "INDOOR");
+    DEBUG_PRINT("Profile Switched: ");
+    DEBUG_PRINTLN(_isOutdoor ? "OUTDOOR" : "INDOOR");
 }
 
 bool SmartTerrain::isOutdoorProfile() {
@@ -111,16 +111,16 @@ void SmartTerrain::updateThermal() {
     // VL53L8CX 8x8 mode: 64 zones. Center rows are 3 and 4.
     // Indices: Row 3 (24-31), Row 4 (32-39)
     
-    for (int i=28; i<=35; i++) { // Center horizontal strip
+    for (int i=THERMAL_ROW_START; i<=THERMAL_ROW_END; i++) { // Center horizontal strip
         if (_matrixData.target_status[i] == 5 || _matrixData.target_status[i] == 9) {
-            if (_matrixData.distance_mm[i] < 2000) {
+            if (_matrixData.distance_mm[i] < THERMAL_VALID_DIST_MM) {
                 objectWidth++;
                 sumDist += _matrixData.distance_mm[i];
                 validZones++;
             }
         }
     }
-    _thermalDist = (validZones > 0) ? (sumDist / validZones) : 2000;
+    _thermalDist = (validZones > 0) ? (sumDist / validZones) : THERMAL_VALID_DIST_MM;
     _thermalWidth = objectWidth;
 
     // 2. Read pixels

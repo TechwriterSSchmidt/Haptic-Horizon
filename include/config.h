@@ -1,5 +1,14 @@
-#pragma once
-#include <Arduino.h>
+// ===== Debugging =====
+// Uncomment to enable Serial Debug Output
+// #define DEBUG_OUTPUT 
+
+#ifdef DEBUG_OUTPUT
+  #define DEBUG_PRINT(x) Serial.print(x)
+  #define DEBUG_PRINTLN(x) Serial.println(x)
+#else
+  #define DEBUG_PRINT(x)
+  #define DEBUG_PRINTLN(x)
+#endif
 
 // ===== Pin Definitions (SuperMini NRF52840 / Nice!Nano) =====
 // We use the direct GPIO numbers (P0.xx) because the board variant 
@@ -14,7 +23,6 @@
 #define SCL1_PIN  8   // P0.08 (Dedicated for MLX90640)
 
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
-// #define TRIGGER_PIN 31 // REMOVED: Trigger is replaced by IMU automation
 
 // --- SYSTEM SETTINGS ---
 #define POWER_PRESS_MS  2000 // 2 seconds press for ON/OFF
@@ -79,6 +87,9 @@ enum OperationMode {
 #define HEAT_THRESHOLD_C 28   // Temperature in Celsius to trigger haptic feedback (Body heat is ~37C, surface temp lower)
 #define HEAT_MAX_C 40         // Temperature for maximum vibration intensity
 #define HEAT_DANGER_C 60      // Temperature in Celsius for "Hot Surface" Warning (Stove, Iron, etc.)
+#define THERMAL_VALID_DIST_MM 2000 // Max distance for valid thermal detection
+#define THERMAL_ROW_START 28  // Start index for center row analysis (VL53L8CX 8x8)
+#define THERMAL_ROW_END 35    // End index for center row analysis
 
 // ===== IMU Settings (BMI160) =====
 #ifdef BMI160_I2C_ADDR
@@ -86,7 +97,6 @@ enum OperationMode {
 #endif
 #define BMI160_I2C_ADDR 0x69 // Default is often 0x68 or 0x69. Check your module!
 #define MOUNTING_PITCH_OFFSET 0 // Calibration: Add +/- degrees if the sensor is not mounted perfectly flat
-#define TILT_THRESHOLD_DOWN -45 // Degrees. (Used for internal logic if needed, but main logic is now continuous)
 #define MOTION_THRESHOLD_GYRO 5 // Degrees/sec. If gyro < this for AUTO_OFF_MS, sleep.
 
 // ===== DRV2605L Haptic Driver Settings =====
@@ -149,10 +159,3 @@ enum OperationMode {
 #define DROPOFF_TOLERANCE_MM 450         // Tolerance for ground distance vs expected height
 #define DROPOFF_MAX_GROUND_MM 3000       // If ground is further than this, it's a drop-off
 #define DIRECTION_SENSITIVITY_MM 300     // Difference in mm to trigger left/right guidance
-
-// ===== Find Me Features =====
-// Uncomment to enable searching for a Bluetooth Selfie Button (e.g. "AB Shutter3")
-#define ENABLE_SELFIE_FINDER 
-#define SELFIE_BUTTON_NAME "AB Shutter3" // Common name for cheap remotes
-#define SCAN_INTERVAL_MS 4000  // Scan every 4 seconds
-#define SCAN_WINDOW_MS   200   // Scan for 200ms (Duty Cycle ~5%)
