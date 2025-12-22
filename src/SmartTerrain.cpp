@@ -278,18 +278,21 @@ void SmartTerrain::update(float pitch) {
         return; 
     }
 
+    // --- GLOBAL SAFETY OVERRIDE: THERMAL DANGER ---
+    // Check for extreme heat (> 60°C) regardless of pitch/zone.
+    if (_thermalClass == THERMAL_DANGER) {
+        _hapticMode = HAPTIC_DROPOFF; // Panic Mode (Fast Strobe)
+        _hapticInterval = 50;
+        return; // Stop processing other sensors, DANGER has priority!
+    }
+
     // --- STEP 4: ZONE LOGIC ---
 
     // ZONE 1: SCAN MODE (Horizontal, > -20 degrees)
-    // Priority: Thermal (Danger) > Thermal (Human) > Glass (Ultrasonic) > Focus Sensor (Precision)
+    // Priority: Thermal (Human) > Glass (Ultrasonic) > Focus Sensor (Precision)
     if (pitch > PITCH_SCAN_THRESHOLD) {
         // A. Thermal Override (Heat Vision)
-        if (_thermalClass == THERMAL_DANGER) {
-            // HOT SURFACE DETECTED (> 60°C)
-            _hapticMode = HAPTIC_DROPOFF; // Reuse Drop-Off Alarm (Fast Strobe) for Danger
-            _hapticInterval = 50;         // Extremely fast pulsing (Panic Mode)
-        }
-        else if (_thermalClass == THERMAL_HUMAN) {
+        if (_thermalClass == THERMAL_HUMAN) {
             _hapticMode = HAPTIC_HUMAN;
             // Direction Logic for Stereo Haptics
             if (_thermalCenter < 10) _wallDirection = -1;
