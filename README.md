@@ -152,14 +152,12 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Thermal Danger** | **Panic Strobe** | *Panic Pulse* | External object > 60°C (Burn Risk). |
 | **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. |
 | **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. |
-| **Drop Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). |
+| **Impact Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). |
 
 ### 5. Safety Features
 *   **Startup Self-Test:** Upon powering on, the device checks all sensors. If a critical sensor (LiDAR, Thermal) is missing or broken, the device will **refuse to start** and emit a distinct error pattern (**3x Long Buzz**) to warn the user that it is not safe to use.
-*   **Drop Alarm:** If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
-*   **Overheat Protection:**
-    *   **Warning (>65°C):**
-    *   **Shutdown (>75°C):**
+
+*(Note: Other safety alerts like **Impact Alarm**, **Thermal Danger**, and **Overheat Protection** are detailed in the **Smart Features** and **Haptic Dictionary** tables above.)*
 
 ## Advanced Features
 
