@@ -29,7 +29,8 @@ Our design is informed by research into assistive technologies, which highlights
 
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
-- **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
+- **Matrix Sensor**: VL53L8CX (Time-of-Flight 8x8 Multizone) - *Wide Angle Obstacle Detection*
+- **Focus Sensor**: VL53L4CX (Time-of-Flight Single Point) - *Precise Aiming*
 - **Thermal Camera**: MLX90640-BAB (32x24 Infrared Array)
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Required - for advanced waveforms & LRA support)
@@ -46,10 +47,10 @@ Our design is informed by research into assistive technologies, which highlights
 ## Pinout (SuperMini NRF52840)
 | GPIO Pin | Function | Connected Component(s) |
 | :--- | :--- | :--- |
-| **P0.17** | I2C SDA (Primary) | VL53L5CX, BMI160, DRV2605L |
-| **P0.20** | I2C SCL (Primary) | VL53L5CX, BMI160, DRV2605L |
-| **P0.06** | I2C SDA (Secondary) | MLX90640 (Thermal Camera), Optional 2nd DRV2605L |
-| **P0.08** | I2C SCL (Secondary) | MLX90640 (Thermal Camera), Optional 2nd DRV2605L |
+| **P0.17** | I2C SDA (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics) |
+| **P0.20** | I2C SCL (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics) |
+| **P0.06** | I2C SDA (Secondary) | VL53L8CX (Matrix), MLX90640 (Thermal) |
+| **P0.08** | I2C SCL (Secondary) | VL53L8CX (Matrix), MLX90640 (Thermal) |
 | **P0.29** | Digital Input | Mode Button |
 | **P0.31** | Digital Input | Trigger Button |
 | **P0.02** | Analog Input | Battery Voltage Divider |

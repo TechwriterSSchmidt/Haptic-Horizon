@@ -32,10 +32,10 @@
 ### Modes (Click Mode Button)
 1.  **Smart Terrain (Default):**
     *   *Best for:* Walking, exploring.
-    *   *Function:* Detects walls, holes, and stairs automatically.
+    *   *Function:* Uses the **Matrix Sensor (VL53L8CX)** to detect walls, holes, and stairs automatically.
 2.  **Precision Mode:**
     *   *Best for:* Finding handles, narrow gaps.
-    *   *Function:* Laser-pointer style. Faster clicks = Closer object.
+    *   *Function:* Uses the **Focus Sensor (VL53L4CX)** like a laser pointer. Faster clicks = Closer object.
 
 ### Heat Vision (Hold Trigger)
 *   **Action:** Press and hold the **Trigger Button**.

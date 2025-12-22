@@ -177,11 +177,11 @@ void SmartTerrain::update(float pitch) {
     // --- HAPTIC DECISION TREE ---
 
     // PRIORITY 1: Focus Sensor (Precise Object)
-    // If Focus sees something CLOSE (< 1.5m) and closer than Matrix average
-    if (focusDist < 1500 && focusDist < matrixDist - 200) {
+    // If Focus sees something CLOSE (< 2.5m) and closer than Matrix average
+    if (focusDist < 2500 && focusDist < matrixDist - 200) {
         // "I am pointing at something specific"
         _hapticMode = HAPTIC_GLASS; // Sharp Tick for precise objects
-        _hapticInterval = map(focusDist, 100, 1500, 50, 500);
+        _hapticInterval = map(focusDist, 100, 2500, 50, 500);
     }
     // PRIORITY 2: Matrix Sensor (General Wall/Obstacle)
     else if (matrixDist < 2000) {
@@ -206,15 +206,26 @@ void SmartTerrain::update(float pitch) {
         }
     }
     
-    // PRIORITY 3: Drop-Off Detection (using Matrix bottom rows)
+    // PRIORITY 3: Drop-Off Detection (Sensor Fusion: Matrix + Focus)
     // If pitch is looking down, check for "missing ground"
     if (pitch < -20) {
-        // Check bottom row (Indices 56-63)
+        // 1. Matrix Check (Wide Area - Bottom Row)
         int groundCount = 0;
         for (int i=56; i<64; i++) {
-            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2000) groundCount++;
+            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500) groundCount++;
         }
-        if (groundCount == 0) {
+
+        // 2. Focus Check (Depth Probe)
+        // Calculate expected distance to floor based on angle
+        float angleRad = abs(pitch) * PI / 180.0;
+        float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
+        
+        // If Focus sensor measures significantly deeper than the floor should be (or sees nothing)
+        bool focusLostGround = (focusDist > expectedDist + 450) || (focusDist > 3000);
+
+        // ALARM CONDITION:
+        // If Matrix sees NO ground (wide failure) OR Focus confirms a deep void (precise failure)
+        if (groundCount == 0 || (focusLostGround && groundCount < 3)) {
             _hapticMode = HAPTIC_DROPOFF; // ALARM! Ground lost!
         }
     }
