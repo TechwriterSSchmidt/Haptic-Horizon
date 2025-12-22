@@ -106,17 +106,17 @@ The device uses an internal gyroscope to switch modes automatically based on how
 ### 3. Smart Features (The "Magic")
 | Feature | Trigger | Action | Benefit |
 | :--- | :--- | :--- | :--- |
-| **Context Shift** | Pitch angle changes (Lift/Lower). | **Switches Mode.** | Seamless transition between Walk & Scan. |
-| **Smart Gradient** | Ground rises "slowly" (Ratio ~1.5x). | **Pulsed Buzz.** | Distinguishes Stairs/Slopes from Walls. |
-| **Void Lock** | Feet see ground, Look-ahead sees void. | **Ramp Down.** | Detects descending stairs & cliffs reliably. |
-| **Tilt Guard** | Device held crooked (Roll). | **Zone Statistics.** | Prevents false alarms by analyzing zones, not lines. |
-| **Table Mute** | Device lies absolutely still for >3s. | **Mutes Haptics.** | Prevents annoying rattling on tables. |
-| **Pocket Mode** | Sensors covered (Bag/Pocket). | **Mutes Haptics.** | Prevents false alarms while carrying it. |
-| **Anti-Fog** | Laser sees "Wall" (<1m), Ultrasonic sees "Clear" (>2m). | **Ignores Laser.** | Prevents false alarms in fog/rain. |
-| **Glass Alarm** | Laser sees "Clear" (>2m), Ultrasonic sees "Wall" (<1m). | **Sharp Tick.** | Warns of invisible glass doors. |
-| **Impact Alarm** | Freefall detected (>2.5g). | **Loud Strobe.** | Helps you find the device if dropped. |
-| **Overheat** | Internal Temp > 65°C. | **Triple Click.** | Warns before damage occurs. |
-| **Low Battery** | Battery < 15%. | **Soft Bump (5min).** | Reminds you to charge soon. |
+| **Context Shift** | Pitch angle changes (lift/lower). | **Switches mode.** | Seamless transition between feet & look-ahead scanning. |
+| **Smart Gradient** | Ground rises "slowly" (ratio ~1.5x). | **Pulsed buzz.** | Distinguishes stairs/slopes from walls. |
+| **Void Lock** | Feet see ground, look-ahead sees void. | **Ramp down.** | Detects descending stairs & cliffs reliably. |
+| **Tilt Guard** | Device held crooked (roll). | **Zone statistics.** | Prevents false alarms by analyzing zones, not lines. |
+| **Table Mute** | Device lies absolutely still for >3s. | **Mutes haptics.** | Prevents annoying rattling on tables. |
+| **Pocket Mode** | Sensors covered (bag/pocket). | **Mutes haptics.** | Prevents false alarms while carrying it. |
+| **Anti-Fog** | Laser sees "wall" (<1m), Ultrasonic sees "clear" (>2m). | **Ignores laser.** | Prevents false alarms in fog/rain. |
+| **Glass Alarm** | Laser sees "clear" (>2m), Ultrasonic sees "wall" (<1m). | **Sharp tick.** | Warns of invisible glass doors. |
+| **Impact Alarm** | Freefall detected (>2.5g). | **Loud strobe.** | Helps you find the device if dropped. |
+| **Overheat** | Internal temp > 65°C. | **Triple click.** | Warns before damage occurs. |
+| **Low Battery** | Battery < 15%. | **Soft bump (5min).** | Reminds you to charge soon. |
 
 ### 4. The Haptic Dictionary
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
