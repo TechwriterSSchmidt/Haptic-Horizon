@@ -2,7 +2,7 @@
 
 *Your silent sixth sense for navigation. Simple, intuitive, and discreet.*
 
-> **Concept:** This device translates the physical world into vibration patterns ("Hapticons"). It does not use sound, so you can stay focused on your environment.
+> **Concept:** This device translates the physical world into vibration patterns ("Hapticons"). It behaves organically: lift it to scan, lower it to walk, drop it to sleep.
 
 ---
 
@@ -12,67 +12,87 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. | Stop or go around. |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). | **STOP immediately!** |
-| **Stairs Up** | **Ramp Up** | Rising Sensation | Ground rises (Stairs up). | Lift your foot. |
-| **Gap / Door** | **Double Click** | *Click-Click* | Open space between obstacles. | Path found. |
-| **Glass Warning** | **Sharp Tick** | *Tick* | Confusing reflection (Mirror/Glass). | Proceed with caution. |
-| **Human** | **Heartbeat** | *Bumm-Bumm...* | Warm object (Person). | - |
-| **Machine** | **Double Tick** | *Tick-Tick...* | Warm electronics (Monitor/PC). | - |
-| **Hot Surface** | **Fast Stutter** | *Bz-Bz-Bz-Bz* | **DANGER!** Very hot surface (>60°C). | **Do not touch!** |
+| **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). | Proceed with caution. |
+| **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). | - |
+| **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode (Short Range). | - |
+| **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode (Long Range). | - |
 | **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
-| **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). | Pick up device. |
+| **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). | **STOP!** Do not walk through. |
+| **Hot Surface (Danger)** | **Fast Strobe** | *Panic Pulse* | External Heat Source > 60°C. | **STOP!** Hot surface nearby. |
+| **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. | Turn off & Cool down. |
+| **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. | **Device turns OFF.** |
 
 ---
 
-## 2. Basic Controls
+## 2. Controls (Single Button)
 
 ### Power
-*   **Turn On:** Double-tap any button. (Feels: *Ramp Up*)
-*   **Turn Off:** Automatic after 2 minutes of no movement. (Feels: *Ramp Down*)
+*   **Turn On/Off:** Press and **Hold for 2 seconds**.
+    *   *On:* Plays Startup Melody.
+    *   *Off:* Plays Shutdown Melody.
 
-### Modes (Click Mode Button)
-1.  **Smart Terrain (Default):**
-    *   *Best for:* Walking, exploring.
-    *   *Function:* Detects walls, holes, and stairs automatically.
-2.  **Precision Mode:**
-    *   *Best for:* Finding handles, narrow gaps.
-    *   *Function:* Laser-pointer style. Faster clicks = Closer object.
+### Profiles (Short Click)
+*   **Action:** Single Click.
+*   **Function:** Toggles between **Indoor** (2m Range, Sensitive) and **Outdoor** (4m Range, Robust).
 
-### Heat Vision (Hold Trigger)
-*   **Action:** Press and hold the **Trigger Button**.
-*   **Function:** Scans for heat sources (People, Pets, Electronics).
-*   **Stereo Note:** If you have two motors, the side with the vibration indicates the direction of the person.
+### Battery Check (Double Click)
+*   **Action:** Double Click.
+*   **Function:** Vibrates 1-4 times to indicate battery level.
 
 ---
 
-## 3. Advanced Features
+## 3. Automatic Modes (How to hold it)
 
-### Stereo Haptics (Directional Feedback)
-*If your device has two motors (Left/Right):*
-*   **Navigation:** If the **Left Handle** vibrates, the obstacle is on the **Left**. Steer away from the vibration.
-*   **Heat Vision:** If the **Right Handle** pulses, the person is on the **Right**.
+The device uses an internal gyroscope to switch modes automatically based on how you hold it.
 
-### Status Check
-*   **Battery Level:** Press and hold **Mode Button** for 2 seconds. Count the clicks (4 is best).
+### Zone 1: Scan Mode (Horizontal)
+*   **Posture:** Hold the device up, pointing forward (like a flashlight).
+*   **Function:** Precision scanning, **Heat Vision**, and **Glass Detection** ("Batgirl-in-Danger").
+*   **Sensors:** 
+    *   **Focus Sensor (Laser):** Detects small objects.
+    *   **Thermal Camera:** Detects people (Heartbeat feedback).
+    *   **Ultrasonic:** Detects glass and transparent surfaces.
+    *   **Anti-Fog (Outdoor Only):** If the Laser sees "Fog" (Close) but Ultrasonic sees "Clear" (Far), the device ignores the false alarm.
 
-### Calibration
-*   *If the device gives false alarms on flat ground:*
-    1.  Place flat on a table.
-    2.  Hold **Mode Button** for **10 seconds**.
-    3.  Wait for the **Triple Click**.
+### Zone 2: Walk Mode (Diagonal)
+*   **Posture:** Hold the device naturally at your side, pointing down at the floor (~45°).
+*   **Function:** Pathfinding. Detects walls, furniture, and **Drop-offs** (Stairs/Holes).
+*   **Sensor:** Uses the **Matrix Sensor** (Wide Angle).
+
+### Zone 3: Rest Mode (Vertical)
+*   **Posture:** Let the device hang straight down on its strap.
+*   **Function:** **Standby.** Sensors and motors are paused to save battery and silence the device.
+*   **Anti-Pendulum:** The device will not wake up if it swings momentarily. You must hold it steady in a scanning position for **0.6 seconds** to wake it up.
+*   **Auto-Off:** If left in Rest Mode for **5 minutes**, the device turns off completely.
+
+### Zone 4: Pocket Mode (Bag/Pocket)
+*   **Trigger:** Putting the device in a bag or pocket (Sensors covered < 10cm).
+*   **Function:** **Muted.** Immediate silence (no vibration) to prevent accidental feedback.
+*   **Auto-Off:** Turns off completely after **5 minutes** to save battery.
 
 ---
 
-## 4. Drop Beacon & Find Me
+## 4. Safety Features
 
-### Drop Beacon (Automatic)
-*   **Scenario:** You drop the device.
-*   **Action:** It waits 5 seconds. If not picked up, it starts a **Loud Strobe Alarm**.
-*   **Stop:** Pick it up or press a button.
+### Drop Alarm
+If you drop the device, it will detect the freefall and impact. After 5 seconds of silence (to let you find it), it will start buzzing loudly so you can locate it by sound/vibration.
 
-### Find via Smartphone
-*   **Scenario:** Device is lost nearby.
-*   **Action:** Connect via App (nRF Connect) and send **'B'**. Device will alarm.
+### Table Mute
+If the device is placed on a table or stable surface (absolutely still for > 3 seconds), it will automatically mute all vibrations to prevent noise. It wakes up instantly when picked up.
 
-### Find via Remote (Selfie Button)
-*   **Scenario:** Device is lost, phone is not handy.
-*   **Action:** Press your Bluetooth Camera Shutter. Device will alarm.
+---
+
+## 5. Limitations & Care (IMPORTANT)
+
+### ⚠️ Weather & Water
+*   **Not Waterproof:** The sensors (Laser, Thermal, Ultrasonic) have open lenses/grills.
+*   **Rain Risk:** Do **NOT** use the device in rain, heavy mist, or snow. Water droplets on the lenses will cause false alarms or permanent damage to the electronics.
+*   **Action:** If it starts raining, put the device in your bag immediately. If it gets wet, turn it off and let it dry completely before using it again.
+
+### ⚠️ Glass & Mirrors
+*   **Laser Limitations:** The main laser sensors may look *through* clean glass.
+*   **Solution:** The device uses a backup **Ultrasonic Sensor** in "Scan Mode" to detect glass. Always scan horizontally if you suspect a glass door.
+
+### ⚠️ Black Surfaces
+*   **Absorption:** Very black, shiny floors or objects may absorb the laser light, making them invisible to the main sensors.
+*   **Safety:** Use the "Walk Mode" carefully on unknown black surfaces.

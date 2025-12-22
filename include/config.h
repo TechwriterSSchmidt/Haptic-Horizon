@@ -1,5 +1,14 @@
-#pragma once
-#include <Arduino.h>
+// ===== Debugging =====
+// Uncomment to enable Serial Debug Output
+// #define DEBUG_OUTPUT 
+
+#ifdef DEBUG_OUTPUT
+  #define DEBUG_PRINT(x) Serial.print(x)
+  #define DEBUG_PRINTLN(x) Serial.println(x)
+#else
+  #define DEBUG_PRINT(x)
+  #define DEBUG_PRINTLN(x)
+#endif
 
 // ===== Pin Definitions (SuperMini NRF52840 / Nice!Nano) =====
 // We use the direct GPIO numbers (P0.xx) because the board variant 
@@ -14,7 +23,10 @@
 #define SCL1_PIN  8   // P0.08 (Dedicated for MLX90640)
 
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
-#define TRIGGER_PIN 31 // P0.31 (Second button for Heat Vision "Trigger")
+
+// --- SYSTEM SETTINGS ---
+#define POWER_PRESS_MS  2000 // 2 seconds press for ON/OFF
+#define DEBOUNCE_MS     50
 
 // Battery Measurement Pin (Requires Voltage Divider if Bat > 3.3V!)
 // Connect Battery (+) -> 100k Resistor -> A0 -> 100k Resistor -> GND
@@ -48,6 +60,7 @@
 #define HAPTIC_STAIRS_UP 4 // Ascending Pulse (Stairs Up detected)
 #define HAPTIC_GAP 5       // Double Click (Door/Gap found)
 #define HAPTIC_GLASS 6     // Sharp Tick (Glass/Mirror warning)
+#define HAPTIC_HUMAN 7     // Heartbeat (Person detected)
 
 // Gap Hunter Settings
 #define GAP_WIDTH_MIN_MM 600   // Minimum width for a door (standard is ~800mm)
@@ -74,11 +87,16 @@ enum OperationMode {
 #define HEAT_THRESHOLD_C 28   // Temperature in Celsius to trigger haptic feedback (Body heat is ~37C, surface temp lower)
 #define HEAT_MAX_C 40         // Temperature for maximum vibration intensity
 #define HEAT_DANGER_C 60      // Temperature in Celsius for "Hot Surface" Warning (Stove, Iron, etc.)
+#define THERMAL_VALID_DIST_MM 2000 // Max distance for valid thermal detection
+#define THERMAL_ROW_START 28  // Start index for center row analysis (VL53L8CX 8x8)
+#define THERMAL_ROW_END 35    // End index for center row analysis
 
 // ===== IMU Settings (BMI160) =====
+#ifdef BMI160_I2C_ADDR
+#undef BMI160_I2C_ADDR
+#endif
 #define BMI160_I2C_ADDR 0x69 // Default is often 0x68 or 0x69. Check your module!
 #define MOUNTING_PITCH_OFFSET 0 // Calibration: Add +/- degrees if the sensor is not mounted perfectly flat
-#define TILT_THRESHOLD_DOWN -45 // Degrees. (Used for internal logic if needed, but main logic is now continuous)
 #define MOTION_THRESHOLD_GYRO 5 // Degrees/sec. If gyro < this for AUTO_OFF_MS, sleep.
 
 // ===== DRV2605L Haptic Driver Settings =====
@@ -103,20 +121,41 @@ enum OperationMode {
 // ===== Power Management =====
 #define AUTO_OFF_MS 120000  // 2 Minutes (2 * 60 * 1000)
                             // Device turns off if no movement (IMU) & no button press for this time.
+#define AUTO_OFF_REST_MS 300000 // 5 Minutes (5 * 60 * 1000)
+                                // Device turns off if in Rest Mode or Handbag (Blocked) for this time.
+
 #define MOVEMENT_THRESHOLD_MM 100 // Minimum distance change to count as "Activity" (prevents staying on when on table)
 
 #define WATCHDOG_TIMEOUT_SEC 3 // 3 Seconds Timeout for system freeze protection
 
-// ===== Audio Volume (1-10) =====
-#define VOL_STARTUP     8
-#define VOL_SHUTDOWN    5
-#define VOL_MODE_CHANGE 7
-#define VOL_ALARM       10
-#define VOL_BATTERY     8  // Volume for battery announcement
+// ===== Temperature Monitoring =====
+#define TEMP_WARNING_THRESHOLD 65 // Celsius. Warning if internal temp exceeds this.
+#define TEMP_CRITICAL_THRESHOLD 75 // Celsius. Automatic Shutdown if temp exceeds this.
+#define TEMP_CHECK_INTERVAL_MS 10000 // Check every 10 seconds
 
-// ===== Find Me Features =====
-// Uncomment to enable searching for a Bluetooth Selfie Button (e.g. "AB Shutter3")
-#define ENABLE_SELFIE_FINDER 
-#define SELFIE_BUTTON_NAME "AB Shutter3" // Common name for cheap remotes
-#define SCAN_INTERVAL_MS 4000  // Scan every 4 seconds
-#define SCAN_WINDOW_MS   200   // Scan for 200ms (Duty Cycle ~5%)
+// ===== Battery Management =====
+#define BATTERY_CHECK_INTERVAL_MS 300000 // 5 Minutes
+#define BATTERY_LOW_VOLTAGE 3.65         // ~15% remaining
+
+// ===== Stillness / Table Mute =====
+#define GYRO_STILL_THRESHOLD 20          // Raw gyro sum threshold for "stillness"
+#define TIME_TO_TABLE_MUTE_MS 3000       // Time to activate Table Mute
+#define TIME_TO_AUTO_CALIB_MS 2000       // Time to trigger Auto-Calibration in Rest Mode
+
+// ===== Pocket Mode / Anti-Fog =====
+#define POCKET_DIST_MATRIX_MM 100        // Max distance for Matrix sensor in pocket
+#define POCKET_DIST_US_MM 300            // Max distance for Ultrasonic in pocket
+#define FOG_LASER_MAX_MM 1000            // Laser sees fog closer than this
+#define FOG_US_MIN_MM 2000               // Ultrasonic sees clear path further than this
+
+#define GLASS_LASER_MIN_MM 2000          // Laser sees through glass (>2m)
+#define GLASS_US_MAX_MM 1000             // Ultrasonic detects glass surface (<1m)
+
+// ===== Smart Terrain Mode Switching =====
+#define PITCH_REST_THRESHOLD -65.0       // Below this (looking down), enter Rest Mode
+#define PITCH_SCAN_THRESHOLD -20.0       // Above this (looking forward), enter Scan Mode
+
+// ===== Drop-Off / Terrain Logic =====
+#define DROPOFF_TOLERANCE_MM 450         // Tolerance for ground distance vs expected height
+#define DROPOFF_MAX_GROUND_MM 3000       // If ground is further than this, it's a drop-off
+#define DIRECTION_SENSITIVITY_MM 300     // Difference in mm to trigger left/right guidance

@@ -4,10 +4,13 @@ The shin-saving, forehead-protecting sixth sense designed exclusively for Samira
 ## Overview
 Haptic Horizon is a smart wearable **Electronic Travel Aid (ETA)** that fuses **LiDAR (ToF)**, **Thermal Imaging**, and **Motion Sensing** to translate the environment into a rich haptic language.
 
+It behaves organically: **Lift it to scan, lower it to walk, drop it to sleep.**
+
 Unlike simple proximity sensors, Haptic Horizon understands context:
 *   **Smart Terrain:** Detects walls, drop-offs, and stairs using 3D gradient analysis.
 *   **Heat Vision:** Identifies people, pets, and electronics by combining heat signatures with object size.
-*   **Find Me:** Automatically vibrates if dropped so it can be easily located. Can also be triggered via Bluetooth (App or Camera Shutter).
+*   **Glass & Fog Detection:** Uses Ultrasonic waves to detect transparent obstacles (Glass) that LiDAR misses, and to filter out false positives from fog or steam.
+*   **Find Me:** Automatically vibrates if dropped so it can be easily located.
 
 It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
 
@@ -29,13 +32,27 @@ Our design is informed by research into assistive technologies, which highlights
 
 ## Hardware
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
-- **Distance Sensor**: VL53L5CX (Time-of-Flight 8x8 Multizone)
+- **Matrix Sensor**: VL53L8CX (Time-of-Flight 8x8 Multizone) - *Wide Angle Obstacle Detection*
+- **Focus Sensor**: VL53L4CX (Time-of-Flight Single Point) - *Precise Aiming*
+- **Ultrasonic Sensor**: GY-US42 (I2C) - *Glass & Transparent Obstacle Detection*
 - **Thermal Camera**: MLX90640-BAB (32x24 Infrared Array)
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Required - for advanced waveforms & LRA support)
 - **Output**: LRA Vibration Motor (Connected to DRV2605L)
-- **Input**: Mode Button, Trigger Button
+- **Input**: Single Mode Button (P0.29)
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
+
+## Power Consumption & Battery Life
+Estimated values based on a **2500mAh LiPo Battery**.
+
+| Mode | Description | Avg. Current | Battery Life |
+| :--- | :--- | :--- | :--- |
+| **Scan Mode** | High Performance (All Sensors + Haptics) | ~170 mA | ~14-15 Hours |
+| **Walk Mode** | Pathfinding (Matrix + Haptics) | ~140 mA | ~17-18 Hours |
+| **Rest Mode** | Standby (Sensors On, Haptics Off) | ~110 mA | ~22 Hours |
+| **Deep Sleep** | System OFF (Button Hold 2s) | < 1 mA | Months |
+
+*Note: "Rest Mode" currently keeps sensors active for instant wake-up. For long storage, always turn the device OFF.*
 
 ## Power Supply (Important!)
 *   **Recommended:** 3.7V LiPo/Li-Ion Battery.
@@ -46,15 +63,77 @@ Our design is informed by research into assistive technologies, which highlights
 ## Pinout (SuperMini NRF52840)
 | GPIO Pin | Function | Connected Component(s) |
 | :--- | :--- | :--- |
-| **P0.17** | I2C SDA (Primary) | VL53L5CX, BMI160, DRV2605L |
-| **P0.20** | I2C SCL (Primary) | VL53L5CX, BMI160, DRV2605L |
-| **P0.06** | I2C SDA (Secondary) | MLX90640 (Thermal Camera), Optional 2nd DRV2605L |
-| **P0.08** | I2C SCL (Secondary) | MLX90640 (Thermal Camera), Optional 2nd DRV2605L |
+| **P0.17** | I2C SDA (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics), GY-US42 (Ultrasonic) |
+| **P0.20** | I2C SCL (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics), GY-US42 (Ultrasonic) |
+| **P0.06** | I2C SDA (Secondary) | VL53L8CX (Matrix), MLX90640 (Thermal) |
+| **P0.08** | I2C SCL (Secondary) | VL53L8CX (Matrix), MLX90640 (Thermal) |
 | **P0.29** | Digital Input | Mode Button |
-| **P0.31** | Digital Input | Trigger Button |
 | **P0.02** | Analog Input | Battery Voltage Divider |
 | **B+** | Power | LiPo Battery Positive |
 | **B-** | Power | LiPo Battery Negative |
+
+## User Guide
+
+### 1. Power & Controls
+*   **Power On/Off:** Press and **Hold for 2 seconds**.
+    *   *On:* Plays Startup Melody.
+    *   *Off:* Plays Shutdown Melody.
+*   **Profile Switch:** Single Click.
+    *   Toggles between **Indoor** (Sensitive, 2m) and **Outdoor** (Robust, 4m).
+*   **Battery Check:** Double Click.
+    *   Vibrates 1-4 times to indicate battery level.
+
+### 2. Automatic Modes (IMU Controlled)
+The device uses an internal gyroscope to switch modes automatically based on how you hold it.
+
+*   **Zone 1: Scan Mode (Horizontal)**
+    *   *Posture:* Hold up like a flashlight.
+    *   *Function:* Precision scanning & **Heat Vision**. Detects door handles, narrow gaps, and **People** (Thermal Heartbeat).
+    *   *Glass/Fog:* Uses Ultrasonic to detect glass doors (which LiDAR sees through) and ignore fog (which LiDAR reflects).
+*   **Zone 2: Walk Mode (Diagonal)**
+    *   *Posture:* Hold naturally at your side (~45° down).
+    *   *Function:* Pathfinding (Matrix Sensor). Detects walls, furniture, and **Drop-offs**.
+*   **Zone 3: Rest Mode (Vertical)**
+    *   *Posture:* Let it hang on the strap.
+    *   *Function:* **Standby.** Sensors paused.
+    *   *Anti-Pendulum:* Requires 0.6s of stable holding to wake up from Rest Mode (prevents accidental scans while walking).
+    *   *Auto-Calibration:* If held still for >2s, the sensors recalibrate automatically.
+    *   *Auto-Off:* Turns off after 5 minutes.
+*   **Zone 4: Pocket Mode (Bag/Pocket)**
+    *   *Trigger:* Sensors covered (< 10cm).
+    *   *Function:* **Muted.** Immediate silence. Turns off after 5 minutes.
+
+### 3. Smart Features (The "Magic")
+| Feature | Trigger | Action | Benefit |
+| :--- | :--- | :--- | :--- |
+| **Table Mute** | Device lies absolutely still for >3s. | **Mutes Haptics.** | Prevents annoying rattling on tables. |
+| **Pocket Mode** | Sensors covered (Bag/Pocket). | **Mutes Haptics.** | Prevents false alarms while carrying it. |
+| **Anti-Fog** | Laser sees "Wall" (<1m), Ultrasonic sees "Clear" (>2m). | **Ignores Laser.** | Prevents false alarms in fog/rain. |
+| **Glass Alarm** | Laser sees "Clear" (>2m), Ultrasonic sees "Wall" (<1m). | **Sharp Tick.** | Warns of invisible glass doors. |
+| **Drop Alarm** | Freefall detected (>2.5g). | **Loud Strobe.** | Helps you find the device if dropped. |
+| **Overheat** | Internal Temp > 65°C. | **Triple Click.** | Warns before damage occurs. |
+| **Low Battery** | Battery < 15%. | **Soft Bump (5min).** | Reminds you to charge soon. |
+
+### 4. The Haptic Dictionary
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning |
+| :--- | :--- | :--- | :--- |
+| **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
+| **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). |
+| **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). |
+| **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). |
+| **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). |
+| **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode. |
+| **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |
+| **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. |
+| **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. |
+| **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |
+| **Drop Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). |
+
+### 5. Safety Features
+*   **Drop Alarm:** If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
+*   **Overheat Protection:**
+    *   **Warning (>65°C):** Triple Click (*Click-Click-Click*).
+    *   **Shutdown (>75°C):** Emergency Shutdown (*Long Buzz x2*).
 
 ## Advanced Features
 
@@ -68,136 +147,6 @@ For the ultimate intuitive experience, Haptic Horizon supports **Dual-Channel Fe
     *   **Navigation:** If a wall is closer on the left, the Thumb vibrates. If on the right, the Fingers vibrate.
     *   **Heat Vision:** If a person is to the left, the Thumb pulses.
     *   **Result:** Samira can navigate blindly by simply "steering away" from the vibration, without needing to scan back and forth.
-
-## User Guide
-
-### 1. Power On / Off
-*   **Start / Wake Up:** Press any button **twice quickly** (Double Tap).
-    *   *Signal:* **Haptic Ramp Up** (Vibration increases).
-*   **Auto-Off:** Automatically turns off after **2 minutes** of inactivity.
-    *   **Smart Detection:** Stays on as long as you move (Gyroscope detection). Turns off if placed on a table or held still.
-    *   *Signal:* **Haptic Ramp Down** (Vibration fades out).
-    *   The device enters **Deep Sleep** (System OFF) to save power and prevent accidental wakeups.
-    *   *Note:* Motion alone will NOT wake the device. You must double-tap a button.
-
-### 2. The Haptic Dictionary (Complete List)
-This table lists every signal the device can produce.
-
-| Category | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
-| :--- | :--- | :--- | :--- | :--- |
-| **System** | Startup | **Ramp Up** | Rising Pitch | Device is waking up. |
-| **System** | Shutdown | **Ramp Down** | Falling Pitch | Device is going to sleep (Auto-Off). |
-| **System** | Battery Full | **4 Pulses** | *Tick-Tick-Tick-Tick* | Battery > 80%. |
-| **System** | Battery Low | **2 Pulses** | *Tick-Tick* | Battery < 20%. Charge soon. |
-| **System** | Calibration | **Triple Click** | *Click-Click-Click* | IMU Calibration saved. |
-| **Terrain** | Wall / Obstacle | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
-| **Terrain** | Drop-off | **Ramp Down** | Falling Sensation | Hole or stairs down! Stop! |
-| **Terrain** | Stairs Up | **Ramp Up** | Rising Sensation | Stairs going up ahead. |
-| **Terrain** | Gap / Door | **Double Click** | *Click-Click* | Open space found (Doorway). |
-| **Terrain** | Glass Warning | **Sharp Tick** | *Tick* | Confusing reflection (Mirror/Glass). |
-| **Heat** | Human | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warm & Narrow). |
-| **Heat** | Machine | **Double Tick** | *Tick-Tick...* | Electronics detected (Warm & Wide). |
-| **Heat** | Small Object | **Geiger Counter** | *Trrrrr...* | Small heat source (Cup, Pet). |
-| **Heat** | Hot Surface | **Fast Stutter** | *Bz-Bz-Bz-Bz* | **DANGER!** Very hot surface (>60°C). |
-| **Alarm** | Drop Beacon | **Loud Strobe** | *BZZZ-BZZZ-BZZZ* | "I fell down! Pick me up!" |
-| **Alarm** | Find Me | **Loud Strobe** | *BZZZ-BZZZ-BZZZ* | "Here I am!" (Triggered via App). |
-
-### 3. Modes (Toggle via Button)
-Press the **Mode Button** to switch between *Smart Terrain* and *Precision Mode*.
-
-#### A. Smart Terrain Mode (Default)
-Uses **Gradient Analysis** (Computer Vision) to understand the environment in 3D. The device compares the upper and lower zones of the sensor to distinguish between walls, stairs, and drop-offs.
-
-#### B. Precision Mode
-*   **Function:** Scans only the center point (Tunnel Vision).
-*   **Feedback:** **Sharp Clicks** (Geiger-Counter Style). Faster clicking = Closer.
-*   **Use Case:** Finding door handles, locating narrow gaps, or checking specific objects.
-
-#### C. Heat Vision Mode (Trigger Activated)
-*   **Activation:** Press and hold the **Trigger Button** (Abzugsfinger). Release to return to previous mode.
-*   **Function:** Uses Sensor Fusion (Thermal + ToF) to identify heat sources.
-*   **Feedback:** See "Heat" section in the Dictionary above.
-
-### 4. Status Check (Battery & Distance)
-*   **Long Press (> 2s) on Mode Button:** The device announces the battery status via haptic pulses.
-    *   **4 Pulses:** Full
-    *   **3 Pulses:** Good
-    *   **2 Pulses:** Low
-    *   **1 Long Pulse:** Critical
-
-### 4. Calibration (IMU)
-If the device is not detecting the ground correctly (e.g., false alarms on flat ground), you can recalibrate the "Zero" position.
-1.  Place the device **flat on a table** (or the surface you want to define as "level").
-2.  Press and **hold the Mode Button for 10 seconds**.
-3.  Wait for the **Success Triple Click**.
-4.  The new calibration is saved permanently.
-
-### 6. Find Me & Drop Beacon Features
-Haptic Horizon includes three ways to locate the device if it is dropped or misplaced. All methods trigger a **Loud Strobe Alarm** (Strong Pulsing Vibration).
-
-#### A. Drop Beacon (Automatic)
-*   **Trigger:** Detects a hard impact (> 2.5G) followed by stillness.
-*   **Behavior:** Waits 5 seconds (grace period). If not picked up, it alarms for 30 seconds.
-*   **Use Case:** You drop the device while walking and it rolls away.
-
-#### B. Smartphone Finder (App)
-*   **Trigger:** Bluetooth LE Command.
-*   **How to use:**
-    1.  Open **nRF Connect** or **Adafruit Bluefruit** app.
-    2.  Connect to **"Haptic Horizon"**.
-    3.  Send character **'B'** or **'F'** via UART.
-*   **Use Case:** Device is lost in the sofa cushions.
-
-#### C. "Selfie Button" Finder (Tactile Remote)
-*   **Trigger:** A standard Bluetooth Camera Shutter (e.g., "AB Shutter3").
-*   **How to use:** Press the button on the remote. The device wakes up and alarms.
-*   **Setup:** Enable `#define ENABLE_SELFIE_FINDER` in `config.h` and set your remote's name.
-*   **Use Case:** Finding the device without needing a smartphone app (Tactile & Fast).
-
-## Documentation
-For an easy-to-read guide for the user, see [Docs/QUICK_REFERENCE.md](Docs/QUICK_REFERENCE.md).
-
-## Configuration (`include/config.h`)
-You can customize the device behavior by editing `include/config.h`:
-*   **Haptic Driver:** `ENABLE_DRV2605` is enabled by default (Required).
-*   **Motor Type:** Uncomment `#define DRV2605_MOTOR_TYPE_LRA` for Linear Resonant Actuators. Default is ERM (Eccentric Rotating Mass).
-*   **Haptic Thresholds:** Adjust distances for vibration intensity.
-*   **Auto-Off Timer:** Default is 2 minutes (`120000` ms).
-*   **Selfie Finder:** Uncomment `#define ENABLE_SELFIE_FINDER` to enable the remote scanner.
-*   **Scanner Settings:** Adjust `SCAN_INTERVAL_MS` to trade off reaction time vs. battery life.
-
-## Wiring (Vibration Motor)
-
-### DRV2605L Driver (Required)
-Connect the DRV2605L Breakout Board:
-*   **VIN**: Connect to **3.3V**
-*   **GND**: Connect to **GND**
-*   **SDA**: Connect to **P0.17** (Primary Bus)
-*   **SCL**: Connect to **P0.20** (Primary Bus)
-*   **Motor**: Connect LRA motor wires to the output pads on the DRV2605L.
-
-## Battery Life Estimation
-*Estimates based on a **2500 mAh 18650 Cell** with **Continuous Sensor Fusion** (LiDAR + Thermal always active).*
-
-| Scenario | Avg. Current | Estimated Runtime |
-| :--- | :--- | :--- |
-| **Active (Single Motor)** | ~130 mA | **~18-20 Hours** |
-| **Active (Stereo Motors)** | ~170 mA | **~14-16 Hours** |
-| **BLE Standby** (App Find only) | ~0.5 mA | **~6-8 Months** |
-| **BLE Standby + Selfie Scanner** | ~1.0 mA | **~3-4 Months** |
-| **Deep Sleep** (Off) | ~0.05 mA | **Years** |
-
-## Contributing
-
-Feel free to open issues or submit pull requests for improvements!
-
-## License
-
-This project is open source. Feel free to use and modify as needed.
-
-## Credits
-
-Created to help Samira navigate the physical obstacles of her life more easily, with a casually elegant flick of her wrist. Batgirl-style!
 
 
 
