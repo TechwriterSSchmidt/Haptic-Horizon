@@ -25,6 +25,10 @@ public:
     // Main Processing Loop
     void update(float pitch);
     
+    // Profile Management
+    void toggleProfile();
+    bool isOutdoorProfile();
+
     // Getters for Haptic Engine
     int getHapticMode();
     int getHapticInterval();
@@ -60,6 +64,11 @@ private:
     int _thermalCenter;
     int _thermalDist;
     int _thermalWidth;
+
+    // Profile & Logic State
+    bool _isOutdoor;
+    unsigned long _wakeUpTimer;
+    bool _inRestMode;
 };
 
 #endif

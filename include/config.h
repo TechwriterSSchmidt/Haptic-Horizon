@@ -14,7 +14,11 @@
 #define SCL1_PIN  8   // P0.08 (Dedicated for MLX90640)
 
 #define BUTTON_PIN 29 // P0.29 (A2/D2 on many Nice!Nano/SuperMini pinouts - check yours!)
-#define TRIGGER_PIN 31 // P0.31 (Second button for Heat Vision "Trigger")
+// #define TRIGGER_PIN 31 // REMOVED: Trigger is replaced by IMU automation
+
+// --- SYSTEM SETTINGS ---
+#define POWER_PRESS_MS  2000 // 2 seconds press for ON/OFF
+#define DEBOUNCE_MS     50
 
 // Battery Measurement Pin (Requires Voltage Divider if Bat > 3.3V!)
 // Connect Battery (+) -> 100k Resistor -> A0 -> 100k Resistor -> GND

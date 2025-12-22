@@ -13,6 +13,11 @@ SmartTerrain::SmartTerrain() {
     _hapticInterval = 150;
     _wallDirection = 0;
     _thermalClass = THERMAL_NONE;
+    
+    // Defaults
+    _isOutdoor = false; // Default to Indoor Profile
+    _wakeUpTimer = 0;
+    _inRestMode = false;
 }
 
 bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
@@ -69,6 +74,16 @@ void SmartTerrain::stop() {
 void SmartTerrain::start() {
     if (_sensorMatrix) _sensorMatrix->vl53l8cx_start_ranging();
     if (_sensorFocus) _sensorFocus->VL53L4CX_StartMeasurement();
+}
+
+void SmartTerrain::toggleProfile() {
+    _isOutdoor = !_isOutdoor;
+    Serial.print("Profile Switched: ");
+    Serial.println(_isOutdoor ? "OUTDOOR" : "INDOOR");
+}
+
+bool SmartTerrain::isOutdoorProfile() {
+    return _isOutdoor;
 }
 
 void SmartTerrain::updateThermal() {
@@ -128,7 +143,35 @@ void SmartTerrain::updateThermal() {
 void SmartTerrain::update(float pitch) {
     if (!_sensorMatrix || !_sensorFocus) return;
 
-    // Check Data Ready
+    // --- STEP 1: IMU STATE MACHINE & LOW-PASS FILTER ---
+    // Zone 3: Rest Mode (Vertical Down, < -65 degrees)
+    if (pitch < -65.0) {
+        _inRestMode = true;
+        _wakeUpTimer = 0; // Reset timer
+        _hapticMode = HAPTIC_NONE;
+        return; // Stop processing
+    } 
+    else {
+        // We are in a potential Active Zone (> -65)
+        if (_wakeUpTimer == 0) {
+            _wakeUpTimer = millis(); // Start timer
+        }
+        
+        // Check if we have been stable for 600ms
+        if (millis() - _wakeUpTimer < 600) {
+            // Still waiting (Anti-Pendulum)
+            _inRestMode = true;
+            _hapticMode = HAPTIC_NONE;
+            return;
+        }
+        
+        // Timer expired, we are officially ACTIVE
+        _inRestMode = false;
+    }
+
+    // --- STEP 2: SENSOR DATA ACQUISITION ---
+    // Only read sensors if we are active
+    
     uint8_t readyMatrix = 0;
     uint8_t readyFocus = 0;
     
@@ -137,16 +180,19 @@ void SmartTerrain::update(float pitch) {
     
     if (!readyMatrix && !readyFocus) return;
 
-    // Get Data
     if (readyMatrix) _sensorMatrix->vl53l8cx_get_ranging_data(&_matrixData);
     if (readyFocus) {
         _sensorFocus->VL53L4CX_GetMultiRangingData(&_focusData);
         _sensorFocus->VL53L4CX_ClearInterruptAndStartMeasurement();
     }
 
-    // --- FUSION LOGIC ---
+    // --- STEP 3: DATA PROCESSING ---
     
-    // 1. Focus Sensor (The "Pointer")
+    // Profile Settings
+    int maxRange = _isOutdoor ? 4000 : 2000;
+    int warnRange = _isOutdoor ? 2500 : 1200;
+
+    // 1. Focus Sensor Data
     int focusDist = 9999;
     if (_focusData.NumberOfObjectsFound > 0) {
         if (_focusData.RangeData[0].RangeStatus == 0) {
@@ -154,12 +200,9 @@ void SmartTerrain::update(float pitch) {
         }
     }
 
-    // 2. Matrix Sensor (The "Scanner")
-    // Calculate average of center zones for general obstacle detection
+    // 2. Matrix Sensor Data (Center Average)
     long matrixSum = 0;
     int matrixCount = 0;
-    // Use center 4x4 block of the 8x8 matrix
-    // Rows 2-5, Cols 2-5
     for (int r=2; r<=5; r++) {
         for (int c=2; c<=5; c++) {
             int idx = r*8 + c;
@@ -174,65 +217,65 @@ void SmartTerrain::update(float pitch) {
     _hapticMode = HAPTIC_NONE;
     _wallDirection = 0;
 
-    // --- HAPTIC DECISION TREE ---
+    // --- STEP 4: ZONE LOGIC ---
 
-    // PRIORITY 1: Focus Sensor (Precise Object)
-    // If Focus sees something CLOSE (< 2.5m) and closer than Matrix average
-    if (focusDist < 2500 && focusDist < matrixDist - 200) {
-        // "I am pointing at something specific"
-        _hapticMode = HAPTIC_GLASS; // Sharp Tick for precise objects
-        _hapticInterval = map(focusDist, 100, 2500, 50, 500);
-    }
-    // PRIORITY 2: Matrix Sensor (General Wall/Obstacle)
-    else if (matrixDist < 2000) {
-        _hapticMode = HAPTIC_WALL;
-        _hapticInterval = map(matrixDist, 300, 2000, 50, 400);
-        
-        // Direction Logic (Left vs Right half of Matrix)
-        long sumLeft = 0, sumRight = 0;
-        int countLeft = 0, countRight = 0;
-        for (int i=0; i<32; i++) { // Left Half (Cols 0-3)
-             if ((i%8) < 4 && _matrixData.target_status[i] == 5) { sumLeft += _matrixData.distance_mm[i]; countLeft++; }
-        }
-        for (int i=0; i<32; i++) { // Right Half (Cols 4-7)
-             if ((i%8) >= 4 && _matrixData.target_status[i] == 5) { sumRight += _matrixData.distance_mm[i]; countRight++; }
-        }
-        
-        if (countLeft > 0 && countRight > 0) {
-            int avgLeft = sumLeft / countLeft;
-            int avgRight = sumRight / countRight;
-            if (avgLeft < avgRight - 300) _wallDirection = -1;
-            else if (avgRight < avgLeft - 300) _wallDirection = 1;
+    // ZONE 1: SCAN MODE (Horizontal, > -20 degrees)
+    // Priority: Focus Sensor (Precision)
+    if (pitch > -20.0) {
+        if (focusDist < maxRange) {
+            _hapticMode = HAPTIC_GLASS; // Sharp Tick
+            _hapticInterval = map(focusDist, 100, maxRange, 50, 600);
+        } 
+        else if (matrixDist < warnRange) {
+            // Fallback to Matrix if Focus misses but something is there
+            _hapticMode = HAPTIC_WALL;
+            _hapticInterval = map(matrixDist, 300, warnRange, 100, 500);
         }
     }
-    
-    // PRIORITY 3: Drop-Off Detection (Sensor Fusion: Matrix + Focus)
-    // If pitch is looking down, check for "missing ground"
-    if (pitch < -20) {
-        // 1. Matrix Check (Wide Area - Bottom Row)
+    // ZONE 2: WALK MODE (Diagonal, -65 to -20 degrees)
+    // Priority: Matrix Sensor (Obstacles) + Drop-Off
+    else {
+        // A. Obstacle Detection (Matrix)
+        if (matrixDist < warnRange) {
+            _hapticMode = HAPTIC_WALL;
+            _hapticInterval = map(matrixDist, 300, warnRange, 50, 400);
+            
+            // Direction Logic
+            long sumLeft = 0, sumRight = 0;
+            int countLeft = 0, countRight = 0;
+            for (int i=0; i<32; i++) { 
+                 if ((i%8) < 4 && _matrixData.target_status[i] == 5) { sumLeft += _matrixData.distance_mm[i]; countLeft++; }
+            }
+            for (int i=0; i<32; i++) { 
+                 if ((i%8) >= 4 && _matrixData.target_status[i] == 5) { sumRight += _matrixData.distance_mm[i]; countRight++; }
+            }
+            if (countLeft > 0 && countRight > 0) {
+                int avgLeft = sumLeft / countLeft;
+                int avgRight = sumRight / countRight;
+                if (avgLeft < avgRight - 300) _wallDirection = -1;
+                else if (avgRight < avgLeft - 300) _wallDirection = 1;
+            }
+        }
+
+        // B. Drop-Off Detection (Sensor Fusion)
+        // Only active in Walk Mode
         int groundCount = 0;
-        for (int i=56; i<64; i++) {
+        for (int i=56; i<64; i++) { // Bottom Row
             if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500) groundCount++;
         }
 
-        // 2. Focus Check (Depth Probe)
-        // Calculate expected distance to floor based on angle
         float angleRad = abs(pitch) * PI / 180.0;
         float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
-        
-        // If Focus sensor measures significantly deeper than the floor should be (or sees nothing)
         bool focusLostGround = (focusDist > expectedDist + 450) || (focusDist > 3000);
 
-        // ALARM CONDITION:
-        // If Matrix sees NO ground (wide failure) OR Focus confirms a deep void (precise failure)
         if (groundCount == 0 || (focusLostGround && groundCount < 3)) {
-            _hapticMode = HAPTIC_DROPOFF; // ALARM! Ground lost!
+            _hapticMode = HAPTIC_DROPOFF; // Override Obstacle Warning
         }
     }
 }
 
 bool SmartTerrain::isDataReady() {
-    return true; // Handled internally
+    return true; 
 }
 
 int SmartTerrain::getHapticMode() { return _hapticMode; }

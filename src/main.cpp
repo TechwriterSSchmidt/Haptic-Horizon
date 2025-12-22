@@ -28,9 +28,6 @@ BLEDfu  bledfu;
 BLEDis  bledis;
 BLEUart bleuart;
 
-OperationMode currentMode = MODE_SMART_TERRAIN;
-OperationMode previousMode = MODE_SMART_TERRAIN;
-
 // Drop Beacon State
 bool dropDetected = false;
 unsigned long dropTime = 0;
@@ -43,12 +40,10 @@ float pitchOffset = MOUNTING_PITCH_OFFSET;
 unsigned long lastActivityTime = 0;
 
 // Forward declaration
-void toggleMode();
 void goToSleep();
 void calibrateIMU();
 void checkForDrop(int16_t* accelGyro);
 void announceBatteryLevel();
-void runHeatVisionFeedback();
 
 #ifdef ENABLE_SELFIE_FINDER
 void scan_callback(ble_gap_evt_adv_report_t* report);
@@ -60,22 +55,15 @@ void setup() {
 
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
-  nrf_gpio_cfg_input(TRIGGER_PIN, NRF_GPIO_PIN_PULLUP);
 
-  // --- DOUBLE TAP WAKEUP CHECK ---
-  if (nrf_gpio_pin_read(BUTTON_PIN) == 0 || nrf_gpio_pin_read(TRIGGER_PIN) == 0) {
-      unsigned long start = millis();
-      while ((nrf_gpio_pin_read(BUTTON_PIN) == 0 || nrf_gpio_pin_read(TRIGGER_PIN) == 0) && millis() - start < 500) delay(10);
-      bool secondTap = false;
-      start = millis();
-      while (millis() - start < 1000) {
-          if (nrf_gpio_pin_read(BUTTON_PIN) == 0 || nrf_gpio_pin_read(TRIGGER_PIN) == 0) {
-              secondTap = true;
-              break;
-          }
-          delay(10);
+  // --- WAKEUP CHECK ---
+  // If button is held during boot, wait to see if it's a spurious wake or intentional
+  if (nrf_gpio_pin_read(BUTTON_PIN) == 0) {
+      delay(50); // Debounce
+      if (nrf_gpio_pin_read(BUTTON_PIN) != 0) {
+          // It was a glitch, go back to sleep
+          goToSleep();
       }
-      if (!secondTap) goToSleep();
   }
 
   // BLE Setup
@@ -178,66 +166,69 @@ void loop() {
 
   if (currentMillis - lastActivityTime > AUTO_OFF_MS) goToSleep();
 
-  // --- Button Handling ---
-  int reading = nrf_gpio_pin_read(BUTTON_PIN);
+  // --- Button Handling (Single Button Logic) ---
   static bool buttonActive = false;
   static unsigned long buttonPressStartTime = 0;
-  static bool calibrationTriggered = false;
+  static int clickCount = 0;
+  static unsigned long lastReleaseTime = 0;
+  static bool longPressHandled = false;
+
+  int reading = nrf_gpio_pin_read(BUTTON_PIN);
 
   if (reading == 0) { // Pressed
       if (!buttonActive) {
           buttonActive = true;
           buttonPressStartTime = currentMillis;
-          calibrationTriggered = false;
+          longPressHandled = false;
       } else {
-          if (!calibrationTriggered && (currentMillis - buttonPressStartTime > 10000)) {
-              calibrateIMU();
-              calibrationTriggered = true;
+          // Check for Long Press (Power Off)
+          if (!longPressHandled && (currentMillis - buttonPressStartTime > POWER_PRESS_MS)) {
+              longPressHandled = true;
+              goToSleep();
           }
       }
   } else { // Released
       if (buttonActive) {
-          unsigned long duration = currentMillis - buttonPressStartTime;
           buttonActive = false;
-          if (!calibrationTriggered && duration > 50) {
-              lastActivityTime = currentMillis;
-              if (duration > 2000) announceBatteryLevel();
-              else toggleMode();
+          unsigned long duration = currentMillis - buttonPressStartTime;
+          
+          if (duration > 50 && !longPressHandled) { // Valid short press
+              clickCount++;
+              lastReleaseTime = currentMillis;
           }
       }
   }
 
-  // --- Trigger Handling ---
-  int triggerReading = nrf_gpio_pin_read(TRIGGER_PIN);
-  if (triggerReading == 0) {
-      if (currentMode != MODE_HEAT_VISION) {
-          previousMode = currentMode;
-          currentMode = MODE_HEAT_VISION;
-          lastActivityTime = currentMillis;
+  // Process Clicks (Delayed to detect double clicks)
+  if (clickCount > 0 && (currentMillis - lastReleaseTime > 400)) {
+      if (clickCount == 1) {
+          // Single Click: Toggle Profile
+          terrain.toggleProfile();
+          if (terrain.isOutdoorProfile()) {
+              haptics.playEffect(EFFECT_DOUBLE_CLICK, 0); // Outdoor: Two clicks
+          } else {
+              haptics.playEffect(EFFECT_SOFT_BUMP, 0); // Indoor: Soft bump
+          }
+      } else if (clickCount >= 2) {
+          // Double Click: Battery Level
+          announceBatteryLevel();
       }
-  } else {
-      if (currentMode == MODE_HEAT_VISION) {
-          currentMode = previousMode;
-          lastActivityTime = currentMillis;
-      }
+      clickCount = 0;
+      lastActivityTime = currentMillis;
   }
+
 
   // --- SENSOR FUSION & LOGIC ---
   terrain.updateThermal();
   terrain.update(pitch);
 
   // --- HAPTIC FEEDBACK ---
-  if (currentMode == MODE_HEAT_VISION) {
-      runHeatVisionFeedback();
-  } else {
-      // Smart Terrain Mode
-      int mode = terrain.getHapticMode();
-      int interval = terrain.getHapticInterval();
-      int dir = terrain.getWallDirection();
-      
-      // Map SmartTerrain modes to HapticEngine effects
-      haptics.playPattern(mode, 255, interval, dir);
-  }
+  int mode = terrain.getHapticMode();
+  int interval = terrain.getHapticInterval();
+  int dir = terrain.getWallDirection();
+  
+  // Map SmartTerrain modes to HapticEngine effects
+  haptics.playPattern(mode, 255, interval, dir);
 }
 
 void goToSleep() {
@@ -246,8 +237,8 @@ void goToSleep() {
     haptics.playShutdown();
     terrain.stop();
     
+    // Wake up on Button Press (Low)
     nrf_gpio_cfg_sense_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
-    nrf_gpio_cfg_sense_input(TRIGGER_PIN, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
     
     NRF_POWER->SYSTEMOFF = 1;
     while(1);
@@ -269,16 +260,6 @@ void scan_callback(ble_gap_evt_adv_report_t* report) {
 }
 #endif
 
-void toggleMode() {
-    if (currentMode == MODE_SMART_TERRAIN) {
-        currentMode = MODE_PRECISION;
-        haptics.playEffect(EFFECT_DOUBLE_CLICK, 0);
-    } else {
-        currentMode = MODE_SMART_TERRAIN;
-        haptics.playEffect(EFFECT_SOFT_BUMP, 0);
-    }
-}
-
 void announceBatteryLevel() {
     // 1. Silence everything for accurate reading
     haptics.stop();
@@ -297,6 +278,11 @@ void announceBatteryLevel() {
 }
 
 void calibrateIMU() {
+    // Calibration logic moved to specific button combo if needed, 
+    // or we can keep it on a very long press (e.g. 10s) if desired.
+    // For now, removing the 10s hold from the main loop to simplify.
+    // If needed, we can add it back as a triple click or >10s hold.
+    
     Serial.println("Calibrating IMU...");
     int16_t accelGyro[6]={0};
     float sumPitch = 0;
@@ -342,28 +328,5 @@ void checkForDrop(int16_t* accelGyro) {
             dropDetected = false;
             dropAlarmActive = false;
         }
-    }
-}
-
-void runHeatVisionFeedback() {
-    unsigned long now = millis();
-    int tClass = terrain.getThermalClass();
-    int tCenter = terrain.getThermalCenter();
-    int dir = 0;
-    
-    if (tCenter < 10) dir = -1;
-    else if (tCenter > 22) dir = 1;
-
-    if (tClass == THERMAL_HUMAN) {
-        if (now % 1000 < 150) haptics.playEffect(EFFECT_TRIPLE_CLICK, dir);
-    } 
-    else if (tClass == THERMAL_MACHINE) {
-        if (now % 1000 < 100) haptics.playEffect(EFFECT_DOUBLE_CLICK, dir);
-    }
-    else if (tClass == THERMAL_SMALL) {
-        if (now % 200 < 50) haptics.playEffect(EFFECT_STRONG_CLICK, dir);
-    }
-    else if (tClass == THERMAL_DANGER) {
-        if (now % 100 < 50) haptics.playEffect(EFFECT_BUZZ, 0); // Always center/both
     }
 }
