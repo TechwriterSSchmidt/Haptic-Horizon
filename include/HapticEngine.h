@@ -50,16 +50,16 @@ private:
     bool _beat2 = false;
     unsigned long _lastTrigger;
     int _lastMode;
+
+    #ifdef ENABLE_DRV2605
+    Adafruit_DRV2605 _drvMain;
+    void runAutoCalibration(Adafruit_DRV2605 &drv);
+    #endif
+
     #ifdef ENABLE_STEREO_HAPTICS
     Adafruit_DRV2605 _drvSec;
     bool _stereoEnabled;
     #endif
-    
-    void runAutoCalibration(Adafruit_DRV2605 &drv);
-    #endif
-
-    unsigned long _lastTrigger;
-    int _lastMode;
 };
 
 #endif
