@@ -52,6 +52,7 @@
 #define HAPTIC_STAIRS_UP 4 // Ascending Pulse (Stairs Up detected)
 #define HAPTIC_GAP 5       // Double Click (Door/Gap found)
 #define HAPTIC_GLASS 6     // Sharp Tick (Glass/Mirror warning)
+#define HAPTIC_HUMAN 7     // Heartbeat (Person detected)
 
 // Gap Hunter Settings
 #define GAP_WIDTH_MIN_MM 600   // Minimum width for a door (standard is ~800mm)

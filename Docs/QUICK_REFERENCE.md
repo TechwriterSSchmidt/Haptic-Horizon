@@ -13,6 +13,7 @@
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. | Stop or go around. |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). | **STOP immediately!** |
 | **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). | Proceed with caution. |
+| **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). | - |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode (Short Range). | - |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode (Long Range). | - |
 | **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
@@ -43,8 +44,8 @@ The device uses an internal gyroscope to switch modes automatically based on how
 
 ### Zone 1: Scan Mode (Horizontal)
 *   **Posture:** Hold the device up, pointing forward (like a flashlight).
-*   **Function:** Precision scanning. Detects door handles, narrow gaps, and obstacles at eye level.
-*   **Sensor:** Uses the **Focus Sensor** (Laser Pointer).
+*   **Function:** Precision scanning & **Heat Vision**. Detects door handles, narrow gaps, and **People**.
+*   **Sensor:** Uses the **Focus Sensor** (Laser) and **Thermal Camera**.
 
 ### Zone 2: Walk Mode (Diagonal)
 *   **Posture:** Hold the device naturally at your side, pointing down at the floor (~45°).

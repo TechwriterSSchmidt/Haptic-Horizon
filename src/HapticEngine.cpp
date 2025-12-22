@@ -142,6 +142,23 @@ void HapticEngine::playPattern(int mode, int intensity, int interval, int direct
             _lastTrigger = now;
         }
     }
+    else if (mode == HAPTIC_HUMAN) {
+        // Heartbeat Pattern: Bump-Bump ... Bump-Bump
+        // We use a modulo timer for the rhythm
+        unsigned long cycle = now % 1200; // 1.2s cycle
+        if (cycle < 100 && !_beat1) {
+            playEffect(EFFECT_SOFT_BUMP, direction);
+            _beat1 = true;
+        }
+        else if (cycle > 200 && cycle < 300 && !_beat2) {
+            playEffect(EFFECT_SOFT_BUMP, direction);
+            _beat2 = true;
+        }
+        else if (cycle > 500) {
+            _beat1 = false;
+            _beat2 = false;
+        }
+    }
     
     _lastMode = mode;
 }

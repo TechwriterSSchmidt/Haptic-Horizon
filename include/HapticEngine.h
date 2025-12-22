@@ -46,8 +46,10 @@ public:
     void go();
 
 private:
-    #ifdef ENABLE_DRV2605
-    Adafruit_DRV2605 _drvMain;
+    bool _beat1 = false;
+    bool _beat2 = false;
+    unsigned long _lastTrigger;
+    int _lastMode;
     #ifdef ENABLE_STEREO_HAPTICS
     Adafruit_DRV2605 _drvSec;
     bool _stereoEnabled;

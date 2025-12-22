@@ -74,7 +74,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
 
 *   **Zone 1: Scan Mode (Horizontal)**
     *   *Posture:* Hold up like a flashlight.
-    *   *Function:* Precision scanning (Focus Sensor). Detects door handles, narrow gaps.
+    *   *Function:* Precision scanning & **Heat Vision**. Detects door handles, narrow gaps, and **People** (Thermal Heartbeat).
 *   **Zone 2: Walk Mode (Diagonal)**
     *   *Posture:* Hold naturally at your side (~45° down).
     *   *Function:* Pathfinding (Matrix Sensor). Detects walls, furniture, and **Drop-offs**.
@@ -89,6 +89,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). |
 | **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). |
+| **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode. |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |
 | **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). |

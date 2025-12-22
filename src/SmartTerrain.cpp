@@ -220,9 +220,18 @@ void SmartTerrain::update(float pitch) {
     // --- STEP 4: ZONE LOGIC ---
 
     // ZONE 1: SCAN MODE (Horizontal, > -20 degrees)
-    // Priority: Focus Sensor (Precision)
+    // Priority: Thermal (Human) > Focus Sensor (Precision)
     if (pitch > -20.0) {
-        if (focusDist < maxRange) {
+        // A. Thermal Override (Heat Vision)
+        if (_thermalClass == THERMAL_HUMAN) {
+            _hapticMode = HAPTIC_HUMAN;
+            // Direction Logic for Stereo Haptics
+            if (_thermalCenter < 10) _wallDirection = -1;
+            else if (_thermalCenter > 22) _wallDirection = 1;
+            else _wallDirection = 0;
+        }
+        // B. Focus Sensor (Precision)
+        else if (focusDist < maxRange) {
             _hapticMode = HAPTIC_GLASS; // Sharp Tick
             _hapticInterval = map(focusDist, 100, maxRange, 50, 600);
         } 
