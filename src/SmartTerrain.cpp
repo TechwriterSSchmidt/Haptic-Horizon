@@ -166,7 +166,7 @@ void SmartTerrain::update(float pitch) {
 
     // --- STEP 1: IMU STATE MACHINE & LOW-PASS FILTER ---
     // Zone 3: Rest Mode (Vertical Down, < -65 degrees)
-    if (pitch < -65.0) {
+    if (pitch < PITCH_REST_THRESHOLD) {
         _inRestMode = true;
         _wakeUpTimer = 0; // Reset timer
         _hapticMode = HAPTIC_NONE;
@@ -282,7 +282,7 @@ void SmartTerrain::update(float pitch) {
 
     // ZONE 1: SCAN MODE (Horizontal, > -20 degrees)
     // Priority: Thermal (Human) > Glass (Ultrasonic) > Focus Sensor (Precision)
-    if (pitch > -20.0) {
+    if (pitch > PITCH_SCAN_THRESHOLD) {
         // A. Thermal Override (Heat Vision)
         if (_thermalClass == THERMAL_HUMAN) {
             _hapticMode = HAPTIC_HUMAN;
@@ -328,8 +328,8 @@ void SmartTerrain::update(float pitch) {
             if (countLeft > 0 && countRight > 0) {
                 int avgLeft = sumLeft / countLeft;
                 int avgRight = sumRight / countRight;
-                if (avgLeft < avgRight - 300) _wallDirection = -1;
-                else if (avgRight < avgLeft - 300) _wallDirection = 1;
+                if (avgLeft < avgRight - DIRECTION_SENSITIVITY_MM) _wallDirection = -1;
+                else if (avgRight < avgLeft - DIRECTION_SENSITIVITY_MM) _wallDirection = 1;
             }
         }
 
@@ -342,10 +342,22 @@ void SmartTerrain::update(float pitch) {
 
         float angleRad = abs(pitch) * PI / 180.0;
         float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
-        bool focusLostGround = (focusDist > expectedDist + 450) || (focusDist > 3000);
+        bool focusLostGround = (focusDist > expectedDist + DROPOFF_TOLERANCE_MM) || (focusDist > DROPOFF_MAX_GROUND_MM);
 
         if (groundCount == 0 || (focusLostGround && groundCount < 3)) {
             _hapticMode = HAPTIC_DROPOFF; // Override Obstacle Warning
+        }
+
+        // C. Stair Detection (Step Up)
+        // Detects if the ground level rises significantly (Step Up)
+        // Height Difference = (Expected - Measured) * sin(angle)
+        if (focusDist < expectedDist && focusDist > 200) { // Valid range
+             float heightDiff = (expectedDist - focusDist) * sin(angleRad);
+             // Check if it's a step (higher than ground, but lower than a full wall)
+             // We allow up to ~75cm height (approx 3-4 steps) to be detected as "Stairs"
+             if (heightDiff > STAIR_STEP_MIN_HEIGHT && heightDiff < STAIR_STEP_MAX_HEIGHT * 2.5) {
+                 _hapticMode = HAPTIC_STAIRS_UP; // Override Wall/Obstacle
+             }
         }
     }
 }

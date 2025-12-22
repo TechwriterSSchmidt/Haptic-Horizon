@@ -141,6 +141,15 @@ enum OperationMode {
 #define GLASS_LASER_MIN_MM 2000          // Laser sees through glass (>2m)
 #define GLASS_US_MAX_MM 1000             // Ultrasonic detects glass surface (<1m)
 
+// ===== Smart Terrain Mode Switching =====
+#define PITCH_REST_THRESHOLD -65.0       // Below this (looking down), enter Rest Mode
+#define PITCH_SCAN_THRESHOLD -20.0       // Above this (looking forward), enter Scan Mode
+
+// ===== Drop-Off / Terrain Logic =====
+#define DROPOFF_TOLERANCE_MM 450         // Tolerance for ground distance vs expected height
+#define DROPOFF_MAX_GROUND_MM 3000       // If ground is further than this, it's a drop-off
+#define DIRECTION_SENSITIVITY_MM 300     // Difference in mm to trigger left/right guidance
+
 // ===== Audio Volume (1-10) =====
 #define VOL_STARTUP     8
 #define VOL_SHUTDOWN    5
