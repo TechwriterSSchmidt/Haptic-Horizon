@@ -110,11 +110,13 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Smart Gradient** | Ground rises "slowly" (ratio ~1.5x). | **Pulsed buzz.** | Distinguishes stairs/slopes from walls. |
 | **Void Lock** | Feet see ground, look-ahead sees void. | **Ramp down.** | Detects descending stairs & cliffs reliably. |
 | **Tilt Guard** | Device held crooked (roll). | **Zone statistics.** | Prevents false alarms by analyzing zones, not lines. |
-| **Smart Calibration** | Held still vertically > 2s. | **Recalibrates.** | Ensures drift-free navigation. |
+| **Smart Calibration** | Held still vertically > 2s (i.e. when placed on a desk). | **Recalibrates.** | Ensures drift-free navigation. |
 | **Table Mute** | Device lies absolutely still for >3s. | **Mutes haptics.** | Prevents annoying rattling on tables. |
 | **Pocket Mode** | Sensors covered (bag/pocket). | **Mutes haptics.** | Prevents false alarms while carrying it. |
 | **Anti-Fog** | Laser sees "wall" (<1m), Ultrasonic sees "clear" (>2m). | **Ignores laser.** | Prevents false alarms in fog/rain. |
 | **Glass Alarm** | Laser sees "clear" (>2m), Ultrasonic sees "wall" (<1m). | **Sharp tick.** | Warns of invisible glass doors. |
+| **Life Sense** | Thermal signature detected. | **Heartbeat.** | Identifies people/pets vs. inanimate objects. |
+| **Thermal Danger** | External object > 60°C. | **Panic strobe.** | Prevents burns from stoves/heaters. |
 | **Impact Alarm** | Freefall detected (>2.5g). | **Loud strobe.** | Helps you find the device if dropped. |
 | **Overheat** | Internal temp > 65°C. | **Triple click.** | Warns before damage occurs. Safety-off at 75°C. |
 | **Low Battery** | Battery < 15%. | **Soft bump (5min).** | Reminds you to charge soon. |
