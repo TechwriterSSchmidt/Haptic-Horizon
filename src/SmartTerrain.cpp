@@ -412,6 +412,10 @@ void SmartTerrain::update(float pitch) {
         // C. Stair Detection (Step Up)
         // Detects if the ground level rises significantly (Step Up)
         // Height Difference = (Expected - Measured) * sin(angle)
+        
+        float angleRad = abs(pitch) * PI / 180.0;
+        float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
+
         if (focusDist < expectedDist && focusDist > 200) { // Valid range
              float heightDiff = (expectedDist - focusDist) * sin(angleRad);
              // Check if it's a step (higher than ground, but lower than a full wall)

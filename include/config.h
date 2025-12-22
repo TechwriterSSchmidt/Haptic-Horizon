@@ -1,3 +1,6 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
 // ===== Debugging =====
 // Uncomment to enable Serial Debug Output
 // #define DEBUG_OUTPUT 
@@ -159,3 +162,5 @@ enum OperationMode {
 #define DROPOFF_TOLERANCE_MM 450         // Tolerance for ground distance vs expected height
 #define DROPOFF_MAX_GROUND_MM 3000       // If ground is further than this, it's a drop-off
 #define DIRECTION_SENSITIVITY_MM 300     // Difference in mm to trigger left/right guidance
+
+#endif // CONFIG_H

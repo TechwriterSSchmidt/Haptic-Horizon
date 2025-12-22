@@ -110,6 +110,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Smart Gradient** | Ground rises "slowly" (ratio ~1.5x). | **Pulsed buzz.** | Distinguishes stairs/slopes from walls. |
 | **Void Lock** | Feet see ground, look-ahead sees void. | **Ramp down.** | Detects descending stairs & cliffs reliably. |
 | **Tilt Guard** | Device held crooked (roll). | **Zone statistics.** | Prevents false alarms by analyzing zones, not lines. |
+| **Smart Calibration** | Held still vertically > 2s. | **Recalibrates.** | Ensures drift-free navigation. |
 | **Table Mute** | Device lies absolutely still for >3s. | **Mutes haptics.** | Prevents annoying rattling on tables. |
 | **Pocket Mode** | Sensors covered (bag/pocket). | **Mutes haptics.** | Prevents false alarms while carrying it. |
 | **Anti-Fog** | Laser sees "wall" (<1m), Ultrasonic sees "clear" (>2m). | **Ignores laser.** | Prevents false alarms in fog/rain. |
