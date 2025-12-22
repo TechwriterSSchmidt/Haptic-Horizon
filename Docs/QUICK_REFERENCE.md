@@ -18,6 +18,7 @@
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode (Long Range). | - |
 | **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
 | **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). | **STOP!** Do not walk through. |
+| **Impact Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). | Pick up device. |
 | **Hot Surface (Danger)** | **Fast Strobe** | *Panic Pulse* | External Heat Source > 60°C. | **STOP!** Hot surface nearby. |
 | **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. | Turn off & Cool down. |
 | **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. | **Device turns OFF.** |
@@ -74,8 +75,8 @@ The device uses an internal gyroscope to switch modes automatically based on how
 
 ## 4. Safety Features
 
-### Drop Alarm
-If you drop the device, it will detect the freefall and impact. After 5 seconds of silence (to let you find it), it will start buzzing loudly so you can locate it by sound/vibration.
+### Impact Alarm
+If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
 
 ### Table Mute
 If the device is placed on a table or stable surface (absolutely still for > 3 seconds), it will automatically mute all vibrations to prevent noise. It wakes up instantly when picked up.

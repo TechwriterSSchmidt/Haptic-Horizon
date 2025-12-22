@@ -149,9 +149,9 @@ For the ultimate intuitive experience, Haptic Horizon supports **Dual-Channel Fe
     *   **LRA 1 (Left Channel):** Under the **Thumb** (for a flashlight grip).
     *   **LRA 2 (Right Channel):** Under the **Fingers**.
 *   **Function:**
-    *   **Navigation:** If a wall is closer on the left, the Thumb vibrates. If on the right, the Fingers vibrate.
+    *   **Navigation:** If a wall is closer on the left, the thumb vibrates. If on the right, the fingers vibrates.
     *   **Heat Vision:** If a person is to the left, the Thumb pulses.
-    *   **Result:** Samira can navigate blindly by simply "steering away" from the vibration, without needing to scan back and forth.
+    *   **Result:** The user can navigate blindly by simply "steering away" from the vibration, without needing to scan back and forth.
 
 
 
