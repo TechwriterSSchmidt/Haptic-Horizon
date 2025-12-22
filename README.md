@@ -125,6 +125,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
 | :--- | :--- | :--- | :--- |
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
+| **Stairs Up** | **Ascending Pulse** | *Bzz-BZZ-BZZZ* | Ground level is rising (Stairs/Ramp). |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). |
 | **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). |
 | **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). |
