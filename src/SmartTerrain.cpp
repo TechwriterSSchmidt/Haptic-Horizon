@@ -360,12 +360,14 @@ void SmartTerrain::update(float pitch) {
             }
         }
 
-        // B. Drop-Off Detection (Zone Split Logic)
-        // We compare the Bottom Row (Feet) with the Top Row (Look Ahead).
+        // B. Drop-Off & Stairs Detection (Smart Zone Statistics)
+        // Instead of single rows, we analyze Top vs Bottom ZONES (3 rows each).
+        // This makes the logic robust against Roll (tilting sideways).
         
         int validBottom = 0;
         long sumBottom = 0;
-        for (int i=56; i<64; i++) { // Bottom Row (Indices 56-63)
+        // Bottom Zone: Rows 5-7 (Indices 40-63) - Looking at feet
+        for (int i=40; i<64; i++) { 
             if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500 && _matrixData.distance_mm[i] > 20) {
                 validBottom++;
                 sumBottom += _matrixData.distance_mm[i];
@@ -374,7 +376,8 @@ void SmartTerrain::update(float pitch) {
 
         int validTop = 0;
         long sumTop = 0;
-        for (int i=0; i<8; i++) { // Top Row (Indices 0-7)
+        // Top Zone: Rows 0-2 (Indices 0-23) - Looking ahead
+        for (int i=0; i<24; i++) { 
             if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500 && _matrixData.distance_mm[i] > 20) {
                 validTop++;
                 sumTop += _matrixData.distance_mm[i];
@@ -382,22 +385,25 @@ void SmartTerrain::update(float pitch) {
         }
 
         // LOGIC 1: DROP-OFF (Stairs Down)
-        // Condition: Ground at feet (Bottom Valid) BUT No Ground ahead (Top Invalid/Far)
-        // We require a solid lock on the bottom (>2 pixels) to avoid false alarms when lifting the device.
-        if (validBottom > 2 && validTop < 2) {
+        // Condition: Strong Ground Lock at feet (>30% valid) BUT Weak/No Ground ahead (<15% valid).
+        // Using 24 pixels per zone: >8 is strong, <4 is weak.
+        if (validBottom > 8 && validTop < 4) {
              _hapticMode = HAPTIC_DROPOFF; // STOP!
         }
 
         // LOGIC 2: STAIRS UP (Rising Ground)
-        // Condition: Both rows see something, but Top is CLOSER than Bottom.
-        // On flat ground, Top (Hypotenuse) is always > Bottom. If Top < Bottom, it's a step or wall.
-        else if (validBottom > 2 && validTop > 2) {
+        // Condition: Both zones see ground.
+        // Physics: 
+        // - Flat Ground: Top distance is MUCH larger than Bottom (Hypotenuse effect, factor > 2.0).
+        // - Wall: Top distance is SMALLER or EQUAL to Bottom.
+        // - Stairs: Top distance is LARGER than Bottom, but NOT AS MUCH as flat ground (factor ~1.2 - 1.5).
+        else if (validBottom > 5 && validTop > 5) {
             float avgBottom = sumBottom / validBottom;
             float avgTop = sumTop / validTop;
             
-            if (avgTop < avgBottom - 100) { // 100mm hysteresis
-                // Rising Ground / Step Up
-                // We treat this as a "Close Obstacle"
+            // We check if the "Growth" of distance is stunted.
+            // If Top is less than 1.6x Bottom, the ground is rising significantly.
+            if (avgTop < (avgBottom * 1.6)) { 
                 _hapticMode = HAPTIC_WALL;
                 _hapticInterval = map(avgTop, 200, 2000, 50, 300);
             }
