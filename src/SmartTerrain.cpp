@@ -33,6 +33,8 @@ bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
     if (_sensorFocus->begin() != 0) { // 0 = Success in STM32duino lib
         DEBUG_PRINTLN("SmartTerrain: VL53L4CX (Focus) not found on Bus 1");
         success = false;
+        delete _sensorFocus;
+        _sensorFocus = nullptr;
     } else {
         _sensorFocus->VL53L4CX_Off(); // Reset
         _sensorFocus->VL53L4CX_On();
@@ -48,6 +50,8 @@ bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
     if (_sensorMatrix->begin() != 0) { // 0 = Success
         DEBUG_PRINTLN("SmartTerrain: VL53L8CX (Matrix) not found on Bus 2");
         success = false;
+        delete _sensorMatrix;
+        _sensorMatrix = nullptr;
     } else {
         _sensorMatrix->init_sensor();
         _sensorMatrix->vl53l8cx_start_ranging();
@@ -155,8 +159,6 @@ void SmartTerrain::updateThermal() {
 }
 
 void SmartTerrain::update(float pitch) {
-    if (!_sensorMatrix || !_sensorFocus) return;
-
     // 0. Table Mute Check
     // If the device is absolutely still (lying on a table), suppress vibration.
     if (_isStill) {
@@ -165,12 +167,11 @@ void SmartTerrain::update(float pitch) {
     }
 
     // --- STEP 1: IMU STATE MACHINE & LOW-PASS FILTER ---
+    bool newRestState = false;
+
     // Zone 3: Rest Mode (Vertical Down, < -65 degrees)
     if (pitch < PITCH_REST_THRESHOLD) {
-        _inRestMode = true;
-        _wakeUpTimer = 0; // Reset timer
-        _hapticMode = HAPTIC_NONE;
-        return; // Stop processing
+        newRestState = true;
     } 
     else {
         // We are in a potential Active Zone (> -65)
@@ -181,17 +182,34 @@ void SmartTerrain::update(float pitch) {
         // Check if we have been stable for 600ms
         if (millis() - _wakeUpTimer < 600) {
             // Still waiting (Anti-Pendulum)
-            _inRestMode = true;
-            _hapticMode = HAPTIC_NONE;
-            return;
+            newRestState = true;
+        } else {
+            // Timer expired, we are officially ACTIVE
+            newRestState = false;
         }
-        
-        // Timer expired, we are officially ACTIVE
+    }
+
+    // State Transition Logic for Power Saving
+    if (newRestState && !_inRestMode) {
+        // Entering Rest Mode -> Stop Sensors
+        DEBUG_PRINTLN("Entering Rest Mode (Sensors Sleep)");
+        stop(); 
+        _inRestMode = true;
+    } else if (!newRestState && _inRestMode) {
+        // Exiting Rest Mode -> Start Sensors
+        DEBUG_PRINTLN("Exiting Rest Mode (Sensors Wake)");
+        start();
         _inRestMode = false;
+    }
+
+    if (_inRestMode) {
+        _hapticMode = HAPTIC_NONE;
+        return;
     }
 
     // --- STEP 2: SENSOR DATA ACQUISITION ---
     // Only read sensors if we are active
+    if (!_sensorMatrix || !_sensorFocus) return;
     
     uint8_t readyMatrix = 0;
     uint8_t readyFocus = 0;

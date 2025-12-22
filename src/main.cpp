@@ -112,7 +112,14 @@ void setup() {
 
   // Init Smart Terrain (Sensors)
   DEBUG_PRINTLN("Initializing Sensors...");
-  terrain.begin(&Wire, &Wire1);
+  if (!terrain.begin(&Wire, &Wire1)) {
+      DEBUG_PRINTLN("CRITICAL ERROR: Sensor Init Failed!");
+      // Error Pattern: 3x Long Buzz
+      haptics.playEffect(EFFECT_BUZZ, 0); delay(500);
+      haptics.playEffect(EFFECT_BUZZ, 0); delay(500);
+      haptics.playEffect(EFFECT_BUZZ, 0);
+      while(1); // Halt
+  }
 
   DEBUG_PRINTLN("Haptic Horizon Started");
   lastActivityTime = millis();
