@@ -360,19 +360,47 @@ void SmartTerrain::update(float pitch) {
             }
         }
 
-        // B. Drop-Off Detection (Sensor Fusion)
-        // Only active in Walk Mode
-        int groundCount = 0;
-        for (int i=56; i<64; i++) { // Bottom Row
-            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500) groundCount++;
+        // B. Drop-Off Detection (Zone Split Logic)
+        // We compare the Bottom Row (Feet) with the Top Row (Look Ahead).
+        
+        int validBottom = 0;
+        long sumBottom = 0;
+        for (int i=56; i<64; i++) { // Bottom Row (Indices 56-63)
+            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500 && _matrixData.distance_mm[i] > 20) {
+                validBottom++;
+                sumBottom += _matrixData.distance_mm[i];
+            }
         }
 
-        float angleRad = abs(pitch) * PI / 180.0;
-        float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
-        bool focusLostGround = (focusDist > expectedDist + DROPOFF_TOLERANCE_MM) || (focusDist > DROPOFF_MAX_GROUND_MM);
+        int validTop = 0;
+        long sumTop = 0;
+        for (int i=0; i<8; i++) { // Top Row (Indices 0-7)
+            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500 && _matrixData.distance_mm[i] > 20) {
+                validTop++;
+                sumTop += _matrixData.distance_mm[i];
+            }
+        }
 
-        if (groundCount == 0 || (focusLostGround && groundCount < 3)) {
-            _hapticMode = HAPTIC_DROPOFF; // Override Obstacle Warning
+        // LOGIC 1: DROP-OFF (Stairs Down)
+        // Condition: Ground at feet (Bottom Valid) BUT No Ground ahead (Top Invalid/Far)
+        // We require a solid lock on the bottom (>2 pixels) to avoid false alarms when lifting the device.
+        if (validBottom > 2 && validTop < 2) {
+             _hapticMode = HAPTIC_DROPOFF; // STOP!
+        }
+
+        // LOGIC 2: STAIRS UP (Rising Ground)
+        // Condition: Both rows see something, but Top is CLOSER than Bottom.
+        // On flat ground, Top (Hypotenuse) is always > Bottom. If Top < Bottom, it's a step or wall.
+        else if (validBottom > 2 && validTop > 2) {
+            float avgBottom = sumBottom / validBottom;
+            float avgTop = sumTop / validTop;
+            
+            if (avgTop < avgBottom - 100) { // 100mm hysteresis
+                // Rising Ground / Step Up
+                // We treat this as a "Close Obstacle"
+                _hapticMode = HAPTIC_WALL;
+                _hapticInterval = map(avgTop, 200, 2000, 50, 300);
+            }
         }
 
         // C. Stair Detection (Step Up)
