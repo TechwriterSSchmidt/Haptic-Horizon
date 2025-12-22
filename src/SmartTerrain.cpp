@@ -270,7 +270,8 @@ void SmartTerrain::update(float pitch) {
     for (int r=2; r<=5; r++) {
         for (int c=2; c<=5; c++) {
             int idx = r*8 + c;
-            if (_matrixData.target_status[idx] == 5) {
+            // Filter: Status 5 (Valid) AND Distance > 20mm (Impossible Value Filter)
+            if (_matrixData.target_status[idx] == 5 && _matrixData.distance_mm[idx] > 20) {
                 matrixSum += _matrixData.distance_mm[idx];
                 matrixCount++;
             }

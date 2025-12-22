@@ -118,7 +118,7 @@ void setup() {
       haptics.playEffect(EFFECT_BUZZ, 0); delay(500);
       haptics.playEffect(EFFECT_BUZZ, 0); delay(500);
       haptics.playEffect(EFFECT_BUZZ, 0);
-      while(1); // Halt
+      goToSleep(); // Force Sleep to avoid Watchdog Reset Loop
   }
 
   DEBUG_PRINTLN("Haptic Horizon Started");
@@ -229,7 +229,7 @@ void loop() {
   }
 
   // Process Clicks (Delayed to detect double clicks)
-  if (clickCount > 0 && (currentMillis - lastReleaseTime > 400)) {
+  if (clickCount > 0 && (currentMillis - lastReleaseTime > 500)) {
       if (clickCount == 1) {
           // Single Click: Toggle Profile
           terrain.toggleProfile();
