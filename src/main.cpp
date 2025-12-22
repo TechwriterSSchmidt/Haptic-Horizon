@@ -233,6 +233,20 @@ void loop() {
   terrain.updateThermal();
   terrain.update(pitch);
 
+  // --- AUTO-OFF LOGIC (Rest Mode / Handbag) ---
+  static unsigned long restModeStartTime = 0;
+  
+  if (terrain.isInRestMode() || terrain.isBlocked()) {
+      if (restModeStartTime == 0) restModeStartTime = currentMillis;
+      
+      if (currentMillis - restModeStartTime > AUTO_OFF_REST_MS) {
+          Serial.println("Auto-Off: Rest Mode Timeout");
+          goToSleep();
+      }
+  } else {
+      restModeStartTime = 0; // Reset timer if active
+  }
+
   // --- HAPTIC FEEDBACK ---
   int mode = terrain.getHapticMode();
   int interval = terrain.getHapticInterval();

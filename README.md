@@ -94,6 +94,10 @@ The device uses an internal gyroscope to switch modes automatically based on how
     *   *Posture:* Let it hang on the strap.
     *   *Function:* **Standby.** Sensors paused.
     *   *Anti-Pendulum:* Requires 0.6s of stable holding to wake up from Rest Mode (prevents accidental scans while walking).
+    *   *Auto-Off:* Turns off after 5 minutes.
+*   **Zone 4: Pocket Mode (Bag/Pocket)**
+    *   *Trigger:* Sensors covered (< 10cm).
+    *   *Function:* **Muted.** Immediate silence. Turns off after 5 minutes.
 
 ### 3. The Haptic Dictionary
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning |

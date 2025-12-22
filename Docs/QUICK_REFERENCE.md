@@ -50,6 +50,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
     *   **Focus Sensor (Laser):** Detects small objects.
     *   **Thermal Camera:** Detects people (Heartbeat feedback).
     *   **Ultrasonic:** Detects glass and transparent surfaces.
+    *   **Anti-Fog (Outdoor Only):** If the Laser sees "Fog" (Close) but Ultrasonic sees "Clear" (Far), the device ignores the false alarm.
 
 ### Zone 2: Walk Mode (Diagonal)
 *   **Posture:** Hold the device naturally at your side, pointing down at the floor (~45°).
@@ -60,6 +61,12 @@ The device uses an internal gyroscope to switch modes automatically based on how
 *   **Posture:** Let the device hang straight down on its strap.
 *   **Function:** **Standby.** Sensors and motors are paused to save battery and silence the device.
 *   **Anti-Pendulum:** The device will not wake up if it swings momentarily. You must hold it steady in a scanning position for **0.6 seconds** to wake it up.
+*   **Auto-Off:** If left in Rest Mode for **5 minutes**, the device turns off completely.
+
+### Zone 4: Pocket Mode (Bag/Pocket)
+*   **Trigger:** Putting the device in a bag or pocket (Sensors covered < 10cm).
+*   **Function:** **Muted.** Immediate silence (no vibration) to prevent accidental feedback.
+*   **Auto-Off:** Turns off completely after **5 minutes** to save battery.
 
 ---
 

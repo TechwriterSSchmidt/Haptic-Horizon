@@ -28,6 +28,8 @@ public:
     // Profile Management
     void toggleProfile();
     bool isOutdoorProfile();
+    bool isInRestMode();
+    bool isBlocked(); // Handbag Mode
 
     // Getters for Haptic Engine
     int getHapticMode();
@@ -69,6 +71,7 @@ private:
     bool _isOutdoor;
     unsigned long _wakeUpTimer;
     bool _inRestMode;
+    bool _isBlocked;
 };
 
 #endif

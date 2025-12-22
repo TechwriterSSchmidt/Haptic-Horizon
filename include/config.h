@@ -111,6 +111,9 @@ enum OperationMode {
 // ===== Power Management =====
 #define AUTO_OFF_MS 120000  // 2 Minutes (2 * 60 * 1000)
                             // Device turns off if no movement (IMU) & no button press for this time.
+#define AUTO_OFF_REST_MS 300000 // 5 Minutes (5 * 60 * 1000)
+                                // Device turns off if in Rest Mode or Handbag (Blocked) for this time.
+
 #define MOVEMENT_THRESHOLD_MM 100 // Minimum distance change to count as "Activity" (prevents staying on when on table)
 
 #define WATCHDOG_TIMEOUT_SEC 3 // 3 Seconds Timeout for system freeze protection

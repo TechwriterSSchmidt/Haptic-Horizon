@@ -18,6 +18,7 @@ SmartTerrain::SmartTerrain() {
     _isOutdoor = false; // Default to Indoor Profile
     _wakeUpTimer = 0;
     _inRestMode = false;
+    _isBlocked = false;
 }
 
 bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
@@ -84,6 +85,14 @@ void SmartTerrain::toggleProfile() {
 
 bool SmartTerrain::isOutdoorProfile() {
     return _isOutdoor;
+}
+
+bool SmartTerrain::isInRestMode() {
+    return _inRestMode;
+}
+
+bool SmartTerrain::isBlocked() {
+    return _isBlocked;
 }
 
 void SmartTerrain::updateThermal() {
@@ -203,19 +212,26 @@ void SmartTerrain::update(float pitch) {
     // 2. Ultrasonic Data (MaxBotix / GY-US42 I2C)
     // Address 0x70, Command 0x51 (Take Range Reading)
     long usDist = 9999;
-    if (pitch > -20.0) { // Only needed in Scan Mode
-        Wire.beginTransmission(0x70);
-        Wire.write(0x51);
-        Wire.endTransmission();
-        // Note: We don't wait here to avoid blocking. We read the PREVIOUS measurement or assume fast response.
-        // For better sync, we could add a small delay or state machine, but for now we poll.
-        
-        Wire.requestFrom(0x70, 2);
-        if (Wire.available() >= 2) {
-            byte high = Wire.read();
-            byte low = Wire.read();
-            usDist = ((high << 8) | low) * 10; // Convert cm to mm
-        }
+    
+    // Always read Ultrasonic for Pocket Mode detection (regardless of pitch)
+    Wire.beginTransmission(0x70);
+    Wire.write(0x51);
+    Wire.endTransmission();
+    
+    // Note: We read the PREVIOUS measurement to avoid blocking.
+    Wire.requestFrom(0x70, 2);
+    if (Wire.available() >= 2) {
+        byte high = Wire.read();
+        byte low = Wire.read();
+        usDist = ((high << 8) | low) * 10; // Convert cm to mm
+    }
+
+    // --- ANTI-FOG LOGIC (Outdoor Only) ---
+    // If Laser sees something CLOSE (< 1m) but Ultrasonic sees FAR (> 2m),
+    // it is likely Fog, Rain, or Smoke reflecting the light.
+    if (_isOutdoor && focusDist < 1000 && usDist > 2000) {
+        focusDist = 9999; // Ignore Laser
+        // Optional: We could log this or provide a very subtle "weather warning" haptic
     }
 
     // 2. Matrix Sensor Data (Center Average)
@@ -232,8 +248,23 @@ void SmartTerrain::update(float pitch) {
     }
     int matrixDist = (matrixCount > 0) ? (matrixSum / matrixCount) : 9999;
 
+    // --- POCKET MODE (Bag/Pocket Detection) ---
+    // If BOTH sensors see very close objects, we assume the device is covered.
+    // Matrix < 100mm (10cm) AND Ultrasonic < 300mm (30cm)
+    // (Ultrasonic min range is often ~20cm, so <300 covers "blocked")
+    if (matrixDist < 100 && usDist < 300 && matrixCount > 0) {
+        _isBlocked = true;
+    } else {
+        _isBlocked = false;
+    }
+
     _hapticMode = HAPTIC_NONE;
     _wallDirection = 0;
+
+    // If Blocked (Handbag), stay silent
+    if (_isBlocked) {
+        return; 
+    }
 
     // --- STEP 4: ZONE LOGIC ---
 
