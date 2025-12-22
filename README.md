@@ -139,6 +139,8 @@ The device uses an internal gyroscope to switch modes automatically based on how
 
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
 | :--- | :--- | :--- | :--- |
+| **Power On** | **Startup Melody** | *Rising Pulse* | Device turned ON. |
+| **Power Off** | **Shutdown Melody** | *Falling Pulse* | Device turned OFF. |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode. |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |
 | **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |

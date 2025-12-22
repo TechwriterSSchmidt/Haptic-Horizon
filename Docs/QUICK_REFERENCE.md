@@ -24,6 +24,8 @@
 
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning | Action |
 | :--- | :--- | :--- | :--- | :--- |
+| **Power On** | **Startup Melody** | *Rising Pulse* | Device turned ON. | - |
+| **Power Off** | **Shutdown Melody** | *Falling Pulse* | Device turned OFF. | - |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode (Short Range). | - |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode (Long Range). | - |
 | **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
