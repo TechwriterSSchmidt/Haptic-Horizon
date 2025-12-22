@@ -2,7 +2,9 @@
 #define SMART_TERRAIN_H
 
 #include <Arduino.h>
-#include <SparkFun_VL53L5CX_Library.h>
+#include <Wire.h>
+#include <vl53l8cx_class.h>
+#include <vl53l4cx_class.h>
 #include <Adafruit_MLX90640.h>
 #include "config.h"
 
@@ -38,8 +40,14 @@ public:
     bool isDataReady();
 
 private:
-    SparkFun_VL53L5CX _sensor;
-    VL53L5CX_ResultsData _measurementData;
+    // Sensors
+    VL53L8CX *_sensorMatrix; // Wide Angle (Bus 2)
+    VL53L4CX *_sensorFocus;  // Narrow Angle (Bus 1)
+    
+    // Data Holders
+    VL53L8CX_ResultsData _matrixData;
+    VL53L4CX_MultiRangingData_t _focusData;
+    
     Adafruit_MLX90640 _mlx;
     float _mlxPixels[768];
 

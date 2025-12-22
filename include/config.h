@@ -76,6 +76,9 @@ enum OperationMode {
 #define HEAT_DANGER_C 60      // Temperature in Celsius for "Hot Surface" Warning (Stove, Iron, etc.)
 
 // ===== IMU Settings (BMI160) =====
+#ifdef BMI160_I2C_ADDR
+#undef BMI160_I2C_ADDR
+#endif
 #define BMI160_I2C_ADDR 0x69 // Default is often 0x68 or 0x69. Check your module!
 #define MOUNTING_PITCH_OFFSET 0 // Calibration: Add +/- degrees if the sensor is not mounted perfectly flat
 #define TILT_THRESHOLD_DOWN -45 // Degrees. (Used for internal logic if needed, but main logic is now continuous)

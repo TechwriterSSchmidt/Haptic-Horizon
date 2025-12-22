@@ -12,76 +12,67 @@ Battery (LiPo 3.7V) (+) --> [ Switch ] --> RAW/BAT Pin
 Battery (LiPo 3.7V) (-) -----------------> GND
 
 -----------------------------------------------------------------------------
-[ I2C BUS (SDA/SCL) ]
+[ I2C BUS 1 (PRIMARY) - "Fast Response" ]
 -----------------------------------------------------------------------------
-* Shared Bus for all sensors *
-nRF52 SDA (P0.17 / D0) -----> VL53L8CX SDA
-                       -----> VL53L4CX SDA
-                       -----> MLX90640 SDA
-                       -----> DRV2605L (Main) SDA
-                       -----> DRV2605L (Sec) SDA
+Pins: SDA = P0.17, SCL = P0.20
+Devices:
+1. VL53L4CX (Focus Sensor) - Address 0x29
+2. DRV2605L (Main Haptic)  - Address 0x5A
+3. DRV2605L (Sec Haptic)   - Address 0x5B (Jumper closed)
+4. BMI160 (IMU)            - Address 0x69
 
-nRF52 SCL (P0.20 / D1) -----> VL53L8CX SCL
-                       -----> VL53L4CX SCL
-                       -----> MLX90640 SCL
-                       -----> DRV2605L (Main) SCL
-                       -----> DRV2605L (Sec) SCL
+Wiring:
+nRF52 SDA (P0.17) ----------> VL53L4CX SDA
+                  ----------> DRV2605L (Main) SDA
+                  ----------> DRV2605L (Sec) SDA
+                  ----------> BMI160 SDA
 
-* Pull-Up Resistors (4.7k) required on SDA and SCL lines if not on modules.
-
------------------------------------------------------------------------------
-[ SENSOR 1: VL53L8CX (Wide Angle / Matrix) ]
------------------------------------------------------------------------------
-VCC ------------------------> 3.3V
-GND ------------------------> GND
-SDA ------------------------> I2C SDA
-SCL ------------------------> I2C SCL
-XSHUT (Shutdown) -----------> nRF52 P0.09 (or any free GPIO) *REQUIRED for Address Change*
-INT (Interrupt) ------------> (Optional)
+nRF52 SCL (P0.20) ----------> VL53L4CX SCL
+                  ----------> DRV2605L (Main) SCL
+                  ----------> DRV2605L (Sec) SCL
+                  ----------> BMI160 SCL
 
 -----------------------------------------------------------------------------
-[ SENSOR 2: VL53L4CX (Narrow Angle / Focus) ]
+[ I2C BUS 2 (SECONDARY) - "High Data" ]
 -----------------------------------------------------------------------------
-VCC ------------------------> 3.3V
-GND ------------------------> GND
-SDA ------------------------> I2C SDA
-SCL ------------------------> I2C SCL
-XSHUT (Shutdown) -----------> nRF52 P0.10 (or any free GPIO) *REQUIRED for Address Change*
-INT (Interrupt) ------------> (Optional)
+Pins: SDA = P0.06, SCL = P0.08
+Devices:
+1. VL53L8CX (Matrix Sensor) - Address 0x29
+2. MLX90640 (Thermal Cam)   - Address 0x33
 
------------------------------------------------------------------------------
-[ THERMAL CAMERA: MLX90640 ]
------------------------------------------------------------------------------
-VCC ------------------------> 3.3V
-GND ------------------------> GND
-SDA ------------------------> I2C SDA
-SCL ------------------------> I2C SCL
+Wiring:
+nRF52 SDA (P0.06) ----------> VL53L8CX SDA
+                  ----------> MLX90640 SDA
+
+nRF52 SCL (P0.08) ----------> VL53L8CX SCL
+                  ----------> MLX90640 SCL
+
+* Note: No XSHUT control needed because sensors are on separate buses! *
+* Connect XSHUT pins of both sensors to 3.3V (or leave floating if internal pullup) *
 
 -----------------------------------------------------------------------------
 [ HAPTIC DRIVERS: DRV2605L ]
 -----------------------------------------------------------------------------
 * Driver 1 (Left/Main) *
-VCC ------------------------> 3.3V (or 5V if available/needed for motor)
+VCC ------------------------> 3.3V (or 5V)
 GND ------------------------> GND
-SDA ------------------------> I2C SDA
-SCL ------------------------> I2C SCL
 Motor (+) ------------------> LRA Motor 1
 Motor (-) ------------------> LRA Motor 1
 
 * Driver 2 (Right/Secondary) *
 VCC ------------------------> 3.3V
 GND ------------------------> GND
-SDA ------------------------> I2C SDA
-SCL ------------------------> I2C SCL
 Motor (+) ------------------> LRA Motor 2
 Motor (-) ------------------> LRA Motor 2
-* Note: Close the address jumper on the back of Driver 2 to change address!
 
 -----------------------------------------------------------------------------
-[ PIN SUMMARY (Suggested) ]
+[ PIN SUMMARY ]
 -----------------------------------------------------------------------------
-P0.17 (D0) : I2C SDA
-P0.20 (D1) : I2C SCL
-P0.09      : XSHUT VL53L8CX
-P0.10      : XSHUT VL53L4CX
+P0.17 (D0) : I2C Bus 1 SDA
+P0.20 (D1) : I2C Bus 1 SCL
+P0.06      : I2C Bus 2 SDA
+P0.08      : I2C Bus 2 SCL
+P0.29 (A2) : Button
+P0.31      : Trigger
+P0.02 (A0) : Battery Sense
 =============================================================================
