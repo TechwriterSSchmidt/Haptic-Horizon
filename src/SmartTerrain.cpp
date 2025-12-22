@@ -16,6 +16,7 @@ SmartTerrain::SmartTerrain() {
     
     // Defaults
     _isOutdoor = false; // Default to Indoor Profile
+    _isStill = false;
     _wakeUpTimer = 0;
     _inRestMode = false;
     _isBlocked = false;
@@ -91,6 +92,10 @@ bool SmartTerrain::isInRestMode() {
     return _inRestMode;
 }
 
+void SmartTerrain::setStill(bool isStill) {
+    _isStill = isStill;
+}
+
 bool SmartTerrain::isBlocked() {
     return _isBlocked;
 }
@@ -151,6 +156,13 @@ void SmartTerrain::updateThermal() {
 
 void SmartTerrain::update(float pitch) {
     if (!_sensorMatrix || !_sensorFocus) return;
+
+    // 0. Table Mute Check
+    // If the device is absolutely still (lying on a table), suppress vibration.
+    if (_isStill) {
+        _hapticMode = HAPTIC_NONE;
+        return;
+    }
 
     // --- STEP 1: IMU STATE MACHINE & LOW-PASS FILTER ---
     // Zone 3: Rest Mode (Vertical Down, < -65 degrees)
@@ -229,7 +241,7 @@ void SmartTerrain::update(float pitch) {
     // --- ANTI-FOG LOGIC (Outdoor Only) ---
     // If Laser sees something CLOSE (< 1m) but Ultrasonic sees FAR (> 2m),
     // it is likely Fog, Rain, or Smoke reflecting the light.
-    if (_isOutdoor && focusDist < 1000 && usDist > 2000) {
+    if (_isOutdoor && focusDist < FOG_LASER_MAX_MM && usDist > FOG_US_MIN_MM) {
         focusDist = 9999; // Ignore Laser
         // Optional: We could log this or provide a very subtle "weather warning" haptic
     }
@@ -252,7 +264,7 @@ void SmartTerrain::update(float pitch) {
     // If BOTH sensors see very close objects, we assume the device is covered.
     // Matrix < 100mm (10cm) AND Ultrasonic < 300mm (30cm)
     // (Ultrasonic min range is often ~20cm, so <300 covers "blocked")
-    if (matrixDist < 100 && usDist < 300 && matrixCount > 0) {
+    if (matrixDist < POCKET_DIST_MATRIX_MM && usDist < POCKET_DIST_US_MM && matrixCount > 0) {
         _isBlocked = true;
     } else {
         _isBlocked = false;
@@ -281,9 +293,9 @@ void SmartTerrain::update(float pitch) {
         }
         // B. Glass Detection (Ultrasonic Override)
         // Laser sees far (>2m) BUT Ultrasonic sees near (<1m)
-        else if (focusDist > 2000 && usDist > 50 && usDist < 1000) {
+        else if (focusDist > GLASS_LASER_MIN_MM && usDist > 50 && usDist < GLASS_US_MAX_MM) {
             _hapticMode = HAPTIC_GLASS; // Sharp Tick
-            _hapticInterval = map(usDist, 50, 1000, 50, 300);
+            _hapticInterval = map(usDist, 50, GLASS_US_MAX_MM, 50, 300);
         }
         // C. Focus Sensor (Precision)
         else if (focusDist < maxRange) {

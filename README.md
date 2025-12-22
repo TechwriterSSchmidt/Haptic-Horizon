@@ -9,6 +9,7 @@ It behaves organically: **Lift it to scan, lower it to walk, drop it to sleep.**
 Unlike simple proximity sensors, Haptic Horizon understands context:
 *   **Smart Terrain:** Detects walls, drop-offs, and stairs using 3D gradient analysis.
 *   **Heat Vision:** Identifies people, pets, and electronics by combining heat signatures with object size.
+*   **Glass & Fog Detection:** Uses Ultrasonic waves to detect transparent obstacles (Glass) that LiDAR misses, and to filter out false positives from fog or steam.
 *   **Find Me:** Automatically vibrates if dropped so it can be easily located. Can also be triggered via Bluetooth (App or Camera Shutter).
 
 It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
@@ -33,6 +34,7 @@ Our design is informed by research into assistive technologies, which highlights
 - **Microcontroller**: SuperMini NRF52840 (Nice!Nano compatible)
 - **Matrix Sensor**: VL53L8CX (Time-of-Flight 8x8 Multizone) - *Wide Angle Obstacle Detection*
 - **Focus Sensor**: VL53L4CX (Time-of-Flight Single Point) - *Precise Aiming*
+- **Ultrasonic Sensor**: GY-US42 (I2C) - *Glass & Transparent Obstacle Detection*
 - **Thermal Camera**: MLX90640-BAB (32x24 Infrared Array)
 - **IMU**: BMI160 (Gyroscope + Accelerometer)
 - **Haptic Driver**: DRV2605L (Required - for advanced waveforms & LRA support)
@@ -61,8 +63,8 @@ Estimated values based on a **2500mAh LiPo Battery**.
 ## Pinout (SuperMini NRF52840)
 | GPIO Pin | Function | Connected Component(s) |
 | :--- | :--- | :--- |
-| **P0.17** | I2C SDA (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics) |
-| **P0.20** | I2C SCL (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics) |
+| **P0.17** | I2C SDA (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics), GY-US42 (Ultrasonic) |
+| **P0.20** | I2C SCL (Primary) | VL53L4CX (Focus), BMI160, DRV2605L (Haptics), GY-US42 (Ultrasonic) |
 | **P0.06** | I2C SDA (Secondary) | VL53L8CX (Matrix), MLX90640 (Thermal) |
 | **P0.08** | I2C SCL (Secondary) | VL53L8CX (Matrix), MLX90640 (Thermal) |
 | **P0.29** | Digital Input | Mode Button |
@@ -87,6 +89,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
 *   **Zone 1: Scan Mode (Horizontal)**
     *   *Posture:* Hold up like a flashlight.
     *   *Function:* Precision scanning & **Heat Vision**. Detects door handles, narrow gaps, and **People** (Thermal Heartbeat).
+    *   *Glass/Fog:* Uses Ultrasonic to detect glass doors (which LiDAR sees through) and ignore fog (which LiDAR reflects).
 *   **Zone 2: Walk Mode (Diagonal)**
     *   *Posture:* Hold naturally at your side (~45° down).
     *   *Function:* Pathfinding (Matrix Sensor). Detects walls, furniture, and **Drop-offs**.
@@ -94,12 +97,24 @@ The device uses an internal gyroscope to switch modes automatically based on how
     *   *Posture:* Let it hang on the strap.
     *   *Function:* **Standby.** Sensors paused.
     *   *Anti-Pendulum:* Requires 0.6s of stable holding to wake up from Rest Mode (prevents accidental scans while walking).
+    *   *Auto-Calibration:* If held still for >2s, the sensors recalibrate automatically.
     *   *Auto-Off:* Turns off after 5 minutes.
 *   **Zone 4: Pocket Mode (Bag/Pocket)**
     *   *Trigger:* Sensors covered (< 10cm).
     *   *Function:* **Muted.** Immediate silence. Turns off after 5 minutes.
 
-### 3. The Haptic Dictionary
+### 3. Smart Features (The "Magic")
+| Feature | Trigger | Action | Benefit |
+| :--- | :--- | :--- | :--- |
+| **Table Mute** | Device lies absolutely still for >3s. | **Mutes Haptics.** | Prevents annoying rattling on tables. |
+| **Pocket Mode** | Sensors covered (Bag/Pocket). | **Mutes Haptics.** | Prevents false alarms while carrying it. |
+| **Anti-Fog** | Laser sees "Wall" (<1m), Ultrasonic sees "Clear" (>2m). | **Ignores Laser.** | Prevents false alarms in fog/rain. |
+| **Glass Alarm** | Laser sees "Clear" (>2m), Ultrasonic sees "Wall" (<1m). | **Sharp Tick.** | Warns of invisible glass doors. |
+| **Drop Alarm** | Freefall detected (>2.5g). | **Loud Strobe.** | Helps you find the device if dropped. |
+| **Overheat** | Internal Temp > 65°C. | **Triple Click.** | Warns before damage occurs. |
+| **Low Battery** | Battery < 15%. | **Soft Bump (5min).** | Reminds you to charge soon. |
+
+### 4. The Haptic Dictionary
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
 | :--- | :--- | :--- | :--- |
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
@@ -111,9 +126,10 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |
 | **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. |
 | **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. |
+| **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |
 | **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). |
 
-### 4. Safety Features
+### 5. Safety Features
 *   **Drop Alarm:** If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
 *   **Overheat Protection:**
     *   **Warning (>65°C):** Triple Click (*Click-Click-Click*).

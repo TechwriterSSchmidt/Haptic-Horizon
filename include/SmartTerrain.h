@@ -29,6 +29,7 @@ public:
     void toggleProfile();
     bool isOutdoorProfile();
     bool isInRestMode();
+    void setStill(bool isStill); // Table Mute
     bool isBlocked(); // Handbag Mode
 
     // Getters for Haptic Engine
@@ -69,6 +70,7 @@ private:
 
     // Profile & Logic State
     bool _isOutdoor;
+    bool _isStill;
     unsigned long _wakeUpTimer;
     bool _inRestMode;
     bool _isBlocked;

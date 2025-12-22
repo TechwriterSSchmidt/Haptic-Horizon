@@ -39,6 +39,9 @@ float pitchOffset = MOUNTING_PITCH_OFFSET;
 // Power Management
 unsigned long lastActivityTime = 0;
 unsigned long lastTempCheck = 0;
+unsigned long lastBatteryCheck = 0;
+unsigned long lastStillTime = 0;
+bool isCalibrated = false;
 
 // Forward declaration
 void goToSleep();
@@ -168,6 +171,18 @@ void loop() {
       checkInternalTemperature();
   }
 
+  // --- Battery Monitor (Auto-Warning < 15%) ---
+  if (currentMillis - lastBatteryCheck > BATTERY_CHECK_INTERVAL_MS) { 
+      lastBatteryCheck = currentMillis;
+      // Read Voltage
+      int raw = analogRead(BATTERY_PIN);
+      float voltage = (raw / 1023.0) * 3.3 * 2.0; 
+      
+      if (voltage < BATTERY_LOW_VOLTAGE) { 
+           haptics.playEffect(EFFECT_SOFT_BUMP, 0);
+      }
+  }
+
   // --- IMU Handling ---
   int16_t accelGyro[6]={0};
   float pitch = 0;
@@ -175,6 +190,30 @@ void loop() {
   if (bmi160.getAccelGyroData(accelGyro) == BMI160_OK) {
       int gyroActivity = abs(accelGyro[0]) + abs(accelGyro[1]) + abs(accelGyro[2]);
       if (gyroActivity > 200) lastActivityTime = currentMillis;
+
+      // --- Stillness Detection (Table Mute & Auto-Calib) ---
+      // Threshold: < 1.0 dps (approx 16 LSB for +/- 2000dps range, but raw values are higher)
+      // Default range is 2000dps. 1 dps = ~16.4 LSB. Let's use 20 as threshold.
+      if (gyroActivity < GYRO_STILL_THRESHOLD) { 
+          if (lastStillTime == 0) lastStillTime = currentMillis;
+          
+          // If still for > 3 seconds -> Table Mute
+          if (currentMillis - lastStillTime > TIME_TO_TABLE_MUTE_MS) {
+               terrain.setStill(true); 
+          }
+
+          // If still for > 2 seconds AND in Rest Mode -> Auto-Calibrate
+          if (currentMillis - lastStillTime > TIME_TO_AUTO_CALIB_MS && terrain.isInRestMode() && !isCalibrated) {
+               // We assume the user is holding it vertically still.
+               // We could trigger a re-calibration here.
+               // For now, we just mark it as calibrated to avoid repeated triggers.
+               isCalibrated = true; 
+          }
+      } else {
+          lastStillTime = 0;
+          terrain.setStill(false);
+          isCalibrated = false; 
+      }
 
       float accelY = accelGyro[4];
       float accelZ = accelGyro[5];

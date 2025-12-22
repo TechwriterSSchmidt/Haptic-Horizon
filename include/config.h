@@ -123,6 +123,24 @@ enum OperationMode {
 #define TEMP_CRITICAL_THRESHOLD 75 // Celsius. Automatic Shutdown if temp exceeds this.
 #define TEMP_CHECK_INTERVAL_MS 10000 // Check every 10 seconds
 
+// ===== Battery Management =====
+#define BATTERY_CHECK_INTERVAL_MS 300000 // 5 Minutes
+#define BATTERY_LOW_VOLTAGE 3.65         // ~15% remaining
+
+// ===== Stillness / Table Mute =====
+#define GYRO_STILL_THRESHOLD 20          // Raw gyro sum threshold for "stillness"
+#define TIME_TO_TABLE_MUTE_MS 3000       // Time to activate Table Mute
+#define TIME_TO_AUTO_CALIB_MS 2000       // Time to trigger Auto-Calibration in Rest Mode
+
+// ===== Pocket Mode / Anti-Fog =====
+#define POCKET_DIST_MATRIX_MM 100        // Max distance for Matrix sensor in pocket
+#define POCKET_DIST_US_MM 300            // Max distance for Ultrasonic in pocket
+#define FOG_LASER_MAX_MM 1000            // Laser sees fog closer than this
+#define FOG_US_MIN_MM 2000               // Ultrasonic sees clear path further than this
+
+#define GLASS_LASER_MIN_MM 2000          // Laser sees through glass (>2m)
+#define GLASS_US_MAX_MM 1000             // Ultrasonic detects glass surface (<1m)
+
 // ===== Audio Volume (1-10) =====
 #define VOL_STARTUP     8
 #define VOL_SHUTDOWN    5
