@@ -158,8 +158,8 @@ The device uses an internal gyroscope to switch modes automatically based on how
 *   **Startup Self-Test:** Upon powering on, the device checks all sensors. If a critical sensor (LiDAR, Thermal) is missing or broken, the device will **refuse to start** and emit a distinct error pattern (**3x Long Buzz**) to warn the user that it is not safe to use.
 *   **Drop Alarm:** If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
 *   **Overheat Protection:**
-    *   **Warning (>65°C):** Triple Click (*Click-Click-Click*).
-    *   **Shutdown (>75°C):** Emergency Shutdown (*Long Buzz x2*).
+    *   **Warning (>65°C):**
+    *   **Shutdown (>75°C):**
 
 ## Advanced Features
 
