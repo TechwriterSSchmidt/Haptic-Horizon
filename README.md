@@ -178,5 +178,16 @@ For the ultimate intuitive experience, Haptic Horizon supports **Dual-Channel Fe
     *   **Heat Vision:** If a person is to the left, the Thumb pulses.
     *   **Result:** The user can navigate blindly by simply "steering away" from the vibration, without needing to scan back and forth.
 
+### Safety Beacon (Optional Upgrade)
+For enhanced visibility at night, you can add an automatic **Safety Light**.
+*   **Hardware:**
+    *   **LDR (Photoresistor):** Connect to **P0.04** (Analog Input) with a 10k Pull-Down resistor.
+    *   **LED (White/Blue):** Connect to **P0.26** (Digital Output) with a resistor.
+*   **Function:**
+    *   The device monitors ambient light levels.
+    *   **Darkness Detected:** The LED flashes a **Double Strobe** pattern every 2 seconds.
+    *   **Daylight:** The LED remains off to save battery.
+*   **Activation:** Uncomment `#define ENABLE_SAFETY_BEACON` in `config.h`.
+
 
 

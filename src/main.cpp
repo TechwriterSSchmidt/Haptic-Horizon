@@ -37,6 +37,27 @@ unsigned long lastBatteryCheck = 0;
 unsigned long lastStillTime = 0;
 bool isCalibrated = false;
 
+#ifdef ENABLE_SAFETY_BEACON
+unsigned long lastBeaconTime = 0;
+
+void updateSafetyBeacon() {
+    int lightLevel = analogRead(PIN_LIGHT_SENSOR);
+    if (lightLevel < LIGHT_THRESHOLD) {
+        unsigned long now = millis();
+        if (now - lastBeaconTime > BEACON_INTERVAL) {
+            lastBeaconTime = now;
+            // Double Flash (Strobe)
+            digitalWrite(PIN_SAFETY_LED, HIGH); delay(30);
+            digitalWrite(PIN_SAFETY_LED, LOW);  delay(80);
+            digitalWrite(PIN_SAFETY_LED, HIGH); delay(30);
+            digitalWrite(PIN_SAFETY_LED, LOW);
+        }
+    } else {
+        digitalWrite(PIN_SAFETY_LED, LOW);
+    }
+}
+#endif
+
 // Forward declaration
 void goToSleep();
 void calibrateIMU();
@@ -52,6 +73,11 @@ void setup() {
 
   // Button Setup
   nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
+
+  #ifdef ENABLE_SAFETY_BEACON
+  pinMode(PIN_SAFETY_LED, OUTPUT);
+  pinMode(PIN_LIGHT_SENSOR, INPUT);
+  #endif
 
   // --- WAKEUP CHECK (Enforce 2s Hold) ---
   // Only check if button is pressed (Wake from Sleep)
@@ -133,6 +159,10 @@ void setup() {
 
 void loop() {
   NRF_WDT->RR[0] = WDT_RR_RR_Reload;
+
+  #ifdef ENABLE_SAFETY_BEACON
+  updateSafetyBeacon();
+  #endif
 
   unsigned long currentMillis = millis();
 

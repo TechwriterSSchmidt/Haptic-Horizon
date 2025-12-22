@@ -121,6 +121,17 @@ enum OperationMode {
 #define MOTOR_RATED_VOLTAGE 1.2 
 #define MOTOR_CLAMP_VOLTAGE 1.2 // Usually same as rated, or slightly higher for overdrive
 
+// ===== Safety Beacon (Optional Upgrade) =====
+// Uncomment to enable the Automatic Safety Light (LDR + LED)
+// #define ENABLE_SAFETY_BEACON
+
+#ifdef ENABLE_SAFETY_BEACON
+  #define PIN_SAFETY_LED    26   // Free Digital Pin for LED
+  #define PIN_LIGHT_SENSOR  4    // P0.04 (Analog A2) for LDR
+  #define LIGHT_THRESHOLD   2000 // 0-4095. Below this = Dark.
+  #define BEACON_INTERVAL   2000 // Flash every 2 seconds
+#endif
+
 // ===== Power Management =====
 #define AUTO_OFF_MS 120000  // 2 Minutes (2 * 60 * 1000)
                             // Device turns off if no movement (IMU) & no button press for this time.
