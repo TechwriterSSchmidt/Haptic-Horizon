@@ -40,6 +40,18 @@ Our design is informed by research into assistive technologies, which highlights
 - **Input**: Single Mode Button (P0.29)
 - **Power**: 3.7V LiPo Battery (SuperMini has built-in charging via B+/B- pads)
 
+## Power Consumption & Battery Life
+Estimated values based on a **2500mAh LiPo Battery**.
+
+| Mode | Description | Avg. Current | Battery Life |
+| :--- | :--- | :--- | :--- |
+| **Scan Mode** | High Performance (All Sensors + Haptics) | ~170 mA | ~14-15 Hours |
+| **Walk Mode** | Pathfinding (Matrix + Haptics) | ~140 mA | ~17-18 Hours |
+| **Rest Mode** | Standby (Sensors On, Haptics Off) | ~110 mA | ~22 Hours |
+| **Deep Sleep** | System OFF (Button Hold 2s) | < 1 mA | Months |
+
+*Note: "Rest Mode" currently keeps sensors active for instant wake-up. For long storage, always turn the device OFF.*
+
 ## Power Supply (Important!)
 *   **Recommended:** 3.7V LiPo/Li-Ion Battery.
     *   **Type:** 18650 Cell (2500mAh+) is excellent for a comfortable, grip-friendly handle design.
@@ -89,6 +101,7 @@ The device uses an internal gyroscope to switch modes automatically based on how
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). |
 | **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). |
+| **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). |
 | **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode. |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |

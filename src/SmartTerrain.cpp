@@ -200,6 +200,24 @@ void SmartTerrain::update(float pitch) {
         }
     }
 
+    // 2. Ultrasonic Data (MaxBotix / GY-US42 I2C)
+    // Address 0x70, Command 0x51 (Take Range Reading)
+    long usDist = 9999;
+    if (pitch > -20.0) { // Only needed in Scan Mode
+        Wire.beginTransmission(0x70);
+        Wire.write(0x51);
+        Wire.endTransmission();
+        // Note: We don't wait here to avoid blocking. We read the PREVIOUS measurement or assume fast response.
+        // For better sync, we could add a small delay or state machine, but for now we poll.
+        
+        Wire.requestFrom(0x70, 2);
+        if (Wire.available() >= 2) {
+            byte high = Wire.read();
+            byte low = Wire.read();
+            usDist = ((high << 8) | low) * 10; // Convert cm to mm
+        }
+    }
+
     // 2. Matrix Sensor Data (Center Average)
     long matrixSum = 0;
     int matrixCount = 0;
@@ -220,7 +238,7 @@ void SmartTerrain::update(float pitch) {
     // --- STEP 4: ZONE LOGIC ---
 
     // ZONE 1: SCAN MODE (Horizontal, > -20 degrees)
-    // Priority: Thermal (Human) > Focus Sensor (Precision)
+    // Priority: Thermal (Human) > Glass (Ultrasonic) > Focus Sensor (Precision)
     if (pitch > -20.0) {
         // A. Thermal Override (Heat Vision)
         if (_thermalClass == THERMAL_HUMAN) {
@@ -230,7 +248,13 @@ void SmartTerrain::update(float pitch) {
             else if (_thermalCenter > 22) _wallDirection = 1;
             else _wallDirection = 0;
         }
-        // B. Focus Sensor (Precision)
+        // B. Glass Detection (Ultrasonic Override)
+        // Laser sees far (>2m) BUT Ultrasonic sees near (<1m)
+        else if (focusDist > 2000 && usDist > 50 && usDist < 1000) {
+            _hapticMode = HAPTIC_GLASS; // Sharp Tick
+            _hapticInterval = map(usDist, 50, 1000, 50, 300);
+        }
+        // C. Focus Sensor (Precision)
         else if (focusDist < maxRange) {
             _hapticMode = HAPTIC_GLASS; // Sharp Tick
             _hapticInterval = map(focusDist, 100, maxRange, 50, 600);

@@ -17,6 +17,7 @@
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode (Short Range). | - |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode (Long Range). | - |
 | **Battery Check** | **Pulses** | *Tick-Tick...* | 4=Full, 3=Good, 2=Low, 1=Critical. | Charge if low. |
+| **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). | **STOP!** Do not walk through. |
 | **Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Find Me / Drop Alarm). | Pick up device. |
 
 ---
@@ -44,8 +45,11 @@ The device uses an internal gyroscope to switch modes automatically based on how
 
 ### Zone 1: Scan Mode (Horizontal)
 *   **Posture:** Hold the device up, pointing forward (like a flashlight).
-*   **Function:** Precision scanning & **Heat Vision**. Detects door handles, narrow gaps, and **People**.
-*   **Sensor:** Uses the **Focus Sensor** (Laser) and **Thermal Camera**.
+*   **Function:** Precision scanning, **Heat Vision**, and **Glass Detection** ("Batgirl-in-Danger").
+*   **Sensors:** 
+    *   **Focus Sensor (Laser):** Detects small objects.
+    *   **Thermal Camera:** Detects people (Heartbeat feedback).
+    *   **Ultrasonic:** Detects glass and transparent surfaces.
 
 ### Zone 2: Walk Mode (Diagonal)
 *   **Posture:** Hold the device naturally at your side, pointing down at the floor (~45°).
@@ -66,3 +70,20 @@ If you drop the device, it will detect the freefall and impact. After 5 seconds 
 
 ### Selfie Finder
 If you lose the device, use a standard Bluetooth "Selfie Remote" to trigger the "Find Me" alarm.
+
+---
+
+## 5. Limitations & Care (IMPORTANT)
+
+### ⚠️ Weather & Water
+*   **Not Waterproof:** The sensors (Laser, Thermal, Ultrasonic) have open lenses/grills.
+*   **Rain Risk:** Do **NOT** use the device in rain, heavy mist, or snow. Water droplets on the lenses will cause false alarms or permanent damage to the electronics.
+*   **Action:** If it starts raining, put the device in your bag immediately. If it gets wet, turn it off and let it dry completely before using it again.
+
+### ⚠️ Glass & Mirrors
+*   **Laser Limitations:** The main laser sensors may look *through* clean glass.
+*   **Solution:** The device uses a backup **Ultrasonic Sensor** in "Scan Mode" to detect glass. Always scan horizontally if you suspect a glass door.
+
+### ⚠️ Black Surfaces
+*   **Absorption:** Very black, shiny floors or objects may absorb the laser light, making them invisible to the main sensors.
+*   **Safety:** Use the "Walk Mode" carefully on unknown black surfaces.
