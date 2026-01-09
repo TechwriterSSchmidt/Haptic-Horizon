@@ -16,7 +16,7 @@ It's designed to be a discreet, powerful companion that translates distance and 
 
 ## Support my projects
 
-Your tip motivates me to continue developing nerdy stuff for the DIY community. Thank you very much for your support!
+Your tip motivates me to continue developing helpful stuff for the DIY community. Thank you very much for your support!
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D01HVT9A)
 
