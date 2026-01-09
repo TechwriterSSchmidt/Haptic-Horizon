@@ -1,5 +1,5 @@
 # Haptic Horizon
-The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode! 🦇
+The shin-saving, forehead-protecting sixth sense tailored for my valued colleague Samira. Go batgirl mode! 🦇
 
 ## Overview
 Haptic Horizon is a smart wearable **Electronic Travel Aid (ETA)** that fuses **LiDAR (ToF)**, **Thermal Imaging**, and **Motion Sensing** to translate the environment into a rich haptic language.
