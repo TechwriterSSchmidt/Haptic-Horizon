@@ -14,6 +14,8 @@ Unlike simple proximity sensors, Haptic Horizon understands context:
 
 It's designed to be a discreet, powerful companion that translates distance and temperature into intuitive vibration patterns. The closer or hotter the object, the more distinct the feedback.
 
+👉 **[Quick Reference Guide](docs/QUICK_REFERENCE.md)**
+
 ## Support my projects
 
 Your tip motivates me to continue developing helpful stuff for the DIY community. Thank you very much for your support!
@@ -106,34 +108,60 @@ The device uses an internal gyroscope to switch modes automatically based on how
 ### 3. Smart Features (The "Magic")
 | Feature | Trigger | Action | Benefit |
 | :--- | :--- | :--- | :--- |
-| **Table Mute** | Device lies absolutely still for >3s. | **Mutes Haptics.** | Prevents annoying rattling on tables. |
-| **Pocket Mode** | Sensors covered (Bag/Pocket). | **Mutes Haptics.** | Prevents false alarms while carrying it. |
-| **Anti-Fog** | Laser sees "Wall" (<1m), Ultrasonic sees "Clear" (>2m). | **Ignores Laser.** | Prevents false alarms in fog/rain. |
-| **Glass Alarm** | Laser sees "Clear" (>2m), Ultrasonic sees "Wall" (<1m). | **Sharp Tick.** | Warns of invisible glass doors. |
-| **Drop Alarm** | Freefall detected (>2.5g). | **Loud Strobe.** | Helps you find the device if dropped. |
-| **Overheat** | Internal Temp > 65°C. | **Triple Click.** | Warns before damage occurs. |
-| **Low Battery** | Battery < 15%. | **Soft Bump (5min).** | Reminds you to charge soon. |
+| **Context Shift** | Pitch angle changes (lift/lower). | **Switches mode.** | Seamless transition between feet & look-ahead scanning. |
+| **Smart Gradient** | Ground rises "slowly" (ratio ~1.5x). | **Pulsed buzz.** | Distinguishes stairs/slopes from walls. |
+| **Void Lock** | Feet see ground, look-ahead sees void. | **Ramp down.** | Detects descending stairs & cliffs reliably. |
+| **Tilt Guard** | Device held crooked (roll). | **Zone statistics.** | Prevents false alarms by analyzing zones, not lines. |
+| **Smart Calibration** | Held still vertically > 2s (i.e. when placed on a desk). | **Recalibrates.** | Ensures drift-free navigation. |
+| **Table Mute** | Device lies absolutely still for >3s. | **Mutes haptics.** | Prevents annoying rattling on tables. |
+| **Pocket Mode** | Sensors covered (bag/pocket). | **Mutes haptics.** | Prevents false alarms while carrying it. |
+| **Anti-Fog** | Laser sees "wall" (<1m), Ultrasonic sees "clear" (>2m). | **Ignores laser.** | Prevents false alarms in fog/rain. |
+| **Glass Alarm** | Laser sees "clear" (>2m), Ultrasonic sees "wall" (<1m). | **Sharp tick.** | Warns of invisible glass doors. |
+| **Life Sense** | Thermal signature detected. | **Heartbeat.** | Identifies people/pets vs. inanimate objects. |
+| **Thermal Danger** | External object > 60°C. | **Panic strobe.** | Prevents burns from stoves/heaters. |
+| **Impact Alarm** | Freefall detected (>2.5g). | **Loud strobe.** | Helps you find the device if dropped. |
+| **Overheat** | Internal temp > 65°C. | **Triple click.** | Warns before damage occurs. Safety-off at 75°C. |
+| **Low Battery** | Battery < 15%. | **Soft bump (5min).** | Reminds you to charge soon. |
 
 ### 4. The Haptic Dictionary
+
+#### Cluster A: Navigation & Environment (Continuous / "Analog")
+*Feedback that guides you through the world. These signals are rhythmic and change speed with distance.*
+
 | Signal Name | Pattern (Rhythm) | Feeling | Meaning |
 | :--- | :--- | :--- | :--- |
 | **Wall / Obstacle** | **Pulsed Buzz** | *Bzzz... Bzzz...* | Obstacle ahead. Faster = Closer. |
+| **Stairs Up** | **Ascending Pulse** | *Bzz-BZZ-BZZZ* | Ground level is rising (Stairs/Ramp). |
 | **Drop-off** | **Ramp Down** | Falling Sensation | Ground disappears (Cliff/Stairs down). |
 | **Glass / Detail** | **Sharp Tick** | *Tick... Tick...* | Precise object (Door handle, Pole). |
-| **Glass Alarm** ("Batgirl-in-Danger") | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). |
 | **Human** | **Heartbeat** | *Bumm-Bumm...* | Person detected (Warmth). |
+
+#### Cluster B: System Status (Discrete / "Digital")
+*Short confirmations for settings and modes. These do not persist.*
+
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning |
+| :--- | :--- | :--- | :--- |
+| **Power On** | **Startup Melody** | *Rising Pulse* | Device turned ON. |
+| **Power Off** | **Shutdown Melody** | *Falling Pulse* | Device turned OFF. |
 | **Profile: Indoor** | **Soft Bump** | *Thump* | Switched to Indoor Mode. |
 | **Profile: Outdoor** | **Double Click** | *Click-Click* | Switched to Outdoor Mode. |
+| **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |
+
+#### Cluster C: Safety & Alerts (Intense / "Urgent")
+*Aggressive signals that demand immediate attention.*
+
+| Signal Name | Pattern (Rhythm) | Feeling | Meaning |
+| :--- | :--- | :--- | :--- |
+| **Glass Alarm** | **Sharp Tick** | *Tick... Tick...* | Invisible obstacle detected (Glass/Clear Wall). |
+| **Thermal Danger** | **Panic Strobe** | *Panic Pulse* | External object > 60°C (Burn Risk). |
 | **Overheat Warning** | **Triple Click** | *Click-Click-Click* | Internal Temp > 65°C. |
 | **Overheat Shutdown** | **Long Buzz x2** | *BZZZ... BZZZ...* | Internal Temp > 75°C. |
-| **Low Battery** | **Soft Bump** | *Thump* (every 5m) | Battery critical (<15%). |
-| **Drop Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). |
+| **Impact Alarm** | **Loud Strobe** | *BZZZ-BZZZ* | "I am here!" (Drop Alarm). |
 
 ### 5. Safety Features
-*   **Drop Alarm:** If the device falls (>2.5g impact), it waits 5 seconds and then strobes loudly to help you find it.
-*   **Overheat Protection:**
-    *   **Warning (>65°C):** Triple Click (*Click-Click-Click*).
-    *   **Shutdown (>75°C):** Emergency Shutdown (*Long Buzz x2*).
+*   **Startup Self-Test:** Upon powering on, the device checks all sensors. If a critical sensor (LiDAR, Thermal) is missing or broken, the device will **refuse to start** and emit a distinct error pattern (**3x Long Buzz**) to warn the user that it is not safe to use.
+
+*(Note: Other safety alerts like **Impact Alarm**, **Thermal Danger**, and **Overheat Protection** are detailed in the **Smart Features** and **Haptic Dictionary** tables above.)*
 
 ## Advanced Features
 
@@ -144,9 +172,20 @@ For the ultimate intuitive experience, Haptic Horizon supports **Dual-Channel Fe
     *   **LRA 1 (Left Channel):** Under the **Thumb** (for a flashlight grip).
     *   **LRA 2 (Right Channel):** Under the **Fingers**.
 *   **Function:**
-    *   **Navigation:** If a wall is closer on the left, the Thumb vibrates. If on the right, the Fingers vibrate.
+    *   **Navigation:** If a wall is closer on the left, the thumb vibrates. If on the right, the fingers vibrates.
     *   **Heat Vision:** If a person is to the left, the Thumb pulses.
-    *   **Result:** Samira can navigate blindly by simply "steering away" from the vibration, without needing to scan back and forth.
+    *   **Result:** The user can navigate blindly by simply "steering away" from the vibration, without needing to scan back and forth.
+
+### Safety Beacon (Optional Upgrade)
+For enhanced visibility at night, you can add an automatic **Safety Light**.
+*   **Hardware:**
+    *   **LDR (Photoresistor):** Connect to **P0.04** (Analog Input) with a 10k Pull-Down resistor.
+    *   **LED (White/Blue):** Connect to **P0.26** (Digital Output) with a resistor.
+*   **Function:**
+    *   The device monitors ambient light levels.
+    *   **Darkness Detected:** The LED flashes a **Double Strobe** pattern every 2 seconds.
+    *   **Daylight:** The LED remains off to save battery.
+*   **Activation:** Uncomment `#define ENABLE_SAFETY_BEACON` in `config.h`.
 
 
 

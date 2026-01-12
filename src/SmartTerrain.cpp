@@ -33,6 +33,8 @@ bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
     if (_sensorFocus->begin() != 0) { // 0 = Success in STM32duino lib
         DEBUG_PRINTLN("SmartTerrain: VL53L4CX (Focus) not found on Bus 1");
         success = false;
+        delete _sensorFocus;
+        _sensorFocus = nullptr;
     } else {
         _sensorFocus->VL53L4CX_Off(); // Reset
         _sensorFocus->VL53L4CX_On();
@@ -48,6 +50,8 @@ bool SmartTerrain::begin(TwoWire *wirePrimary, TwoWire *wireSecondary) {
     if (_sensorMatrix->begin() != 0) { // 0 = Success
         DEBUG_PRINTLN("SmartTerrain: VL53L8CX (Matrix) not found on Bus 2");
         success = false;
+        delete _sensorMatrix;
+        _sensorMatrix = nullptr;
     } else {
         _sensorMatrix->init_sensor();
         _sensorMatrix->vl53l8cx_start_ranging();
@@ -155,8 +159,6 @@ void SmartTerrain::updateThermal() {
 }
 
 void SmartTerrain::update(float pitch) {
-    if (!_sensorMatrix || !_sensorFocus) return;
-
     // 0. Table Mute Check
     // If the device is absolutely still (lying on a table), suppress vibration.
     if (_isStill) {
@@ -165,12 +167,11 @@ void SmartTerrain::update(float pitch) {
     }
 
     // --- STEP 1: IMU STATE MACHINE & LOW-PASS FILTER ---
+    bool newRestState = false;
+
     // Zone 3: Rest Mode (Vertical Down, < -65 degrees)
     if (pitch < PITCH_REST_THRESHOLD) {
-        _inRestMode = true;
-        _wakeUpTimer = 0; // Reset timer
-        _hapticMode = HAPTIC_NONE;
-        return; // Stop processing
+        newRestState = true;
     } 
     else {
         // We are in a potential Active Zone (> -65)
@@ -181,17 +182,34 @@ void SmartTerrain::update(float pitch) {
         // Check if we have been stable for 600ms
         if (millis() - _wakeUpTimer < 600) {
             // Still waiting (Anti-Pendulum)
-            _inRestMode = true;
-            _hapticMode = HAPTIC_NONE;
-            return;
+            newRestState = true;
+        } else {
+            // Timer expired, we are officially ACTIVE
+            newRestState = false;
         }
-        
-        // Timer expired, we are officially ACTIVE
+    }
+
+    // State Transition Logic for Power Saving
+    if (newRestState && !_inRestMode) {
+        // Entering Rest Mode -> Stop Sensors
+        DEBUG_PRINTLN("Entering Rest Mode (Sensors Sleep)");
+        stop(); 
+        _inRestMode = true;
+    } else if (!newRestState && _inRestMode) {
+        // Exiting Rest Mode -> Start Sensors
+        DEBUG_PRINTLN("Exiting Rest Mode (Sensors Wake)");
+        start();
         _inRestMode = false;
+    }
+
+    if (_inRestMode) {
+        _hapticMode = HAPTIC_NONE;
+        return;
     }
 
     // --- STEP 2: SENSOR DATA ACQUISITION ---
     // Only read sensors if we are active
+    if (!_sensorMatrix || !_sensorFocus) return;
     
     uint8_t readyMatrix = 0;
     uint8_t readyFocus = 0;
@@ -252,7 +270,8 @@ void SmartTerrain::update(float pitch) {
     for (int r=2; r<=5; r++) {
         for (int c=2; c<=5; c++) {
             int idx = r*8 + c;
-            if (_matrixData.target_status[idx] == 5) {
+            // Filter: Status 5 (Valid) AND Distance > 20mm (Impossible Value Filter)
+            if (_matrixData.target_status[idx] == 5 && _matrixData.distance_mm[idx] > 20) {
                 matrixSum += _matrixData.distance_mm[idx];
                 matrixCount++;
             }
@@ -341,24 +360,62 @@ void SmartTerrain::update(float pitch) {
             }
         }
 
-        // B. Drop-Off Detection (Sensor Fusion)
-        // Only active in Walk Mode
-        int groundCount = 0;
-        for (int i=56; i<64; i++) { // Bottom Row
-            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500) groundCount++;
+        // B. Drop-Off & Stairs Detection (Smart Zone Statistics)
+        // Instead of single rows, we analyze Top vs Bottom ZONES (3 rows each).
+        // This makes the logic robust against Roll (tilting sideways).
+        
+        int validBottom = 0;
+        long sumBottom = 0;
+        // Bottom Zone: Rows 5-7 (Indices 40-63) - Looking at feet
+        for (int i=40; i<64; i++) { 
+            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500 && _matrixData.distance_mm[i] > 20) {
+                validBottom++;
+                sumBottom += _matrixData.distance_mm[i];
+            }
         }
 
-        float angleRad = abs(pitch) * PI / 180.0;
-        float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
-        bool focusLostGround = (focusDist > expectedDist + DROPOFF_TOLERANCE_MM) || (focusDist > DROPOFF_MAX_GROUND_MM);
+        int validTop = 0;
+        long sumTop = 0;
+        // Top Zone: Rows 0-2 (Indices 0-23) - Looking ahead
+        for (int i=0; i<24; i++) { 
+            if (_matrixData.target_status[i] == 5 && _matrixData.distance_mm[i] < 2500 && _matrixData.distance_mm[i] > 20) {
+                validTop++;
+                sumTop += _matrixData.distance_mm[i];
+            }
+        }
 
-        if (groundCount == 0 || (focusLostGround && groundCount < 3)) {
-            _hapticMode = HAPTIC_DROPOFF; // Override Obstacle Warning
+        // LOGIC 1: DROP-OFF (Stairs Down)
+        // Condition: Strong Ground Lock at feet (>30% valid) BUT Weak/No Ground ahead (<15% valid).
+        // Using 24 pixels per zone: >8 is strong, <4 is weak.
+        if (validBottom > 8 && validTop < 4) {
+             _hapticMode = HAPTIC_DROPOFF; // STOP!
+        }
+
+        // LOGIC 2: STAIRS UP (Rising Ground)
+        // Condition: Both zones see ground.
+        // Physics: 
+        // - Flat Ground: Top distance is MUCH larger than Bottom (Hypotenuse effect, factor > 2.0).
+        // - Wall: Top distance is SMALLER or EQUAL to Bottom.
+        // - Stairs: Top distance is LARGER than Bottom, but NOT AS MUCH as flat ground (factor ~1.2 - 1.5).
+        else if (validBottom > 5 && validTop > 5) {
+            float avgBottom = sumBottom / validBottom;
+            float avgTop = sumTop / validTop;
+            
+            // We check if the "Growth" of distance is stunted.
+            // If Top is less than 1.6x Bottom, the ground is rising significantly.
+            if (avgTop < (avgBottom * 1.6)) { 
+                _hapticMode = HAPTIC_WALL;
+                _hapticInterval = map(avgTop, 200, 2000, 50, 300);
+            }
         }
 
         // C. Stair Detection (Step Up)
         // Detects if the ground level rises significantly (Step Up)
         // Height Difference = (Expected - Measured) * sin(angle)
+        
+        float angleRad = abs(pitch) * PI / 180.0;
+        float expectedDist = HAND_HEIGHT_MM / sin(angleRad);
+
         if (focusDist < expectedDist && focusDist > 200) { // Valid range
              float heightDiff = (expectedDist - focusDist) * sin(angleRad);
              // Check if it's a step (higher than ground, but lower than a full wall)
