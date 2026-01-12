@@ -1,5 +1,5 @@
 # Haptic Horizon
-The shin-saving, forehead-protecting sixth sense designed exclusively for Samira. Go batgirl mode! 🦇
+The shin-saving, forehead-protecting sixth sense tailored for Samira, the most elegant white cane swinger I know. Go batgirl mode! 🦇
 
 ## Overview
 Haptic Horizon is a smart wearable **Electronic Travel Aid (ETA)** that fuses **LiDAR (ToF)**, **Thermal Imaging**, and **Motion Sensing** to translate the environment into a rich haptic language.
@@ -18,14 +18,12 @@ It's designed to be a discreet, powerful companion that translates distance and 
 
 ## Support my projects
 
-Your tip motivates me to continue developing cool stuff for the DIY community. Thank you very much for your support!
+Your tip motivates me to continue developing helpful stuff for the DIY community. Thank you very much for your support!
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D01HVT9A)
 
 ## Design Philosophy & Research
-The initial spark for this project came during a lovely evening at a Christmas market with Samira and colleagues. She had a traditional white cane, which she couldn't use in the crowd. This inspired me to create a discreet, context-aware companion device.
-
-The design is informed by research into assistive technologies, which highlights the importance of:
+This design is informed by research into assistive technologies, which highlights the importance of:
 
 1.  **Silent UI:** We strictly avoid audio feedback (beeps/voice) to prevent masking environmental sounds that are critical for situational awareness. This approach is supported by studies like [PMC5375851](https://pmc.ncbi.nlm.nih.gov/articles/PMC5375851/) and [Sensors 2023, 23(16), 7198](https://www.mdpi.com/1424-8220/23/16/7198), which emphasize the safety benefits of haptic-only feedback.
 2.  **Cognitive Load Management:** Instead of complex "haptic Morse code," we use intuitive "Hapticons" (Haptic Icons) that mimic physical sensations (e.g., a "ramp up" feeling for startup, distinct pulses for battery levels).
