@@ -1,5 +1,5 @@
 # Haptic Horizon
-The shin-saving, forehead-protecting sixth sense tailored for Samira, the coolest white cane swinger ever. Go batgirl mode! 🦇
+The shin-saving, forehead-protecting sixth sense tailored for Samira, the most elegant white cane swinger I know. Go batgirl mode! 🦇
 
 ## Overview
 Haptic Horizon is a smart wearable **Electronic Travel Aid (ETA)** that fuses **LiDAR (ToF)**, **Thermal Imaging**, and **Motion Sensing** to translate the environment into a rich haptic language.
